@@ -4,14 +4,18 @@ pkgrel = 0
 build_style = "gnu_configure"
 # TODO vde liburing libssh capstone
 configure_args = [
+    "--target-list=aarch64-linux-user",
+    "--without-default-features",
+    "--disable-werror",
+    "--disable-docs",
     "--enable-linux-user",
-    "--disable-bsd-user",
-    "--disable-kvm",
-    "--disable-png",
-    "--disable-fdt",
-    "--disable-virtfs",
-    "--disable-seccomp",
-    "--disable-system",
+    #"--disable-bsd-user",
+    #"--disable-kvm",
+    #"--disable-png",
+    #"--disable-fdt",
+    #"--disable-virtfs",
+    #"--disable-seccomp",
+    #"--disable-system",
     "--static",
 ]
 make_cmd = "gmake"
@@ -21,16 +25,16 @@ hostmakedepends = [
     "pkgconf",
     "gmake",
     "bash",
-    "perl",
-    "flex",
-    "bison",
-    "bzip2",
+    #"perl",
+    #"flex",
+    #"bison",
+    #"bzip2",
     "ugetopt",
 ]
 makedepends = [
     "glib-devel-static",
     "zlib-devel-static",
-    "libcxx-devel-static",
+    #"libcxx-devel-static",
     "pcre2-devel-static",
     "libunwind-devel-static",
     "musl-devel-static",
@@ -46,6 +50,10 @@ sha256 = "710c101198e334d4762eef65f649bc43fa8a5dd75303554b8acfec3eb25f0e55"
 # maybe someday
 options = ["!cross", "!check"]
 exec_wrappers = [("/usr/bin/ugetopt", "getopt")]
+
+# segfaults with pie when running bins for any target arch
+if self.profile().arch == "riscv64":
+    hardening = ["!pie"]
 
 
 def post_install(self):
@@ -115,40 +123,40 @@ def _upkg(uname):
 
 for _u in [
     "aarch64",
-    "aarch64_be",
-    "alpha",
-    "arm",
-    "armeb",
-    "cris",
-    "hexagon",
-    "hppa",
-    "i386",
-    "loongarch64",
-    "m68k",
-    "microblaze",
-    "microblazeel",
-    "mips",
-    "mips64",
-    "mips64el",
-    "mipsel",
-    "mipsn32",
-    "mipsn32el",
-    "nios2",
-    "or1k",
-    "ppc",
-    "ppc64",
-    "ppc64le",
-    "riscv32",
-    "riscv64",
-    "s390x",
-    "sh4",
-    "sh4eb",
-    "sparc",
-    "sparc32plus",
-    "sparc64",
-    "x86_64",
-    "xtensa",
-    "xtensaeb",
+    #"aarch64_be",
+    #"alpha",
+    #"arm",
+    #"armeb",
+    #"cris",
+    #"hexagon",
+    #"hppa",
+    #"i386",
+    #"loongarch64",
+    #"m68k",
+    #"microblaze",
+    #"microblazeel",
+    #"mips",
+    #"mips64",
+    #"mips64el",
+    #"mipsel",
+    #"mipsn32",
+    #"mipsn32el",
+    #"nios2",
+    #"or1k",
+    #"ppc",
+    #"ppc64",
+    #"ppc64le",
+    #"riscv32",
+    #"riscv64",
+    #"s390x",
+    #"sh4",
+    #"sh4eb",
+    #"sparc",
+    #"sparc32plus",
+    #"sparc64",
+    #"x86_64",
+    #"xtensa",
+    #"xtensaeb",
 ]:
     _upkg(_u)
 
