@@ -1,0 +1,19 @@
+diff --git a/setup.py b/setup.py
+index 08fc003..41f0f88 100644
+--- a/setup.py
++++ b/setup.py
+@@ -1,4 +1,5 @@
+ import sys, subprocess
++import os
+ from distutils.core import setup, Extension
+ 
+ 
+@@ -14,6 +15,8 @@ USE_CYTHON = False
+ if "--cython" in sys.argv:
+     sys.argv.remove("--cython")
+     USE_CYTHON = True
++elif "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "true":
++    USE_CYTHON = True
+ 
+ file_ext = ".pyx" if USE_CYTHON else ".c"
+ 
