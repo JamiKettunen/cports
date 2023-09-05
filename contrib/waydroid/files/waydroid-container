@@ -1,0 +1,6 @@
+# waydroid container service
+
+type       = process
+command    = /usr/bin/waydroid -w container start
+depends-on = dbus
+depends-on = local.target

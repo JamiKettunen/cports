@@ -1,0 +1,29 @@
+From 324109313f89c754ba435b9d4b41c26b8b17bda2 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Wed, 6 Sep 2023 00:05:39 +0300
+Subject: [PATCH] Makefile: Make sed usage portable
+
+-i argument works differently to an incompatible-at-syntax level between
+the GNU and other implementations since it's not defined in POSIX,
+simply avoid using it altogether.
+---
+ Makefile | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index dc54740..b04c903 100644
+--- a/Makefile
++++ b/Makefile
+@@ -46,7 +46,8 @@ install:
+ 		cp systemd/waydroid-container.service $(INSTALL_SYSD_DIR); \
+ 	fi
+ 	if [ $(USE_NFTABLES) = 1 ]; then \
+-		sed '/LXC_USE_NFT=/ s/false/true/' -i $(INSTALL_WAYDROID_DIR)/data/scripts/waydroid-net.sh; \
++		sed '/LXC_USE_NFT=/ s/false/true/' data/scripts/waydroid-net.sh \
++			> $(INSTALL_WAYDROID_DIR)/data/scripts/waydroid-net.sh; \
+ 	fi
+ 
+ install_apparmor:
+-- 
+2.42.0
+

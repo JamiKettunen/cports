@@ -1,0 +1,6 @@
+#!/bin/sh
+# prepare new waydroid version configuration
+if [ -f /var/lib/waydroid/waydroid_base.prop ]; then
+	/usr/bin/waydroid upgrade --offline || :
+fi
+# TODO: restart waydroid container service?
