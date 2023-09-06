@@ -1,0 +1,88 @@
+--- a/hooks/nvidia
++++ b/hooks/nvidia
+@@ -99,7 +99,7 @@ EOF
+     return 0
+ }
+ 
+-options=$(getopt -o h -l help,no-load-kmods,disable-require,debug:,ldcache:,root:,ldconfig: -- "$@")
++options=$(ugetopt -o h -l help,no-load-kmods,disable-require,debug:,ldcache:,root:,ldconfig: -- "$@")
+ if [ $? -ne 0 ]; then
+     usage
+     exit 1
+--- a/hooks/ubuntu-cloud-prep
++++ b/hooks/ubuntu-cloud-prep
+@@ -43,7 +43,7 @@ prep() {
+     local short_opts="Chi:L:S:u:v"
+     local long_opts="auth-key:,cloud,help,hostid:,name:,nolocales:,create-etc-init,userdata:,vendordata:,verbose"
+     local getopt_out getopt_ret
+-    getopt_out=$(getopt --name "${0##*/}" \
++    getopt_out=$(ugetopt --name "${0##*/}" \
+         --options "${short_opts}" --long "${long_opts}" -- "$@" 2>/dev/null) ||
+         :
+     getopt_ret=$?
+--- a/src/lxc/cmd/lxc-update-config.in
++++ b/src/lxc/cmd/lxc-update-config.in
+@@ -21,7 +21,7 @@ if [ $# -eq 0 ]; then
+     exit 0
+ fi
+ 
+-OPTIONS=$(getopt -o c:h --long config:,help -- "${@}")
++OPTIONS=$(ugetopt -o c:h --long config:,help -- "${@}")
+ eval set -- "${OPTIONS}"
+ 
+ while true; do
+--- a/src/tests/lxc-test-usernsexec
++++ b/src/tests/lxc-test-usernsexec
+@@ -227,7 +227,7 @@ setup_and_run() {
+     local short_opts="hv"
+     local long_opts="help,user:,create-subuid:,create-subgid:,verbose"
+     local getopt_out=""
+-    getopt_out=$(getopt --name "${0##*/}" \
++    getopt_out=$(ugetopt --name "${0##*/}" \
+         --options "${short_opts}" --long "${long_opts}" -- "$@") &&
+         eval set -- "${getopt_out}" ||
+         { bad_Usage; return; }
+--- a/templates/lxc-busybox.in
++++ b/templates/lxc-busybox.in
+@@ -260,7 +260,7 @@ EOF
+   return 0
+ }
+ 
+-if ! options=$(getopt -o hp:n: -l help,rootfs:,path:,name:,mapped-uid:,mapped-gid:,busybox-path: -- "$@"); then
++if ! options=$(ugetopt -o hp:n: -l help,rootfs:,path:,name:,mapped-uid:,mapped-gid:,busybox-path: -- "$@"); then
+   usage
+   exit 1
+ fi
+--- a/templates/lxc-download.in
++++ b/templates/lxc-download.in
+@@ -137,7 +137,7 @@ EOF
+   return 0
+ }
+ 
+-if ! options=$(getopt -o d:r:a:hl -l dist:,release:,arch:,help,list,variant:,\
++if ! options=$(ugetopt -o d:r:a:hl -l dist:,release:,arch:,help,list,variant:,\
+ server:,flush-cache,force-cache,verbose,name:,path:,\
+ rootfs:,mapped-uid:,mapped-gid: -- "$@"); then
+   usage
+--- a/templates/lxc-local.in
++++ b/templates/lxc-local.in
+@@ -72,7 +72,7 @@ EOF
+ }
+ 
+ # Show usage and exit if invalid arguments are passed
+-if ! options=$(getopt -o hm:f: -l help,metadata:,fstree:,no-dev:,name:,path:,rootfs:,mapped-uid:,mapped-gid: -- "$@"); then
++if ! options=$(ugetopt -o hm:f: -l help,metadata:,fstree:,no-dev:,name:,path:,rootfs:,mapped-uid:,mapped-gid: -- "$@"); then
+   usage
+   exit 1
+ fi
+--- a/templates/lxc-oci.in
++++ b/templates/lxc-oci.in
+@@ -250,7 +250,7 @@ EOF
+   return 0
+ }
+ 
+-if ! options=$(getopt -o u:h -l help,url:,username:,password:,no-cache,dhcp,name:,path:,rootfs:,mapped-uid:,mapped-gid:,mount-helper: -- "$@"); then
++if ! options=$(ugetopt -o u:h -l help,url:,username:,password:,no-cache,dhcp,name:,path:,rootfs:,mapped-uid:,mapped-gid:,mount-helper: -- "$@"); then
+     usage
+     exit 1
+ fi

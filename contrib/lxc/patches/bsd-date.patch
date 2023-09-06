@@ -1,0 +1,26 @@
+--- a/meson.build
++++ b/meson.build
+@@ -307,7 +307,7 @@ endif
+ if time_epoch == ''
+     time_epoch = run_command(date, '+%s', check: true).stdout().strip()
+ endif
+-generate_date = run_command(date, '--utc', '--date=@' + time_epoch, '+%Y-%m-%d', check: true).stdout().strip()
++generate_date = run_command(date, '-j', '-f', '%s', time_epoch, '+%Y-%m-%d', check: true).stdout().strip()
+ 
+ ## Manpages.
+ docconf = configuration_data()
+@@ -979,10 +979,8 @@ status = [
+     'lxc user network config:	@0@'.format(lxc_user_network_conf),
+     'lxc user network database:	@0@'.format(lxc_user_network_db)]
+ 
+-alt_time_epoch = run_command('date', '-Is', '-u', '-d',
+-                             '@@0@'.format(time_epoch), check: true).stdout().strip()
+ status += [
+-    'time epoch:			@0@ (@1@)'.format(time_epoch, alt_time_epoch)]
++    'time epoch:			@0@'.format(time_epoch)]
+ 
+ status += [
+     '',
+-- 
+2.45.2
+

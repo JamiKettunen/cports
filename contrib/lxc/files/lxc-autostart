@@ -1,0 +1,6 @@
+# lxc-autostart service
+
+type       = scripted
+command    = /usr/bin/lxc-autostart
+depends-on = local.target
+#depends-on = network.target
