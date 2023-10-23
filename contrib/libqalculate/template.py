@@ -1,7 +1,7 @@
 pkgname = "libqalculate"
 # match to qalculate-gtk/qt
 pkgver = "5.2.0.1"
-pkgrel = 0
+pkgrel = 1
 build_style = "gnu_configure"
 make_cmd = "gmake"
 hostmakedepends = [
@@ -26,6 +26,8 @@ license = "GPL-2.0-or-later"
 url = "https://qalculate.github.io"
 source = f"https://github.com/Qalculate/libqalculate/archive/refs/tags/v{pkgver}.tar.gz"
 sha256 = "df48e3693a034afa239f37b445a48b60c07d336073af8e8df8a36e1c6657d37f"
+# FIXME: lots of undefined symbols for calc.cc
+hardening = ["vis"]
 
 
 @subpackage("libqalculate-devel")
