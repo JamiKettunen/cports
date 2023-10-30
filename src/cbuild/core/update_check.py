@@ -90,6 +90,7 @@ class UpdateCheck:
         self.vdprefix = None
         self.vdsuffix = None
         self.ignore = []
+        self.git = False
 
     def _fetch(self, u):
         if u in self._urlcache:
@@ -446,8 +447,31 @@ def update_check(pkg, verbose=False, error=False):
         if hasattr(modh, "vdsuffix"):
             uc.vdsuffix = modh.vdsuffix
 
+        if hasattr(modh, "git"):
+            uc.git = modh.git
+
     if uc.ignore is True or pkg.build_style == "meta":
         return checkvers
+
+    # git update-check
+
+    if pkg._commit:
+        uc.git = True
+        if not uc.pattern:
+            uc.pattern = r"(?<=commit\/).*(?=<\/id>)"
+        uc.pkgver = pkg._commit
+        if not uc.url:
+            src = pkg.source[0]
+            if not pkg._branch:
+                pkg._branch = "master" if "//invent.kde.org/" in src else "main"
+            if (
+                "//gitlab." in src
+                or "//source.puri.sm/" in src
+                or "//invent.kde.org/" in src
+            ):
+                uc.url = f"{src.rsplit("/-/")[0]}/commits/{pkg._branch}?format=atom"
+            elif "github.com" in src:
+                uc.url = f"{src.rsplit("/archive/")[0]}/commits/{pkg._branch}.atom"
 
     # use hooks if defined
 
@@ -483,8 +507,11 @@ def update_check(pkg, verbose=False, error=False):
         if verbose:
             print("No versions fetched, retrying...")
 
-    vers = list(set(vers))
-    vers.sort(key=_ver_conv)
+    if uc.git:
+        vers = [vers[0]]
+    else:
+        vers = list(set(vers))
+        vers.sort(key=_ver_conv)
 
     if len(vers) == 0:
         if error:
@@ -508,10 +535,14 @@ def update_check(pkg, verbose=False, error=False):
         if ignored:
             continue
 
-        ret = apkcli.compare_version(
-            uc.pkgver.replace("-", "."), v.replace("-", "."), False
-        )
-        if ret == -1:
-            checkvers.append((pkg.pkgver, v))
+        if uc.git:
+            if uc.pkgver != v:
+                checkvers.append((pkg._commit, v))
+        else:
+            ret = apkcli.compare_version(
+                uc.pkgver.replace("-", "."), v.replace("-", "."), False
+            )
+            if ret == -1:
+                checkvers.append((pkg.pkgver, v))
 
     return checkvers

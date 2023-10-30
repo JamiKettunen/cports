@@ -478,6 +478,9 @@ core_fields = [
     ("go_mod_dl", None, str, False, False, False),
     ("go_build_tags", [], list, False, False, False),
     ("go_check_tags", [], list, False, False, False),
+    # git update-check
+    ("_commit", None, str, False, False, False),
+    ("_branch", None, str, False, False, False),
 ]
 
 # a field priority list, the second element indicates whether
@@ -487,6 +490,8 @@ core_fields_priority = [
     ("pkgname", True),
     ("pkgver", True),
     ("pkgrel", True),
+    ("_commit", False),
+    ("_branch", False),
     ("archs", True),
     ("build_wrksrc", True),
     ("build_style", True),
