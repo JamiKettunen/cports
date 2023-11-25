@@ -1,0 +1,19 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a49ca908..581487de 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -428,14 +428,6 @@ endif()
+ #- CURL
+ find_package("CURL")
+ 
+-#- JSON
+-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/third-party/nlohmann-json/single_include")
+-	message(FATAL_ERROR "Please make sure to update git submodules to their latest supported version.")
+-	return()
+-else()
+-	set(JSON_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/third-party/nlohmann-json/single_include")
+-endif()
+-
+ #- Qt 6
+ find_package("Qt6"
+ 	COMPONENTS Core Gui Widgets

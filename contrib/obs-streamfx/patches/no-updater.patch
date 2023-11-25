@@ -1,0 +1,13 @@
+diff --git a/source/updater.cpp b/source/updater.cpp
+index 7114a804..71844946 100644
+--- a/source/updater.cpp
++++ b/source/updater.cpp
+@@ -396,7 +396,7 @@ void streamfx::updater::save()
+ streamfx::updater::updater()
+ 	: _lock(), _task(),
+ 
+-	  _data_sharing_allowed(false), _automation(true), _channel(version_stage::STABLE), _lastcheckedat(),
++	  _data_sharing_allowed(false), _automation(false), _channel(version_stage::STABLE), _lastcheckedat(),
+ 
+ 	  _current_info(), _updates(), _dirty(false)
+ {

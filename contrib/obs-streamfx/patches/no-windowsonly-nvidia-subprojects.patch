@@ -1,0 +1,31 @@
+diff --git a/components/nvidia/CMakeLists.txt b/components/nvidia/CMakeLists.txt
+index f0565c05..b9444adc 100644
+--- a/components/nvidia/CMakeLists.txt
++++ b/components/nvidia/CMakeLists.txt
+@@ -6,6 +6,11 @@ cmake_minimum_required(VERSION 3.26)
+ project("NVIDIA")
+ list(APPEND CMAKE_MESSAGE_INDENT "[${PROJECT_NAME}] ")
+ 
++streamfx_add_component("NVIDIA")
++if(NOT D_PLATFORM_WINDOWS)
++    streamfx_disable_component("NVIDIA" REASON "NVIDIA integration is (currently) only available for Windows under Direct3D11.")
++else()
++
+ #- NVIDIA Audio Effects SDK
+ if(NOT TARGET NVIDIA::AFX)
+     add_library(NVIDIA::AFX IMPORTED INTERFACE)
+@@ -35,7 +40,6 @@ if(NOT TARGET NVIDIA::VFX)
+     )
+ endif()
+ 
+-streamfx_add_component("NVIDIA")
+ target_link_libraries(${COMPONENT_TARGET}
+     PRIVATE
+         NVIDIA::AFX
+@@ -43,6 +47,4 @@ target_link_libraries(${COMPONENT_TARGET}
+         NVIDIA::VFX
+ )
+ 
+-if(NOT D_PLATFORM_WINDOWS)
+-    streamfx_disable_component("NVIDIA" REASON "NVIDIA integration is (currently) only available for Windows under Direct3D11.")
+ endif()

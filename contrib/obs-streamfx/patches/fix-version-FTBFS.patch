@@ -1,0 +1,71 @@
+From 3225e70878ab320c593a4a7893b89239cacff2a5 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Sat, 25 Nov 2023 17:47:12 +0200
+Subject: [PATCH] cmake: Fix passing -DVERSION=...
+
+Fixes building from source in a non-git source directory:
+
+  -- [StreamFX] Not a git repository, automatic version detection disabled.
+  -- [StreamFX] Version 0.0.0-
+  ...
+  ../components/mirror/source/sources/source-mirror.cpp:119:7: error: duplicate case value '0'
+    119 |         case STREAMFX_VERSION:
+        |              ^
+  generated/version.hpp:26:2: note: expanded from macro 'STREAMFX_VERSION'
+     26 |         STREAMFX_MAKE_VERSION(STREAMFX_VERSION_MAJOR, STREAMFX_VERSION_MINOR, STREAMFX_VERSION_PATCH, \
+        |         ^
+  generated/version.hpp:12:2: note: expanded from macro 'STREAMFX_MAKE_VERSION'
+     12 |         (((uint64_t(major) & 0xFFFFull) << 48ull) | ((uint64_t(minor) & 0xFFFFull) << 32ull) \
+        |         ^
+  ../components/mirror/source/sources/source-mirror.cpp:116:7: note: previous case defined here
+    116 |         case 0:
+        |              ^
+---
+ CMakeLists.txt | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 581487de..a315fd74 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -230,14 +230,14 @@ if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/.git")
+ 	else()
+ 		message(WARNING "'git' not found, automatic version detection disabled.")
+ 	endif()
++	version(PARSE _VERSION "${_VERSION}" REQUIRE "PATCH;TWEAK")
+ else()
+ 	message(STATUS "Not a git repository, automatic version detection disabled.")
+ endif()
+-version(PARSE _VERSION "${_VERSION}" REQUIRE "PATCH;TWEAK")
+ 
+ # Allow manual overrides of the detected version.
+ if(NOT ("${${PREFIX}VERSION}" STREQUAL ""))
+-	version(PARSE _VERSION_CFG "${${PREFIX}VERSION}" REQUIRE "PATCH;TWEAK")
++	version(PARSE _VERSION_CFG "${${PREFIX}VERSION}" REQUIRE "PATCH;")
+ 	if("${_VERSION_CFG_BUILD}" STREQUAL "")
+ 		set(_VERSION_CFG_BUILD "${_VERSION_BUILD}")
+ 	endif()
+@@ -249,15 +249,19 @@ if(NOT ("${${PREFIX}VERSION}" STREQUAL ""))
+ 		PRERELEASE "${_VERSION_CFG_PRERELEASE}"
+ 		BUILD "${_VERSION_CFG_BUILD}"
+ 	)
++	version(PARSE _VERSION "${_VERSION}" REQUIRE "PATCH;")
+ endif()
+ 
+ set(_VERSION_THIN "${_VERSION_MAJOR}.${_VERSION_MINOR}.${_VERSION_PATCH}")
+ if(NOT (_VERSION_PRERELEASE STREQUAL ""))
+ 	set(_VERSION_THIN "${_VERSION_THIN}${_VERSION_PRERELEASE}${_VERSION_TWEAK}")
+ endif()
+-if(NOT (VERSION_COMMIT STREQUAL ""))
++if(NOT (_VERSION_BUILD STREQUAL ""))
+ 	set(_VERSION_THIN "${_VERSION_THIN}-${_VERSION_BUILD}")
+ endif()
++if(_VERSION_THIN STREQUAL "0.0.0")
++	message(FATAL_ERROR "Version cannot be 0.0.0, please define -DVERSION=... during configure.")
++endif()
+ 
+ # Parse & Log the detected version.
+ message(STATUS "Version ${_VERSION_THIN}")
+-- 
+2.42.0
+
