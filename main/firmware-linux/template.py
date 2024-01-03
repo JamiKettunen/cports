@@ -1,14 +1,21 @@
 # also update ucode-amd when updating
 pkgname = "firmware-linux"
 pkgver = "20231211"
-pkgrel = 1
+pkgrel = 2
 hostmakedepends = ["python", "rdfind"]
 pkgdesc = "Binary firmware blobs for the Linux kernel"
 maintainer = "q66 <q66@chimera-linux.org>"
 license = "custom:linux-firmware"
 url = "https://www.kernel.org"
-source = f"https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/snapshot/linux-firmware-{pkgver}.tar.gz"
-sha256 = "d0ba54f05f5dd34b0fc5a1e1970cd9cbc48491d2da97f3798a9e13530dc18298"
+source = [
+    f"https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/snapshot/linux-firmware-{pkgver}.tar.gz",
+    # from powervr branch @ 2023-12-06 for BXE-4-32 GPU on VisionFive 2 SBC
+    "!https://gitlab.freedesktop.org/frankbinns/linux-firmware/-/raw/96f6a1a6/powervr/rogue_36.50.54.182_v1.fw",
+]
+sha256 = [
+    "d0ba54f05f5dd34b0fc5a1e1970cd9cbc48491d2da97f3798a9e13530dc18298",
+    "b5232ac64c0c708ee66400f40033ba4da8895a04ae688bc14821f59c5d4a6326",
+]
 options = ["empty"]
 
 _arch = self.profile().arch
@@ -305,6 +312,7 @@ _pkgs = [
 
 
 def do_install(self):
+    self.cp(self.sources_path / "rogue_36.50.54.182_v1.fw", "powervr")
     self.install_dir("usr/lib/firmware")
     self.do(
         "./copy-firmware.sh",

@@ -1,0 +1,29 @@
+From 96f6a1a645cac81416ae3f9db3d63f72a1a6e826 Mon Sep 17 00:00:00 2001
+From: Vlad Schiller <vlad-radu.schiller@imgtec.com>
+Date: Fri, 15 Sep 2023 13:01:49 +0100
+Subject: [PATCH] powervr: add firmware for Imagination Technologies BXE-4-32
+ GPU
+
+This adds the initial firmware to support this GPU.
+
+Signed-off-by: Vlad Schiller <vlad-radu.schiller@imgtec.com>
+Signed-off-by: Frank Binns <frank.binns@imgtec.com>
+(omitted binary in favor of downloading via cbuild)
+---
+ WHENCE                           |   1 +
+ powervr/rogue_36.50.54.182_v1.fw | Bin 0 -> 126976 bytes
+ 2 files changed, 1 insertion(+)
+ create mode 100644 powervr/rogue_36.50.54.182_v1.fw
+
+diff --git a/WHENCE b/WHENCE
+index 02f4eb18..87599d6e 100644
+--- a/WHENCE
++++ b/WHENCE
+@@ -6883,6 +6883,7 @@
+ Driver: powervr - Imagination Technologies PowerVR graphics driver
+ 
+ File: powervr/rogue_33.15.11.3_v1.fw
++File: powervr/rogue_36.50.54.182_v1.fw
+ Version: 1.0.OS@6503725
+ 
+ License: Redistributable. See LICENSE.powervr for details
