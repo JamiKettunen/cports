@@ -1,6 +1,10 @@
+# TODO: if FTBFS on riscv64 bring back https://github.com/chimera-linux/cports/blob/674fd86b424618aa7f177b3ad9e693f400bc165d/main/mesa/patches/003-6388896985da7495ad0968322491953894d29637.patch
 pkgname = "mesa"
-pkgver = "23.3.3"
+# based on 23.2.0, powervr-mesa-next @ 675db6f9
+pkgver = "99_git20231207"
 pkgrel = 0
+_branch = "dev/devinfo"
+_commit = "019439578c28eb1747cb61b2160af63ff9e1df7c"
 build_style = "meson"
 configure_args = [
     "-Dglvnd=false",
@@ -64,13 +68,13 @@ makedepends = [
 pkgdesc = "Mesa 3D Graphics Library"
 maintainer = "q66 <q66@chimera-linux.org>"
 license = "MIT"
-url = "https://www.mesa3d.org"
-source = f"https://mesa.freedesktop.org/archive/{pkgname}-{pkgver}.tar.xz"
-sha256 = "518307c0057fa3cee8b58df78be431d4df5aafa7edc60d09278b2d7a0a80f3b4"
+url = "https://docs.mesa3d.org/drivers/powervr.html"
+source = f"https://gitlab.freedesktop.org/frankbinns/mesa/-/archive/{_commit}.tar.gz"
+sha256 = "eccf784f170b909642db70b9a5714870a8a003fa290f6104a8b602c675f103ef"
 # lots of issues in swrast and so on
 hardening = ["!int"]
 # cba to deal with cross patching nonsense
-options = ["!cross", "linkundefver"]
+options = ["!cross", "linkundefver"] # , "!lto"
 
 _have_llvm = False
 
@@ -98,6 +102,7 @@ _have_intel = False
 _have_vmware = False
 _have_nine = False
 _have_arm = False
+_have_riscv = False
 _have_opencl = False
 _have_vulkan = False
 _have_zink = False
@@ -109,13 +114,21 @@ match self.profile().arch:
         _have_nine = True
     case "aarch64":
         _have_arm = True
+    case "riscv64":
+        _have_riscv = True
+        # reduce build time for VF2
+        _have_nvidia = False
+        _have_amd = False
+        _have_hwdec = False
+        _have_virgl = False
+        # TODO: perfetto
     case "ppc64le":
         configure_args += ["-Dpower8=true"]
     case "ppc64":
         configure_args += ["-Dpower8=false"]
 
 _have_opencl = _have_amd or _have_intel
-_have_vulkan = _have_amd or _have_intel or _have_arm
+_have_vulkan = _have_amd or _have_intel or _have_arm or _have_riscv
 _have_zink = _have_vulkan
 
 if _have_amd:
@@ -145,6 +158,11 @@ if _have_arm:
     ]
     if _have_vulkan:
         _vulkan_drivers += ["broadcom", "freedreno", "panfrost"]
+
+if _have_riscv:
+    if _have_vulkan:
+        _vulkan_drivers += ["imagination-experimental"]
+        configure_args += ["-Dimagination-srv=true", "-Dtools=drm-shim,glsl,nir,imagination,dlclose-skip"]
 
 if _have_virgl:
     _gallium_drivers += ["virgl"]
@@ -193,6 +211,9 @@ configure_args += ["-Dvulkan-drivers=" + ",".join(_vulkan_drivers)]
 
 
 def post_install(self):
+    self.install_file(
+        self.files_path / "mesa-powervr-vulkan.sh", "etc/profile.d"
+    )
     self.install_file(
         self.files_path / "00-radeonsi-gnome-no-glthread.conf",
         "usr/share/drirc.d",
