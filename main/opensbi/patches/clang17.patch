@@ -1,0 +1,24 @@
+clang: error: unsupported option '-mno-unaligned-access' for target 'riscv64-unknown-elf'
+
+Ref: https://github.com/freebsd/freebsd-ports/commit/a864243fb7ae1932341fce17598cfc588150156d
+
+--- a/Makefile.orig	2023-07-19 06:21:59 UTC
++++ b/Makefile
+@@ -337,7 +337,7 @@ endif
+ else
+ CFLAGS		+=	-O2
+ endif
+-CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls -mstrict-align
++CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
+ # enable -m(no-)save-restore option by CC_SUPPORT_SAVE_RESTORE
+ ifeq ($(CC_SUPPORT_SAVE_RESTORE),y)
+ CFLAGS		+=	-mno-save-restore
+@@ -355,7 +355,7 @@ ASFLAGS		=	-g -Wall -nostdlib
+ CPPFLAGS	+=	$(firmware-cppflags-y)
+
+ ASFLAGS		=	-g -Wall -nostdlib
+-ASFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls -mstrict-align
++ASFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
+ # enable -m(no-)save-restore option by CC_SUPPORT_SAVE_RESTORE
+ ifeq ($(CC_SUPPORT_SAVE_RESTORE),y)
+ ASFLAGS		+=	-mno-save-restore
