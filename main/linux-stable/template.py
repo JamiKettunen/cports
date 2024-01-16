@@ -66,6 +66,10 @@ def do_install(self):
 
     linux.install(self, _flavor)
 
+    if not self.build_dbg:
+        self.rm(self.destdir / "usr/lib/debug", recursive=True)
+        self.rm(self.destdir / f"boot/System.map-*", glob=True)
+
 
 @subpackage("linux-stable-devel")
 def _devel(self):
@@ -74,7 +78,7 @@ def _devel(self):
     return ["usr/src", "usr/lib/modules/*/build"]
 
 
-@subpackage("linux-stable-dbg")
+@subpackage("linux-stable-dbg", self.build_dbg)
 def _dbg(self):
     self.pkgdesc += " (debug files)"
     self.options = [
