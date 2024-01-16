@@ -34,9 +34,6 @@ _conf = False
 if _conf:
     hostmakedepends += ["base-cross", "ncurses-devel"]
 
-if self.profile().cross:
-    broken = "linux-devel does not come out right"
-
 
 def init_configure(self):
     # generate scriptlets for packaging, just hooking to base-kernel helpers
@@ -66,12 +63,17 @@ def do_install(self):
 
     linux.install(self, _flavor)
 
+    if self.profile().cross:
+        # -devel does not come out right for crossbuilds
+        self.rm(self.destdir / "usr/src", recursive=True)
+        self.rm(self.destdir / f"usr/lib/modules/*/build", glob=True)
+
     if not self.build_dbg:
         self.rm(self.destdir / "usr/lib/debug", recursive=True)
         self.rm(self.destdir / f"boot/System.map-*", glob=True)
 
 
-@subpackage("linux-stable-devel")
+@subpackage("linux-stable-devel", not self.profile().cross)
 def _devel(self):
     self.depends += ["clang"]
     self.options = ["foreignelf", "execstack", "!scanshlibs"]
