@@ -121,7 +121,6 @@ match self.profile().arch:
         _have_amd = False
         _have_hwdec = False
         _have_virgl = False
-        # TODO: perfetto
     case "ppc64le":
         configure_args += ["-Dpower8=true"]
     case "ppc64":
