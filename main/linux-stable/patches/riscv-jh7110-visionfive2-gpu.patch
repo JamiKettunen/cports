@@ -1,0 +1,83 @@
+Loading powervr kernel module immediately freezes the board atm with
+nothing left in "dmesg -w" when checked via serial or SSH over ethernet
+started just before "modprobe powervr".
+
+dmesg w/ dyndbg over ethernet SSH (serial is way too slow to even
+capture that much) look like: https://paste.c-net.org/7vhbluorsfsh
+
+diff --git a/arch/riscv/boot/dts/starfive/jh7110-starfive-visionfive-2.dtsi b/arch/riscv/boot/dts/starfive/jh7110-starfive-visionfive-2.dtsi
+index cc92ac5e8e78..0e80977e3da7 100644
+--- a/arch/riscv/boot/dts/starfive/jh7110-starfive-visionfive-2.dtsi
++++ b/arch/riscv/boot/dts/starfive/jh7110-starfive-visionfive-2.dtsi
+@@ -862,3 +862,7 @@ &U74_4 {
+ &voutcrg {
+ 	status = "okay";
+ };
++
++&gpu {
++	status = "okay";
++};
+diff --git a/arch/riscv/boot/dts/starfive/jh7110.dtsi b/arch/riscv/boot/dts/starfive/jh7110.dtsi
+index 3dc9e7bb8c72..43f6aed4885d 100644
+--- a/arch/riscv/boot/dts/starfive/jh7110.dtsi
++++ b/arch/riscv/boot/dts/starfive/jh7110.dtsi
+@@ -1131,6 +1131,29 @@ pwrc: power-controller@17030000 {
+ 			#power-domain-cells = <1>;
+ 		};
+ 
++		// downstream: https://github.com/starfive-tech/linux/blob/JH7110_VisionFive2_6.1.y_devel/arch/riscv/boot/dts/starfive/jh7110.dtsi#L1343-L1362
++		gpu: gpu@18000000 {
++			compatible = "starfive,jh7110-gpu", "img,img-bxe";
++			reg = <0x0 0x18000000 0x0 0x100000>,
++			      <0x0 0x130c000  0x0 0x10000>;
++			clocks = <&syscrg JH7110_SYSCLK_GPU_CORE>,
++				 <&syscrg JH7110_SYSCLK_GPU_APB>,
++				 <&syscrg JH7110_SYSCLK_GPU_RTC_TOGGLE>,
++				 <&syscrg JH7110_SYSCLK_GPU_CORE_CLK>,
++				 <&syscrg JH7110_SYSCLK_GPU_SYS_CLK>,
++				 <&syscrg JH7110_SYSCLK_NOC_BUS_GPU_AXI>;
++			// commenting clock-names stops crashing, graceful probe failure in pvr_device_clk_init()
++			clock-names = "bv",
++				      "apb",
++				      "rtc",
++				      "core",
++				      "sys",
++				      "axi";
++			power-domains = <&pwrc JH7110_PD_GPUA>;
++			interrupts = <82>;
++			status = "disabled";
++		};
++
+ 		ispcrg: clock-controller@19810000 {
+ 			compatible = "starfive,jh7110-ispcrg";
+ 			reg = <0x0 0x19810000 0x0 0x10000>;
+diff --git a/drivers/gpu/drm/imagination/Kconfig b/drivers/gpu/drm/imagination/Kconfig
+index 3bfa2ac212dc..5f218896114c 100644
+--- a/drivers/gpu/drm/imagination/Kconfig
++++ b/drivers/gpu/drm/imagination/Kconfig
+@@ -3,7 +3,7 @@
+ 
+ config DRM_POWERVR
+ 	tristate "Imagination Technologies PowerVR (Series 6 and later) & IMG Graphics"
+-	depends on ARM64
++	depends on (ARM64 || RISCV)
+ 	depends on DRM
+ 	depends on PM
+ 	select DRM_EXEC
+diff --git a/drivers/gpu/drm/imagination/pvr_drv.c b/drivers/gpu/drm/imagination/pvr_drv.c
+index 5c3b2d58d766..0dded5f0b05c 100644
+--- a/drivers/gpu/drm/imagination/pvr_drv.c
++++ b/drivers/gpu/drm/imagination/pvr_drv.c
+@@ -1475,6 +1475,7 @@ pvr_remove(struct platform_device *plat_dev)
+ 
+ static const struct of_device_id dt_match[] = {
+ 	{ .compatible = "img,img-axe", .data = NULL },
++	{ .compatible = "img,img-bxe", .data = NULL },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, dt_match);
+@@ -1499,3 +1500,4 @@ MODULE_DESCRIPTION(PVR_DRIVER_DESC);
+ MODULE_LICENSE("Dual MIT/GPL");
+ MODULE_IMPORT_NS(DMA_BUF);
+ MODULE_FIRMWARE("powervr/rogue_33.15.11.3_v1.fw");
++MODULE_FIRMWARE("powervr/rogue_36.50.54.182_v1.fw");
