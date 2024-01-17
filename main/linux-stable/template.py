@@ -1,7 +1,9 @@
 # update linux-stable-zfs-bin when bumping
 pkgname = "linux-stable"
+# 6.8-rc1 @ ~13.1.2024
 pkgver = "6.7.0"
 pkgrel = 1
+_commit = "052d534373b7ed33712a63d5e17b2b6cdbce84fd"
 archs = ["aarch64", "ppc64le", "ppc64", "riscv64", "x86_64"]
 make_dir = "build"
 hostmakedepends = ["base-kernel-devel"]
@@ -11,8 +13,8 @@ pkgdesc = f"Linux kernel {pkgver[0:pkgver.rfind('.')]}.x"
 maintainer = "q66 <q66@chimera-linux.org>"
 license = "GPL-2.0-only"
 url = "https://kernel.org"
-source = f"https://cdn.kernel.org/pub/linux/kernel/v{pkgver[0]}.x/linux-{pkgver[:-2]}.tar.xz"
-sha256 = "ef31144a2576d080d8c31698e83ec9f66bf97c677fa2aaf0d5bbb9f3345b1069"
+source = f"https://github.com/torvalds/linux/archive/{_commit}.tar.gz"
+sha256 = "b3bd9e4386093c7ec85aba757c566cbe6ea6b6b1949bf855cbe2abbdbf69b0ac"
 # no meaningful checking to be done
 options = [
     "!check",

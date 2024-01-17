@@ -1,6 +1,7 @@
-Below is a diff of v6.7..114876b6e5bf from https://github.com/esmil/linux/tree/jh7110
-which mostly finalizes VisionFive 2 / JH7110 SoC support in the mainline
-Linux kernel including PCIe support, HDMI output and other misc fixes.
+Below is a diff of https://github.com/esmil/linux/tree/jh7110 @ 114876b6e5bf
+rebased on top of torvalds/master before v6.8-rc1 which mostly finalizes
+VisionFive 2 / JH7110 SoC support in the mainline Linux kernel including
+PCIe support, HDMI output and other misc fixes.
 
 Excludes:
 - riscv: dts: starfive: add Milkv Mars board device tree
@@ -9,16 +10,6 @@ Excludes:
   https://github.com/esmil/linux/commit/114876b6e5bffb0e2c0ff237372ef3abd286b914
 
 Includes:
-- crypto: jh7110 - Correct deferred probe return
-  https://patchwork.kernel.org/project/linux-crypto/patch/20231109063259.3427055-1-chanho61.park@samsung.com/
-- crypto: starfive - Minor fixes in driver
-  https://patchwork.kernel.org/project/linux-crypto/cover/20231114171214.240855-1-jiajie.ho@starfivetech.com/
-- [v2] crypto: starfive - Pad adata with zeroes
-  https://patchwork.kernel.org/project/linux-crypto/patch/20231120031242.25100-1-jiajie.ho@starfivetech.com/
-- hwrng: starfive - Fix dev_err_probe return error
-  https://patchwork.kernel.org/project/linux-crypto/patch/20231120151121.60942-1-jiajie.ho@starfivetech.com/
-- spi: cadence-quadspi: add missing clk_disable_unprepare() in cqspi_probe()
-  https://patchwork.kernel.org/project/spi-devel-general/patch/20231129081147.628004-1-yangyingliang@huawei.com/
 - [v14,0/22] Refactoring Microchip PCIe driver and add StarFive PCIe
   https://patchwork.kernel.org/project/linux-pci/cover/20240108110612.19048-1-minda.chen@starfivetech.com/
 - [v2] clk: starfive: jh7110-sys: Fix lower rate of CPUfreq by setting PLL0 rate to 1.5GHz
@@ -27,6 +18,7 @@ Includes:
   https://patchwork.kernel.org/project/linux-pwm/cover/20231222094548.54103-1-william.qiu@starfivetech.com/
 - [v3,0/6] DRM driver for verisilicon
   https://patchwork.kernel.org/project/dri-devel/cover/20231204123315.28456-1-keith.zhao@starfivetech.com/
+- Own hotfix to get verisilicon driver compiling again for v6.8 (after bce3dab7eb6e)
 
 diff --git a/Documentation/devicetree/bindings/display/starfive/starfive,display-subsystem.yaml b/Documentation/devicetree/bindings/display/starfive/starfive,display-subsystem.yaml
 new file mode 100644
@@ -810,10 +802,10 @@ index 0039319e91fe..cf9b657d0e8a 100644
  
    reg:
 diff --git a/MAINTAINERS b/MAINTAINERS
-index a7c4cf8201e0..a78f9b27e9fb 100644
+index 391bbb855cbe..e7512c532ccd 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -6854,6 +6854,14 @@ T:	git git://anongit.freedesktop.org/drm/drm-misc
+@@ -6872,6 +6872,14 @@ T:	git git://anongit.freedesktop.org/drm/drm-misc
  F:	Documentation/devicetree/bindings/display/ste,mcde.yaml
  F:	drivers/gpu/drm/mcde/
  
@@ -825,10 +817,10 @@ index a7c4cf8201e0..a78f9b27e9fb 100644
 +F:	Documentation/devicetree/bindings/display/starfive/
 +F:	drivers/gpu/drm/verisilicon/
 +
- DRM DRIVER FOR TI DLPC3433 MIPI DSI TO DMD BRIDGE
- M:	Jagan Teki <jagan@amarulasolutions.com>
+ DRM DRIVER FOR SYNAPTICS R63353 PANELS
+ M:	Michael Trimarchi <michael@amarulasolutions.com>
  S:	Maintained
-@@ -16152,6 +16160,13 @@ F:	Documentation/i2c/busses/i2c-ocores.rst
+@@ -16298,6 +16306,13 @@ F:	Documentation/i2c/busses/i2c-ocores.rst
  F:	drivers/i2c/busses/i2c-ocores.c
  F:	include/linux/platform_data/i2c-ocores.h
  
@@ -842,7 +834,7 @@ index a7c4cf8201e0..a78f9b27e9fb 100644
  OPENRISC ARCHITECTURE
  M:	Jonas Bonn <jonas@southpole.se>
  M:	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-@@ -16557,6 +16572,14 @@ S:	Maintained
+@@ -16696,6 +16711,14 @@ S:	Maintained
  F:	Documentation/devicetree/bindings/pci/layerscape-pcie-gen4.txt
  F:	drivers/pci/controller/mobiveil/pcie-layerscape-gen4.c
  
@@ -857,7 +849,7 @@ index a7c4cf8201e0..a78f9b27e9fb 100644
  PCI DRIVER FOR RENESAS R-CAR
  M:	Marek Vasut <marek.vasut+renesas@gmail.com>
  M:	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-@@ -16789,7 +16812,7 @@ M:	Daire McNamara <daire.mcnamara@microchip.com>
+@@ -16928,7 +16951,7 @@ M:	Daire McNamara <daire.mcnamara@microchip.com>
  L:	linux-pci@vger.kernel.org
  S:	Supported
  F:	Documentation/devicetree/bindings/pci/microchip*
@@ -866,7 +858,7 @@ index a7c4cf8201e0..a78f9b27e9fb 100644
  
  PCIE DRIVER FOR QUALCOMM MSM
  M:	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-@@ -16813,6 +16836,13 @@ S:	Maintained
+@@ -16952,6 +16975,13 @@ S:	Maintained
  F:	Documentation/devicetree/bindings/pci/socionext,uniphier-pcie*
  F:	drivers/pci/controller/dwc/pcie-uniphier*
  
@@ -880,8 +872,8 @@ index a7c4cf8201e0..a78f9b27e9fb 100644
  PCIE DRIVER FOR ST SPEAR13XX
  M:	Pratyush Anand <pratyush.anand@gmail.com>
  L:	linux-pci@vger.kernel.org
-@@ -18587,7 +18617,7 @@ F:	drivers/char/hw_random/mpfs-rng.c
- F:	drivers/clk/microchip/clk-mpfs*.c
+@@ -18721,7 +18751,7 @@ F:	drivers/clk/microchip/clk-mpfs*.c
+ F:	drivers/firmware/microchip/mpfs-auto-update.c
  F:	drivers/i2c/busses/i2c-microchip-corei2c.c
  F:	drivers/mailbox/mailbox-mpfs.c
 -F:	drivers/pci/controller/pcie-microchip-host.c
@@ -890,10 +882,10 @@ index a7c4cf8201e0..a78f9b27e9fb 100644
  F:	drivers/reset/reset-mpfs.c
  F:	drivers/rtc/rtc-mpfs.c
 diff --git a/arch/riscv/boot/dts/starfive/jh7100-common.dtsi b/arch/riscv/boot/dts/starfive/jh7100-common.dtsi
-index b93ce351a90f..11876906cc05 100644
+index 42fb61c36068..6aac0404b465 100644
 --- a/arch/riscv/boot/dts/starfive/jh7100-common.dtsi
 +++ b/arch/riscv/boot/dts/starfive/jh7100-common.dtsi
-@@ -84,6 +84,24 @@ GPO_I2C2_PAD_SDA_OEN,
+@@ -115,6 +115,24 @@ GPO_I2C2_PAD_SDA_OEN,
  		};
  	};
  
@@ -915,10 +907,10 @@ index b93ce351a90f..11876906cc05 100644
 +		};
 +	};
 +
- 	uart3_pins: uart3-0 {
- 		rx-pins {
- 			pinmux = <GPIOMUX(13, GPO_LOW, GPO_DISABLE,
-@@ -154,6 +172,12 @@ &osc_aud {
+ 	sdio0_pins: sdio0-0 {
+ 		clk-pins {
+ 			pinmux = <GPIOMUX(54, GPO_SDIO0_PAD_CCLK_OUT,
+@@ -257,6 +275,12 @@ &osc_aud {
  	clock-frequency = <27000000>;
  };
  
@@ -928,14 +920,14 @@ index b93ce351a90f..11876906cc05 100644
 +	status = "okay";
 +};
 +
- &uart3 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&uart3_pins>;
+ &sdio0 {
+ 	broken-cd;
+ 	bus-width = <4>;
 diff --git a/arch/riscv/boot/dts/starfive/jh7100.dtsi b/arch/riscv/boot/dts/starfive/jh7100.dtsi
-index e68cafe7545f..4f5eb2f60856 100644
+index c216aaecac53..164b62787af4 100644
 --- a/arch/riscv/boot/dts/starfive/jh7100.dtsi
 +++ b/arch/riscv/boot/dts/starfive/jh7100.dtsi
-@@ -280,6 +280,15 @@ watchdog@12480000 {
+@@ -320,6 +320,15 @@ watchdog@12480000 {
  				 <&rstgen JH7100_RSTN_WDT>;
  		};
  
@@ -1403,21 +1395,8 @@ index 45213cdf50dc..3dc9e7bb8c72 100644
 +		};
  	};
  };
-diff --git a/drivers/char/hw_random/jh7110-trng.c b/drivers/char/hw_random/jh7110-trng.c
-index 38474d48a25e..b1f94e3c0c6a 100644
---- a/drivers/char/hw_random/jh7110-trng.c
-+++ b/drivers/char/hw_random/jh7110-trng.c
-@@ -300,7 +300,7 @@ static int starfive_trng_probe(struct platform_device *pdev)
- 	ret = devm_request_irq(&pdev->dev, irq, starfive_trng_irq, 0, pdev->name,
- 			       (void *)trng);
- 	if (ret)
--		return dev_err_probe(&pdev->dev, irq,
-+		return dev_err_probe(&pdev->dev, ret,
- 				     "Failed to register interrupt handler\n");
- 
- 	trng->hclk = devm_clk_get(&pdev->dev, "hclk");
 diff --git a/drivers/clk/starfive/clk-starfive-jh7110-sys.c b/drivers/clk/starfive/clk-starfive-jh7110-sys.c
-index 3884eff9fe93..b6b9e967dfc7 100644
+index 8f5e5abfa178..8e3892e438e0 100644
 --- a/drivers/clk/starfive/clk-starfive-jh7110-sys.c
 +++ b/drivers/clk/starfive/clk-starfive-jh7110-sys.c
 @@ -501,7 +501,52 @@ static int __init jh7110_syscrg_probe(struct platform_device *pdev)
@@ -1474,269 +1453,13 @@ index 3884eff9fe93..b6b9e967dfc7 100644
  }
  
  static const struct of_device_id jh7110_syscrg_match[] = {
-diff --git a/drivers/crypto/starfive/Kconfig b/drivers/crypto/starfive/Kconfig
-index 2cb192502c1b..cb59357b58b2 100644
---- a/drivers/crypto/starfive/Kconfig
-+++ b/drivers/crypto/starfive/Kconfig
-@@ -4,7 +4,7 @@
- 
- config CRYPTO_DEV_JH7110
- 	tristate "StarFive JH7110 cryptographic engine driver"
--	depends on SOC_STARFIVE || AMBA_PL08X || COMPILE_TEST
-+	depends on (SOC_STARFIVE && AMBA_PL08X) || COMPILE_TEST
- 	depends on HAS_DMA
- 	select CRYPTO_ENGINE
- 	select CRYPTO_HMAC
-diff --git a/drivers/crypto/starfive/jh7110-aes.c b/drivers/crypto/starfive/jh7110-aes.c
-index 9378e6682f0e..e0fe599f8192 100644
---- a/drivers/crypto/starfive/jh7110-aes.c
-+++ b/drivers/crypto/starfive/jh7110-aes.c
-@@ -500,7 +500,7 @@ static int starfive_aes_prepare_req(struct skcipher_request *req,
- 	scatterwalk_start(&cryp->out_walk, rctx->out_sg);
- 
- 	if (cryp->assoclen) {
--		rctx->adata = kzalloc(ALIGN(cryp->assoclen, AES_BLOCK_SIZE), GFP_KERNEL);
-+		rctx->adata = kzalloc(cryp->assoclen + AES_BLOCK_SIZE, GFP_KERNEL);
- 		if (!rctx->adata)
- 			return dev_err_probe(cryp->dev, -ENOMEM,
- 					     "Failed to alloc memory for adata");
-@@ -569,7 +569,7 @@ static int starfive_aes_aead_do_one_req(struct crypto_engine *engine, void *areq
- 	struct starfive_cryp_ctx *ctx =
- 		crypto_aead_ctx(crypto_aead_reqtfm(req));
- 	struct starfive_cryp_dev *cryp = ctx->cryp;
--	struct starfive_cryp_request_ctx *rctx = ctx->rctx;
-+	struct starfive_cryp_request_ctx *rctx;
- 	u32 block[AES_BLOCK_32];
- 	u32 stat;
- 	int err;
-@@ -579,6 +579,8 @@ static int starfive_aes_aead_do_one_req(struct crypto_engine *engine, void *areq
- 	if (err)
- 		return err;
- 
-+	rctx = ctx->rctx;
-+
- 	if (!cryp->assoclen)
- 		goto write_text;
- 
-diff --git a/drivers/crypto/starfive/jh7110-cryp.c b/drivers/crypto/starfive/jh7110-cryp.c
-index 08e974e0dd12..31803e9cacba 100644
---- a/drivers/crypto/starfive/jh7110-cryp.c
-+++ b/drivers/crypto/starfive/jh7110-cryp.c
-@@ -109,12 +109,6 @@ static irqreturn_t starfive_cryp_irq(int irq, void *priv)
- 		tasklet_schedule(&cryp->hash_done);
- 	}
- 
--	if (status & STARFIVE_IE_FLAG_PKA_DONE) {
--		mask |= STARFIVE_IE_MASK_PKA_DONE;
--		writel(mask, cryp->base + STARFIVE_IE_MASK_OFFSET);
--		complete(&cryp->pka_done);
--	}
--
- 	return IRQ_HANDLED;
- }
- 
-@@ -159,8 +153,6 @@ static int starfive_cryp_probe(struct platform_device *pdev)
- 		return dev_err_probe(&pdev->dev, PTR_ERR(cryp->rst),
- 				     "Error getting hardware reset line\n");
- 
--	init_completion(&cryp->pka_done);
--
- 	irq = platform_get_irq(pdev, 0);
- 	if (irq < 0)
- 		return irq;
-@@ -180,12 +172,8 @@ static int starfive_cryp_probe(struct platform_device *pdev)
- 	spin_unlock(&dev_list.lock);
- 
- 	ret = starfive_dma_init(cryp);
--	if (ret) {
--		if (ret == -EPROBE_DEFER)
--			goto err_probe_defer;
--		else
--			goto err_dma_init;
--	}
-+	if (ret)
-+		goto err_dma_init;
- 
- 	/* Initialize crypto engine */
- 	cryp->engine = crypto_engine_alloc_init(&pdev->dev, 1);
-@@ -233,7 +221,7 @@ static int starfive_cryp_probe(struct platform_device *pdev)
- 
- 	tasklet_kill(&cryp->aes_done);
- 	tasklet_kill(&cryp->hash_done);
--err_probe_defer:
-+
- 	return ret;
- }
- 
-diff --git a/drivers/crypto/starfive/jh7110-cryp.h b/drivers/crypto/starfive/jh7110-cryp.h
-index fe011d50473d..8510f8c1f307 100644
---- a/drivers/crypto/starfive/jh7110-cryp.h
-+++ b/drivers/crypto/starfive/jh7110-cryp.h
-@@ -125,6 +125,15 @@ union starfive_pka_cacr {
- 	};
- };
- 
-+union starfive_pka_casr {
-+	u32 v;
-+	struct {
-+#define STARFIVE_PKA_DONE			BIT(0)
-+		u32 done			:1;
-+		u32 rsvd_0			:31;
-+	};
-+};
-+
- struct starfive_rsa_key {
- 	u8	*n;
- 	u8	*e;
-@@ -183,7 +192,6 @@ struct starfive_cryp_dev {
- 	struct crypto_engine			*engine;
- 	struct tasklet_struct			aes_done;
- 	struct tasklet_struct			hash_done;
--	struct completion			pka_done;
- 	size_t					assoclen;
- 	size_t					total_in;
- 	size_t					total_out;
-diff --git a/drivers/crypto/starfive/jh7110-rsa.c b/drivers/crypto/starfive/jh7110-rsa.c
-index f31bbd825f88..c2b1f598873c 100644
---- a/drivers/crypto/starfive/jh7110-rsa.c
-+++ b/drivers/crypto/starfive/jh7110-rsa.c
-@@ -6,13 +6,7 @@
-  */
- 
- #include <linux/crypto.h>
--#include <linux/delay.h>
--#include <linux/device.h>
--#include <linux/dma-direct.h>
--#include <linux/interrupt.h>
- #include <linux/iopoll.h>
--#include <linux/io.h>
--#include <linux/mod_devicetable.h>
- #include <crypto/akcipher.h>
- #include <crypto/algapi.h>
- #include <crypto/internal/akcipher.h>
-@@ -28,13 +22,13 @@
- #define STARFIVE_PKA_CAER_OFFSET	(STARFIVE_PKA_REGS_OFFSET + 0x108)
- #define STARFIVE_PKA_CANR_OFFSET	(STARFIVE_PKA_REGS_OFFSET + 0x208)
- 
--// R^2 mod N and N0'
-+/* R ^ 2 mod N and N0' */
- #define CRYPTO_CMD_PRE			0x0
--// A * R mod N   ==> A
-+/* A * R mod N   ==> A */
- #define CRYPTO_CMD_ARN			0x5
--// A * E * R mod N ==> A
-+/* A * E * R mod N ==> A */
- #define CRYPTO_CMD_AERN			0x6
--// A * A * R mod N ==> A
-+/* A * A * R mod N ==> A */
- #define CRYPTO_CMD_AARN			0x7
- 
- #define STARFIVE_RSA_MAX_KEYSZ		256
-@@ -43,21 +37,10 @@
- static inline int starfive_pka_wait_done(struct starfive_cryp_ctx *ctx)
- {
- 	struct starfive_cryp_dev *cryp = ctx->cryp;
-+	u32 status;
- 
--	return wait_for_completion_timeout(&cryp->pka_done,
--					   usecs_to_jiffies(100000));
--}
--
--static inline void starfive_pka_irq_mask_clear(struct starfive_cryp_ctx *ctx)
--{
--	struct starfive_cryp_dev *cryp = ctx->cryp;
--	u32 stat;
--
--	stat = readl(cryp->base + STARFIVE_IE_MASK_OFFSET);
--	stat &= ~STARFIVE_IE_MASK_PKA_DONE;
--	writel(stat, cryp->base + STARFIVE_IE_MASK_OFFSET);
--
--	reinit_completion(&cryp->pka_done);
-+	return readl_relaxed_poll_timeout(cryp->base + STARFIVE_PKA_CASR_OFFSET, status,
-+					  status & STARFIVE_PKA_DONE, 10, 100000);
- }
- 
- static void starfive_rsa_free_key(struct starfive_rsa_key *key)
-@@ -114,10 +97,9 @@ static int starfive_rsa_montgomery_form(struct starfive_cryp_ctx *ctx,
- 		rctx->csr.pka.not_r2 = 1;
- 		rctx->csr.pka.ie = 1;
- 
--		starfive_pka_irq_mask_clear(ctx);
- 		writel(rctx->csr.pka.v, cryp->base + STARFIVE_PKA_CACR_OFFSET);
- 
--		if (!starfive_pka_wait_done(ctx))
-+		if (starfive_pka_wait_done(ctx))
- 			return -ETIMEDOUT;
- 
- 		for (loop = 0; loop <= opsize; loop++)
-@@ -136,10 +118,9 @@ static int starfive_rsa_montgomery_form(struct starfive_cryp_ctx *ctx,
- 		rctx->csr.pka.start = 1;
- 		rctx->csr.pka.ie = 1;
- 
--		starfive_pka_irq_mask_clear(ctx);
- 		writel(rctx->csr.pka.v, cryp->base + STARFIVE_PKA_CACR_OFFSET);
- 
--		if (!starfive_pka_wait_done(ctx))
-+		if (starfive_pka_wait_done(ctx))
- 			return -ETIMEDOUT;
- 	} else {
- 		rctx->csr.pka.v = 0;
-@@ -151,10 +132,9 @@ static int starfive_rsa_montgomery_form(struct starfive_cryp_ctx *ctx,
- 		rctx->csr.pka.pre_expf = 1;
- 		rctx->csr.pka.ie = 1;
- 
--		starfive_pka_irq_mask_clear(ctx);
- 		writel(rctx->csr.pka.v, cryp->base + STARFIVE_PKA_CACR_OFFSET);
- 
--		if (!starfive_pka_wait_done(ctx))
-+		if (starfive_pka_wait_done(ctx))
- 			return -ETIMEDOUT;
- 
- 		for (loop = 0; loop <= count; loop++)
-@@ -172,10 +152,9 @@ static int starfive_rsa_montgomery_form(struct starfive_cryp_ctx *ctx,
- 		rctx->csr.pka.start = 1;
- 		rctx->csr.pka.ie = 1;
- 
--		starfive_pka_irq_mask_clear(ctx);
- 		writel(rctx->csr.pka.v, cryp->base + STARFIVE_PKA_CACR_OFFSET);
- 
--		if (!starfive_pka_wait_done(ctx))
-+		if (starfive_pka_wait_done(ctx))
- 			return -ETIMEDOUT;
- 	}
- 
-@@ -226,11 +205,10 @@ static int starfive_rsa_cpu_start(struct starfive_cryp_ctx *ctx, u32 *result,
- 		rctx->csr.pka.start = 1;
- 		rctx->csr.pka.ie = 1;
- 
--		starfive_pka_irq_mask_clear(ctx);
- 		writel(rctx->csr.pka.v, cryp->base + STARFIVE_PKA_CACR_OFFSET);
- 
- 		ret = -ETIMEDOUT;
--		if (!starfive_pka_wait_done(ctx))
-+		if (starfive_pka_wait_done(ctx))
- 			goto rsa_err;
- 
- 		if (mlen) {
-@@ -242,10 +220,9 @@ static int starfive_rsa_cpu_start(struct starfive_cryp_ctx *ctx, u32 *result,
- 			rctx->csr.pka.start = 1;
- 			rctx->csr.pka.ie = 1;
- 
--			starfive_pka_irq_mask_clear(ctx);
- 			writel(rctx->csr.pka.v, cryp->base + STARFIVE_PKA_CACR_OFFSET);
- 
--			if (!starfive_pka_wait_done(ctx))
-+			if (starfive_pka_wait_done(ctx))
- 				goto rsa_err;
- 		}
- 	}
 diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index 3eee8636f847..e8d53c2e7c86 100644
+index 2520db0b776e..60b45f6a9f56 100644
 --- a/drivers/gpu/drm/Kconfig
 +++ b/drivers/gpu/drm/Kconfig
-@@ -394,6 +394,8 @@ source "drivers/gpu/drm/solomon/Kconfig"
+@@ -399,6 +399,8 @@ source "drivers/gpu/drm/sprd/Kconfig"
  
- source "drivers/gpu/drm/sprd/Kconfig"
+ source "drivers/gpu/drm/imagination/Kconfig"
  
 +source "drivers/gpu/drm/verisilicon/Kconfig"
 +
@@ -1744,13 +1467,13 @@ index 3eee8636f847..e8d53c2e7c86 100644
  	tristate "DRM Support for Hyper-V synthetic video device"
  	depends on DRM && PCI && MMU && HYPERV
 diff --git a/drivers/gpu/drm/Makefile b/drivers/gpu/drm/Makefile
-index 8e1bde059170..29e04acded06 100644
+index 104b42df2e95..f07744dd50e7 100644
 --- a/drivers/gpu/drm/Makefile
 +++ b/drivers/gpu/drm/Makefile
-@@ -198,3 +198,4 @@ obj-$(CONFIG_DRM_HYPERV) += hyperv/
- obj-y			+= solomon/
+@@ -189,3 +189,4 @@ obj-y			+= solomon/
  obj-$(CONFIG_DRM_SPRD) += sprd/
  obj-$(CONFIG_DRM_LOONGSON) += loongson/
+ obj-$(CONFIG_DRM_POWERVR) += imagination/
 +obj-$(CONFIG_DRM_VERISILICON) += verisilicon/
 diff --git a/drivers/gpu/drm/verisilicon/Kconfig b/drivers/gpu/drm/verisilicon/Kconfig
 new file mode 100644
@@ -3226,10 +2949,10 @@ index 000000000000..8f5b5718283f
 +#endif /* __VS_CRTC_H__ */
 diff --git a/drivers/gpu/drm/verisilicon/vs_dc.c b/drivers/gpu/drm/verisilicon/vs_dc.c
 new file mode 100644
-index 000000000000..3f1e70ba4261
+index 000000000000..a58587d48ee9
 --- /dev/null
 +++ b/drivers/gpu/drm/verisilicon/vs_dc.c
-@@ -0,0 +1,1192 @@
+@@ -0,0 +1,1191 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2023 VeriSilicon Holdings Co., Ltd.
@@ -4069,14 +3792,13 @@ index 000000000000..3f1e70ba4261
 +	struct drm_plane_state *state = drm_atomic_get_new_plane_state(drm_state,
 +								       drm_plane);
 +	struct vs_plane_state *plane_state = to_vs_plane_state(state);
-+	struct drm_framebuffer *drm_fb = state->fb;
 +	struct dc_hw_cursor cursor;
 +
 +	cursor.address = plane_state->dma_addr[0];
 +	cursor.x = state->crtc_x;
 +	cursor.y = state->crtc_y;
-+	cursor.hot_x = drm_fb->hot_x;
-+	cursor.hot_y = drm_fb->hot_y;
++	cursor.hot_x = state->hotspot_x;
++	cursor.hot_y = state->hotspot_y;
 +	cursor.display_id = to_vs_display_id(dc, state->crtc);
 +	update_cursor_size(state, &cursor);
 +	cursor.enable = true;
@@ -9807,25 +9529,3 @@ index 000000000000..dfb5a186da71
 +MODULE_AUTHOR("Hal Feng <hal.feng@starfivetech.com>");
 +MODULE_DESCRIPTION("OpenCores PWM PTC driver");
 +MODULE_LICENSE("GPL");
-diff --git a/drivers/spi/spi-cadence-quadspi.c b/drivers/spi/spi-cadence-quadspi.c
-index 3d7bf62da11c..f94e0d370d46 100644
---- a/drivers/spi/spi-cadence-quadspi.c
-+++ b/drivers/spi/spi-cadence-quadspi.c
-@@ -1840,7 +1840,7 @@ static int cqspi_probe(struct platform_device *pdev)
- 		if (ddata->jh7110_clk_init) {
- 			ret = cqspi_jh7110_clk_init(pdev, cqspi);
- 			if (ret)
--				goto probe_clk_failed;
-+				goto probe_reset_failed;
- 		}
- 
- 		if (of_device_is_compatible(pdev->dev.of_node,
-@@ -1901,6 +1901,8 @@ static int cqspi_probe(struct platform_device *pdev)
- probe_setup_failed:
- 	cqspi_controller_enable(cqspi, 0);
- probe_reset_failed:
-+	if (cqspi->is_jh7110)
-+		cqspi_jh7110_disable_clk(pdev, cqspi);
- 	clk_disable_unprepare(cqspi->clk);
- probe_clk_failed:
- 	return ret;
