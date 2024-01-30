@@ -9,6 +9,7 @@ make_dir = "build"
 # necessary for efistub
 make_env = {"CBUILD_BYPASS_STRIP_WRAPPER": "1"}
 _commit = "d7a6e253b2a21e92fe53115b24bd27fa0ecdc843"
+_branch = "rpi-6.12.y"
 hostmakedepends = ["base-kernel-devel"]
 depends = ["base-kernel"]
 provides = ["linux"]
