@@ -1,0 +1,8 @@
+# buffyboard service
+
+type               = process
+command            = /usr/bin/buffyboard
+before             = login.target
+depends-on         = init-console.target
+restart            = true
+smooth-recovery    = true
