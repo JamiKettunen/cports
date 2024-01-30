@@ -1,0 +1,52 @@
+From f75990fdb47859c740a7a75c92552a9e5da48ac4 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Tue, 4 Apr 2023 03:46:58 +0300
+Subject: [PATCH] [WIP] configs: add `oneplus,cheeseburger` &
+ `oneplus,dumpling`
+
+---
+ configs/oneplus,cheeseburger.toml | 30 ++++++++++++++++++++++++++++++
+ configs/oneplus,dumpling.toml     |  1 +
+ 2 files changed, 31 insertions(+)
+ create mode 100644 configs/oneplus,cheeseburger.toml
+ create mode 120000 configs/oneplus,dumpling.toml
+
+diff --git a/configs/oneplus,cheeseburger.toml b/configs/oneplus,cheeseburger.toml
+new file mode 100644
+index 0000000..17ca320
+--- /dev/null
++++ b/configs/oneplus,cheeseburger.toml
+@@ -0,0 +1,30 @@
++[juicer]
++firmware = [
++    { partition = "vendor", origin = "firmware", destination = "qcom/msm8998/oneplus", files = [
++            { name = "a540_zap.mdt" },
++            { name = "ipa_fws.mdt" },
++        ] },
++    { partition = "vendor", origin = "firmware", destination = "qcom", files = [
++            { name = "a530_pfp.fw" },
++            { name = "a530_pm4.fw" },
++            { name = "a540_gpmu.fw2" },
++        ] },
++    { partition = "modem", origin = "image", destination = "qcom/msm8998/oneplus", files = [
++            { name = "adsp.mdt" },
++            { name = "adspr.jsn" },
++            { name = "adspua.jsn" },
++            { name = "mba.mbn" },
++            { name = "modem.mdt" },
++            { name = "modemr.jsn" },
++            { name = "modemuw.jsn" },
++            { name = "slpi_v2.mdt" },
++            { name = "slpir.jsn" },
++            { name = "slpius.jsn" },
++            { name = "venus.mdt" },
++            { name = "wlanmdsp.mbn" },
++        ] },
++    { partition = "bluetooth", origin = "image", destination = "qca", files = [
++            { name = "crbtfw21.tlv" },
++            { name = "crnv21.bin" },
++        ] },
++]
+-- 
+2.40.0
+
