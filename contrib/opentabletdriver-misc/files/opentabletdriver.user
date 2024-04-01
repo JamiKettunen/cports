@@ -1,0 +1,12 @@
+# flatpak OpenTabletDriver daemon user service
+
+type            = process
+command         = /usr/bin/flatpak run --command=/app/bin/OpenTabletDriver.Daemon net.opentabletdriver.OpenTabletDriver
+depends-on      = dbus
+log-type        = buffer
+log-buffer-size = 65536
+restart         = true
+restart-delay   = 3
+
+# FIXME: needs {WAYLAND_,}DISPLAY env var(s) to run, graphical dinit services aren't yet properly supported
+# -> dinitctl setenv {WAYLAND_,}DISPLAY
