@@ -1,0 +1,8 @@
+type = process
+command = /usr/bin/flatpak run --command=/app/bin/OpenTabletDriver.Daemon net.opentabletdriver.OpenTabletDriver
+depends-on = dbus
+depends-on = graphical.target
+log-type = buffer
+#log-buffer-size = 65536
+#restart = true
+#restart-delay = 3
