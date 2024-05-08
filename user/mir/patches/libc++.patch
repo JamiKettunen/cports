@@ -1,0 +1,167 @@
+From https://github.com/canonical/mir/pull/3388 (merged in main)
+
+--- a/include/common/mir/log.h
++++ b/include/common/mir/log.h
+@@ -22,6 +22,7 @@
+ #include "mir/logging/logger.h"  // for Severity
+ #include <string>
+ #include <cstdarg>
++#include <exception>
+ 
+ namespace mir
+ {
+--- a/include/miral/miral/application.h
++++ b/include/miral/miral/application.h
+@@ -21,6 +21,7 @@
+ 
+ #include <memory>
+ #include <string>
++#include <unistd.h>
+ 
+ namespace mir
+ {
+--- a/include/platform/mir/graphics/display_configuration.h
++++ b/include/platform/mir/graphics/display_configuration.h
+@@ -148,7 +148,7 @@ struct DisplayConfigurationOutput
+     std::string name = "OUT-" + std::to_string(id.as_value());
+ 
+     /// Custom attributes (typically set via the .display configuration file
+-    std::map<std::string const, std::optional<std::string>> custom_attribute = {};
++    std::map<std::string, std::optional<std::string>> custom_attribute = {};
+ 
+     /** The logical rectangle occupied by the output, based on its position,
+         current mode and orientation (rotation) */
+@@ -196,7 +196,7 @@ struct UserDisplayConfigurationOutput
+     mir::optional_value<geometry::Size>& custom_logical_size;
+     std::string const& name;
+     /// Custom attributes (typically set by the .display configuration file
+-    std::map<std::string const, std::optional<std::string>>& custom_attribute;
++    std::map<std::string, std::optional<std::string>>& custom_attribute;
+ 
+     UserDisplayConfigurationOutput(DisplayConfigurationOutput& main);
+     geometry::Rectangle extents() const;
+--- a/include/wayland/mir/wayland/protocol_error.h
++++ b/include/wayland/mir/wayland/protocol_error.h
+@@ -19,6 +19,7 @@
+ 
+ #include <stdexcept>
+ #include <cstdint>
++#include <string>
+ 
+ struct wl_resource;
+ struct wl_client;
+--- a/src/miral/output.cpp
++++ b/src/miral/output.cpp
+@@ -124,7 +124,7 @@ auto miral::Output::attribute(std::string const& key) const -> std::optional<std
+ 
+ auto miral::Output::attributes_map() const -> std::map<std::string const, std::optional<std::string>>
+ {
+-    return self->custom_attribute;
++    return {self->custom_attribute.begin(), self->custom_attribute.end()};
+ }
+ 
+ bool miral::operator==(Output::PhysicalSizeMM const& lhs, Output::PhysicalSizeMM const& rhs)
+--- a/src/miral/static_display_config.h
++++ b/src/miral/static_display_config.h
+@@ -69,7 +69,7 @@ private:
+         mir::optional_value<float>  scale;
+         mir::optional_value<MirOrientation>  orientation;
+         mir::optional_value<int> group_id;
+-        std::map<std::string const, std::optional<std::string>> custom_attribute;
++        std::map<std::string, std::optional<std::string>> custom_attribute;
+     };
+ 
+     using Port2Config = std::map<std::string, Config>;
+--- a/src/miral/wayland_extensions.cpp
++++ b/src/miral/wayland_extensions.cpp
+@@ -30,6 +30,7 @@
+ #include <set>
+ #include <map>
+ #include <vector>
++#include <iterator>
+ 
+ namespace mo = mir::options;
+ 
+--- a/src/platforms/virtual/display.h
++++ b/src/platforms/virtual/display.h
+@@ -19,6 +19,7 @@
+ 
+ #include "platform.h"
+ #include <mir/graphics/display.h>
++#include <mutex>
+ 
+ namespace mir
+ {
+--- a/src/server/compositor/multi_monitor_arbiter.cpp
++++ b/src/server/compositor/multi_monitor_arbiter.cpp
+@@ -18,6 +18,7 @@
+ #include "mir/graphics/buffer.h"
+ #include "mir/frontend/event_sink.h"
+ #include <boost/throw_exception.hpp>
++#include <algorithm>
+ 
+ namespace mg = mir::graphics;
+ namespace mc = mir::compositor;
+--- a/src/server/console/linux_virtual_terminal.cpp
++++ b/src/server/console/linux_virtual_terminal.cpp
+@@ -655,7 +655,7 @@ std::future<std::unique_ptr<mir::Device>> mir::LinuxVirtualTerminal::acquire_dev
+         {
+             using namespace boost::iostreams;
+             char line_buffer[1024];
+-            stream<file_descriptor_source> uevent{fd, file_descriptor_flags::never_close_handle};
++            stream<file_descriptor_source> uevent{static_cast<int>(fd), file_descriptor_flags::never_close_handle};
+ 
+             while (uevent.getline(line_buffer, sizeof(line_buffer)))
+             {
+--- a/src/server/console/minimal_console_services.cpp
++++ b/src/server/console/minimal_console_services.cpp
+@@ -100,7 +100,7 @@ std::future<std::unique_ptr<mir::Device>> mir::MinimalConsoleServices::acquire_d
+     auto const devnode = [](auto const& fd) {
+         using namespace boost::iostreams;
+         char line_buffer[1024];
+-        stream<file_descriptor_source> uevent{fd, file_descriptor_flags::never_close_handle};
++        stream<file_descriptor_source> uevent{static_cast<int>(fd), file_descriptor_flags::never_close_handle};
+ 
+         while (uevent.getline(line_buffer, sizeof(line_buffer)))
+         {
+--- a/src/server/frontend_wayland/wayland_executor.cpp
++++ b/src/server/frontend_wayland/wayland_executor.cpp
+@@ -198,7 +198,7 @@ private:
+              * If work_queue *is* unique that means that ~WaylandExecutor has already
+              * unregistered the event source, so we should not try to do so again.
+              */
+-            if (!me->work_queue.unique())
++            if (me->work_queue.use_count() != 1)
+             {
+                 wl_event_source_remove(me->source);
+             }
+--- a/src/server/frontend_xwayland/xwayland_client_manager.cpp
++++ b/src/server/frontend_xwayland/xwayland_client_manager.cpp
+@@ -23,6 +23,7 @@
+ #include "mir/frontend/session_authorizer.h"
+ #include "mir/frontend/session_credentials.h"
+ 
++#include <unistd.h>
+ #include <sys/stat.h>
+ 
+ namespace mf = mir::frontend;
+--- a/src/server/input/cursor_controller.cpp
++++ b/src/server/input/cursor_controller.cpp
+@@ -24,6 +24,7 @@
+ #include "mir/scene/null_surface_observer.h"
+ #include "mir/scene/surface.h"
+ 
++#include <exception>
+ #include <mutex>
+ #include <map>
+ 
+--- a/src/server/scene/rendering_tracker.cpp
++++ b/src/server/scene/rendering_tracker.cpp
+@@ -18,6 +18,7 @@
+ #include "mir/scene/surface.h"
+ 
+ #include <algorithm>
++#include <iterator>
+ #include <stdexcept>
+ #include <boost/throw_exception.hpp>
+ 

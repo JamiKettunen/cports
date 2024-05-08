@@ -1,0 +1,15 @@
+This similar to below are spammed 51 times during mir_demo_server launch
+while we don't have this symbol around with musl as libc
+
+  < - debug - > mircommon: Cannot check "add_graphics_platform_options" symbol version is "MIR_GRAPHICS_PLATFORM_2.17": dlvsym() is unavailable
+
+--- a/src/common/sharedlibrary/shared_library.cpp
++++ b/src/common/sharedlibrary/shared_library.cpp
+@@ -61,7 +61,6 @@ void* mir::SharedLibrary::load_symbol(char const* function_name, char const* ver
+ 
+ #ifdef MIR_DONT_USE_DLVSYM
+     // Load the function without checking the version
+-    log_debug("Cannot check \"%s\" symbol version is \"%s\": dlvsym() is unavailable", function_name, version);
+     return load_symbol(function_name);
+ #else
+     if (void* result = dlvsym(so, function_name, version))
