@@ -1,0 +1,143 @@
+From 14e97f7b1c7e6cd10c39a3ef5607e02a057c29c8 Mon Sep 17 00:00:00 2001
+From: Kjell Ahlstedt <kjell.ahlstedt@bredband.net>
+Date: Thu, 17 Sep 2015 15:19:32 +0200
+Subject: [PATCH] Replace remaining auto_ptr by unique_ptr
+
+Replace the deprecated std::auto_ptr by std::unique_ptr in header files.
+Bug #753123.
+---
+ libxml++/parsers/saxparser.h              | 2 +-
+ libxml++/parsers/textreader.h             | 2 +-
+ libxml++/relaxngschema.h                  | 4 ++--
+ libxml++/validators/relaxngvalidator.h    | 4 ++--
+ libxml++/validators/schemavalidatorbase.h | 1 -
+ libxml++/validators/xsdvalidator.h        | 4 ++--
+ libxml++/xsdschema.h                      | 4 ++--
+ 7 files changed, 10 insertions(+), 11 deletions(-)
+
+diff --git a/libxml++/parsers/saxparser.h b/libxml++/parsers/saxparser.h
+index 6b3405a..3ed8e1e 100644
+--- a/libxml++/parsers/saxparser.h
++++ b/libxml++/parsers/saxparser.h
+@@ -216,7 +216,7 @@ class SaxParser : public Parser
+   //TODO: Remove the virtual when we can break ABI?
+   virtual void parse();
+   
+-  std::auto_ptr<_xmlSAXHandler> sax_handler_;
++  std::unique_ptr<_xmlSAXHandler> sax_handler_;
+ 
+   // A separate xmlpp::Document that is just used for entity resolution,
+   // and never seen in the API:
+diff --git a/libxml++/parsers/textreader.h b/libxml++/parsers/textreader.h
+index 5901894..9acd6cd 100644
+--- a/libxml++/parsers/textreader.h
++++ b/libxml++/parsers/textreader.h
+@@ -257,7 +257,7 @@ class TextReader: NonCopyable
+                               void * locator);
+     void check_for_exceptions() const;
+ 
+-    std::auto_ptr<PropertyReader> propertyreader;
++    std::unique_ptr<PropertyReader> propertyreader;
+     _xmlTextReader* impl_;
+     int severity_;
+     Glib::ustring error_;
+diff --git a/libxml++/relaxngschema.h b/libxml++/relaxngschema.h
+index 8df7089..ffe2eaa 100644
+--- a/libxml++/relaxngschema.h
++++ b/libxml++/relaxngschema.h
+@@ -23,7 +23,7 @@
+ 
+ #include <libxml++/schemabase.h>
+ #include <libxml++/document.h>
+-#include <memory> // std::auto_ptr
++#include <memory> // std::unique_ptr
+ 
+ #ifndef DOXYGEN_SHOULD_SKIP_THIS
+ extern "C" {
+@@ -105,7 +105,7 @@ class RelaxNGSchema : public SchemaBase
+ 
+ private:
+   struct Impl;
+-  std::auto_ptr<Impl> pimpl_;
++  std::unique_ptr<Impl> pimpl_;
+ };
+ 
+ } // namespace xmlpp
+diff --git a/libxml++/validators/relaxngvalidator.h b/libxml++/validators/relaxngvalidator.h
+index f9138a3..1f86222 100644
+--- a/libxml++/validators/relaxngvalidator.h
++++ b/libxml++/validators/relaxngvalidator.h
+@@ -22,7 +22,7 @@
+ #define __LIBXMLPP_VALIDATOR_RELAXNGVALIDATOR_H
+ 
+ #include <libxml++/validators/schemavalidatorbase.h>
+-#include <memory> // std::auto_ptr
++#include <memory> // std::unique_ptr
+ 
+ namespace Glib
+ {
+@@ -156,7 +156,7 @@ class RelaxNGValidator : public SchemaValidatorBase
+ 
+ private:
+   struct Impl;
+-  std::auto_ptr<Impl> pimpl_;
++  std::unique_ptr<Impl> pimpl_;
+ };
+ 
+ } // namespace xmlpp
+diff --git a/libxml++/validators/schemavalidatorbase.h b/libxml++/validators/schemavalidatorbase.h
+index 02b63a7..85299fd 100644
+--- a/libxml++/validators/schemavalidatorbase.h
++++ b/libxml++/validators/schemavalidatorbase.h
+@@ -20,7 +20,6 @@
+ #define __LIBXMLPP_VALIDATOR_SCHEMAVALIDATORBASE_H
+ 
+ #include <libxml++/validators/validator.h>
+-#include <memory> // std::auto_ptr
+ 
+ namespace Glib
+ {
+diff --git a/libxml++/validators/xsdvalidator.h b/libxml++/validators/xsdvalidator.h
+index 2f14cb0..bf65ecd 100644
+--- a/libxml++/validators/xsdvalidator.h
++++ b/libxml++/validators/xsdvalidator.h
+@@ -20,7 +20,7 @@
+ #define __LIBXMLPP_VALIDATOR_XSDVALIDATOR_H
+ 
+ #include <libxml++/validators/schemavalidatorbase.h>
+-#include <memory> // std::auto_ptr
++#include <memory> // std::unique_ptr
+ 
+ namespace Glib
+ {
+@@ -146,7 +146,7 @@ class XsdValidator : public SchemaValidatorBase
+ 
+ private:
+   struct Impl;
+-  std::auto_ptr<Impl> pimpl_;
++  std::unique_ptr<Impl> pimpl_;
+ };
+ 
+ } // namespace xmlpp
+diff --git a/libxml++/xsdschema.h b/libxml++/xsdschema.h
+index 1333025..8220e4e 100644
+--- a/libxml++/xsdschema.h
++++ b/libxml++/xsdschema.h
+@@ -21,7 +21,7 @@
+ 
+ #include <libxml++/schemabase.h>
+ #include <libxml++/document.h>
+-#include <memory> // std::auto_ptr
++#include <memory> // std::unique_ptr
+ 
+ #ifndef DOXYGEN_SHOULD_SKIP_THIS
+ extern "C" {
+@@ -96,7 +96,7 @@ class XsdSchema : public SchemaBase
+ 
+ private:
+   struct Impl;
+-  std::auto_ptr<Impl> pimpl_;
++  std::unique_ptr<Impl> pimpl_;
+ };
+ 
+ } // namespace xmlpp
