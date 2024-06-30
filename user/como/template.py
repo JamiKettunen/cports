@@ -79,7 +79,8 @@ def post_install(self):
 
 @subpackage("como-devel")
 def _devel(self):
-    self.depends += [
+    self.depends = [
+        f"{pkgname}={pkgver}-r{pkgrel}",
         "wrapland-devel",
         "wlroots-git-devel",
         "kauth-devel",
@@ -97,4 +98,8 @@ def _devel(self):
         "kxmlgui-devel",
     ]
 
-    return self.default_devel()
+    # libbase-x11-backend.so is needed by e.g. theseus-ship, drop it from -devel
+    return [
+        "usr/include",
+        "usr/lib/cmake",
+    ]
