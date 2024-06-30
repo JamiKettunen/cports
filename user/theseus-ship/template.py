@@ -38,19 +38,9 @@ makedepends = [
 #    # "plasma-workspace-devel", # Plasma?
 #    # FIXME: wayland-devel?
 ]
-# checkdepends = ["dbus"]
-# depends = ["kirigami"]
-# FIXME: provides/replaces kwin~6.1.1 etc?
-#provides = [
-#    "cmd:kwin_wayland=6.1.69",
-#    "cmd:kwin_wayland_wrapper=6.1.69",
-#    "cmd:kwin_x11=6.1.69",
-#    "so:libkcmkwincommon.so.6=6.1.69",
-#]
-#replaces = ["kwin~6.1.1.2"]
-#replaces = ["kwin<6.1.69"]
+# depends = ["kirigami"] # hwdata qt6-qtmultimedia xwayland kglobalacceld?
+provides = ["kwin=6.1.69-r420"]
 replaces = ["kwin~6.1"]
-#replaces = [f"kwin~{pkgver}"]
 pkgdesc = "Wayland and X11 Compositor for KDE Plasma desktop"
 maintainer = "Jami Kettunen <jami.kettunen@protonmail.com>"
 license = "GPL-2.0-or-later"
