@@ -45,8 +45,7 @@ makedepends = [
     "kdecoration-devel",
     "kscreenlocker-devel",
     "breeze-devel",
-    # TODO: maybe just patch for 0.17 and submit?
-    "wlroots-git-devel",
+    "wlroots0.18-devel",
 #    "libx11-devel",
 #    "libx*-devel",  # TODO: https://github.com/winft/como/blob/master/CMakeLists.txt#L232
 #    "freetype-devel",
