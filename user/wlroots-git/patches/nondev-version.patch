@@ -6,8 +6,8 @@ index c3ea7fc6..b5fe2e2e 100644
  project(
  	'wlroots',
  	'c',
--	version: '0.18.0-dev',
-+	version: '0.18.0',
+-	version: '0.19.0-dev',
++	version: '0.19.0',
  	license: 'MIT',
  	meson_version: '>=0.59.0',
  	default_options: [

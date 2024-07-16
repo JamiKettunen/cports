@@ -1,5 +1,5 @@
 pkgname = "wlroots-git"
-pkgver = "0.18.0_git20240630"
+pkgver = "0.19.0_git20240716"
 pkgrel = 0
 build_style = "meson"
 configure_args = [
@@ -37,13 +37,13 @@ makedepends = [
     "xcb-util-wm-devel",
 ]
 provides = [f"wlroots={pkgver}-r{pkgrel}"]
-pkgdesc = "Modular Wayland compositor library (0.18.x in-development)"
+_commit = "015bb8512ee314e1deb858cf7350b0220fc58702"
+pkgdesc = "Modular Wayland compositor library git commit {_commit:0:7}"
 maintainer = "flukey <flukey@vapourmail.eu>"
 license = "MIT"
 url = "https://gitlab.freedesktop.org/wlroots/wlroots"
-_commit = "67b88e46b04a9a42a735f88066872821caab8e7d"
 source = f"https://gitlab.freedesktop.org/wlroots/wlroots/-/archive/{_commit}.tar.gz"
-sha256 = "d5db533f9dc8d181ef64ffda8cec529a6ea83aed1259d40253b6c27bdc973520"
+sha256 = "ebdb2fc4c7d1da5b1986fa9f620638e0b2fb12ad9c0fb1caf1d1ec0f3063c86b"
 
 
 def post_install(self):
@@ -52,15 +52,7 @@ def post_install(self):
 
 @subpackage("wlroots-git-devel")
 def _devel(self):
-    self.depends = [f"{pkgname}={pkgver}-r{pkgrel}"]
+    # TODO: needed?
+    #self.depends = [f"{pkgname}={pkgver}-r{pkgrel}"]
     self.provides = [f"wlroots-devel={pkgver}-r{pkgrel}"]
-    # FIXME: no more self.default_devel() with 0.18?!
-    # just non-symlink /usr/lib/libwlroots-0.18.so exists now
-    # good 13b9b54f3f22e6c932207f6cad9632782ec86d71
-    #  (or b1b34cd6653d51f3bf8e331e6ae7b39290ae820e)
-    # bad d9bfb47648aa40c15b699cde567763ebc4603e55
-    return [
-        "usr/include",
-        "usr/lib/pkgconfig",
-        "usr/lib/*.a",
-    ]
+    return self.default_devel()
