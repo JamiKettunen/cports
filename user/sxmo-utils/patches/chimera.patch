@@ -1,0 +1,268 @@
+diff --git a/configs/appcfg/profile_template b/configs/appcfg/profile_template
+index 851bd39..322b1a5 100755
+--- a/configs/appcfg/profile_template
++++ b/configs/appcfg/profile_template
+@@ -25,7 +25,7 @@
+ command -v firefox >/dev/null && export BROWSER=firefox
+ 
+ # Prepopulate Subreddits menu with custom subreddits
+-#export SXMO_SUBREDDITS="postmarketos pinephoneOfficial pinephone unixporn"
++#export SXMO_SUBREDDITS="chimeralinux pinephoneOfficial pinephone unixporn"
+ 
+ # Change the default terminal command
+ export TERMCMD="sxmo_terminal.sh"
+diff --git a/configs/default_hooks/sxmo_hook_restart_modem_daemons.sh b/configs/default_hooks/sxmo_hook_restart_modem_daemons.sh
+index f48fcef..70aa07c 100755
+--- a/configs/default_hooks/sxmo_hook_restart_modem_daemons.sh
++++ b/configs/default_hooks/sxmo_hook_restart_modem_daemons.sh
+@@ -26,6 +26,9 @@ daemon_start() {
+ 			[ "$1" = "modemmanager" ] && set -- ModemManager
+ 			doas systemctl start "$1"
+ 			;;
++		chimera)
++			doas dinitctl start "$1"
++			;;
+ 	esac
+ }
+ 
+@@ -46,6 +49,9 @@ daemon_stop() {
+ 			[ "$1" = "modemmanager" ] && set -- ModemManager
+ 			doas systemctl stop "$1"
+ 			;;
++		chimera)
++			doas dinitctl stop "$1"
++			;;
+ 	esac
+ }
+ 
+@@ -62,6 +68,9 @@ daemon_isrunning() {
+ 			[ "$1" = "modemmanager" ] && set -- ModemManager
+ 			systemctl is-active --quiet "$1"
+ 			;;
++		chimera)
++			dinitctl --system --quiet is-started "$1"
++			;;
+ 	esac
+ }
+ 
+@@ -75,6 +84,10 @@ daemon_exists() {
+ 			systemctl status "$1" > /dev/null 2>&1
+ 			[ $? -ne 4 ]
+ 			;;
++		chimera)
++			# TODO: should user services be accounted for here? -> " || [ -f /etc/dinit.d/user/"$1" ]"
++			[ -f /etc/dinit.d/"$1" ]
++			;;
+ 	esac
+ }
+ 
+diff --git a/configs/default_hooks/sxmo_hook_wallpaper.sh b/configs/default_hooks/sxmo_hook_wallpaper.sh
+index 82a5274..be191a2 100755
+--- a/configs/default_hooks/sxmo_hook_wallpaper.sh
++++ b/configs/default_hooks/sxmo_hook_wallpaper.sh
+@@ -8,6 +8,7 @@
+ # This script is executed once, and must output the wallpaper to display
+ 
+ installed_wallpapers() {
++	# TODO: do something for chimera here? it has default wallpapers
+ 	xdg_data_path wallpapers 0 "\0" | xargs -r0I{} find "{}" -name "$SXMO_OS.*"
+ }
+ 
+diff --git a/scripts/appscripts/sxmo_reddit.sh b/scripts/appscripts/sxmo_reddit.sh
+index f908729..2c6b566 100755
+--- a/scripts/appscripts/sxmo_reddit.sh
++++ b/scripts/appscripts/sxmo_reddit.sh
+@@ -6,7 +6,7 @@
+ # shellcheck source=scripts/core/sxmo_common.sh
+ . sxmo_common.sh
+ 
+-[ -z "$SXMO_SUBREDDITS" ] && SXMO_SUBREDDITS="pine64official pinephoneofficial unixporn postmarketos linux"
++[ -z "$SXMO_SUBREDDITS" ] && SXMO_SUBREDDITS="pine64official pinephoneofficial unixporn chimeralinux linux"
+ 
+ menu() {
+ 	SUBREDDIT="$(
+diff --git a/scripts/core/sxmo_bluetoothmenu.sh b/scripts/core/sxmo_bluetoothmenu.sh
+index 8aaadc5..cf535b8 100755
+--- a/scripts/core/sxmo_bluetoothmenu.sh
++++ b/scripts/core/sxmo_bluetoothmenu.sh
+@@ -59,6 +59,9 @@ _restart_bluetooth() {
+ 		arch|archarm|nixos)
+ 			doas systemctl restart bluetooth
+ 			;;
++		chimera)
++			doas dinitctl restart bluetoothd
++			;;
+ 	esac
+ }
+ 
+diff --git a/scripts/core/sxmo_bluetoothtoggle.sh b/scripts/core/sxmo_bluetoothtoggle.sh
+index f670f61..1c4b7f5 100755
+--- a/scripts/core/sxmo_bluetoothtoggle.sh
++++ b/scripts/core/sxmo_bluetoothtoggle.sh
+@@ -18,6 +18,9 @@ on() {
+ 			systemctl start bluetooth
+ 			systemctl enable bluetooth
+ 			;;
++		chimera)
++			dinitctl enable bluetoothd
++			;;
+ 	esac
+ }
+ 
+@@ -31,6 +34,9 @@ off() {
+ 			systemctl stop bluetooth
+ 			systemctl disable bluetooth
+ 			;;
++		chimera)
++			dinitctl disable bluetoothd
++			;;
+ 	esac
+ 	rfkill block bluetooth
+ }
+diff --git a/scripts/core/sxmo_contactmenu.sh b/scripts/core/sxmo_contactmenu.sh
+index 5c6ba8a..75579b4 100755
+--- a/scripts/core/sxmo_contactmenu.sh
++++ b/scripts/core/sxmo_contactmenu.sh
+@@ -40,7 +40,7 @@ editcontactname() {
+ 
+ 	if ! printf %s "$PICKED" | grep -q "^Old name: "; then
+ 		newcontact="$oldnumber	$PICKED"
+-		sed -i "s/^$oldnumber	$oldname$/$newcontact/" "$SXMO_CONTACTFILE"
++		sed -i '' "s/^$oldnumber	$oldname$/$newcontact/" "$SXMO_CONTACTFILE"
+ 		set -- "$newcontact"
+ 	fi
+ 
+@@ -68,7 +68,7 @@ editcontactnumber() {
+ 	newcontact="$PICKED	$oldname"
+ 
+ 	# reverse them
+-	sed -i "s/^$number	$name$/$newcontact/" "$SXMO_CONTACTFILE"
++	sed -i '' "s/^$number	$name$/$newcontact/" "$SXMO_CONTACTFILE"
+ 	editcontact "$oldname	$PICKED"
+ }
+ 
+@@ -84,7 +84,7 @@ deletecontact() {
+ 	)"
+ 
+ 	# reverse them
+-	printf %s "$PICKED" | grep -q "Yes" && sed -i "/^$number	$name$/d" "$SXMO_CONTACTFILE"
++	printf %s "$PICKED" | grep -q "Yes" && sed -i '' "/^$number	$name$/d" "$SXMO_CONTACTFILE"
+ }
+ 
+ editcontact() {
+diff --git a/scripts/core/sxmo_migrate.sh b/scripts/core/sxmo_migrate.sh
+index 91fbc31..10888fb 100755
+--- a/scripts/core/sxmo_migrate.sh
++++ b/scripts/core/sxmo_migrate.sh
+@@ -85,11 +85,11 @@ resolvedifference() {
+ 			refversion="$(fetchversion "$defaultfile")"
+ 			userversion="$(fetchversion "$userfile")"
+ 			if [ -n "$userversion" ]; then
+-				sed -i "s/configversion: $userversion/configversion: $refversion/" "$userfile" || abort=1
++				sed -i '' "s/configversion: $userversion/configversion: $refversion/" "$userfile" || abort=1
+ 			elif [ -n "$refversion" ]; then
+ 				refline="$(head -n5 "$defaultfile" | grep -m1 "configversion: ")"
+ 				# fall back in case the userfile doesn't contain a configversion at all yet
+-				sed -i "2i$refline" "$userfile" || abort=1
++				sed -i '' "2i$refline" "$userfile" || abort=1
+ 			fi
+ 			;;
+ 		*)
+diff --git a/scripts/core/sxmo_mmsdconfig.sh b/scripts/core/sxmo_mmsdconfig.sh
+index b923c78..772bee9 100755
+--- a/scripts/core/sxmo_mmsdconfig.sh
++++ b/scripts/core/sxmo_mmsdconfig.sh
+@@ -56,7 +56,7 @@ editfile() {
+ 		VALUE="$(printf %s "$CHOICE" | cut -d= -f2-)"
+ 		NEWVALUE="$(valuemenu "$KEY" "$VALUE")"
+ 
+-		sed -i "$FILE" -e "s|^$CHOICE$|$KEY=$NEWVALUE|"
++		sed -i '' -e "s|^$CHOICE$|$KEY=$NEWVALUE|" "$FILE"
+ 	done
+ }
+ 
+diff --git a/scripts/core/sxmo_status.sh b/scripts/core/sxmo_status.sh
+index 2e50b28..f0ac0cc 100755
+--- a/scripts/core/sxmo_status.sh
++++ b/scripts/core/sxmo_status.sh
+@@ -102,7 +102,8 @@ show() {
+ 	_sorted_components_name | while read -r id; do
+ 		tr '\n' ' ' < "$ROOT/$id"
+ 		printf " "
+-	done | head -c -1 | tr '\n' '\0' | xargs -0 -n1 printf "%s\n"
++	done | sed 's/.$//' | tr '\n' '\0' | xargs -0 -n1 printf "%s\n"
++	# ^ FIXED head: illegal byte count -- -1
+ 	free
+ }
+ 
+diff --git a/scripts/core/sxmo_timezonechange.sh b/scripts/core/sxmo_timezonechange.sh
+index f680a96..b590a30 100755
+--- a/scripts/core/sxmo_timezonechange.sh
++++ b/scripts/core/sxmo_timezonechange.sh
+@@ -24,6 +24,15 @@ change_systemd() {
+ 	echo "Timezone changed ok"
+ }
+ 
++change_fallback() {
++	echo "Changing timezone to $1"
++
++	doas sxmo_set_timezone.sh "$1"
++	sxmo_hook_statusbar.sh time
++
++	echo "Timezone changed ok"
++}
++
+ menu() {
+ 	zoneinfo_dir=$(xdg_data_path zoneinfo)
+ 	T="$(
+@@ -39,9 +48,11 @@ if [ $# -gt 0 ]; then
+ 	trap "read -r" EXIT
+ 	set -e
+ 
++	# FIXME: call change_fallback once confirming $@ is e.g. Europe/Helsinki
+ 	case "$SXMO_OS" in
+ 		alpine|postmarketos) change_alpine "$@";;
+ 		arch|archarm|debian) change_systemd "$@";;
++		chimera) echo "Change the timezone via ln -sf ../usr/share/zoneinfo/$@ /etc/localtime";;
+ 		nixos) echo "Change the timezone in configuration.nix with time.timeZone = \"[timezone]\"";;
+ 		*) echo "Changing the timezone isn't implemented on your distro yet";;
+ 	esac
+diff --git a/scripts/core/sxmo_upgrade.sh b/scripts/core/sxmo_upgrade.sh
+index 9607b1a..f69d720 100755
+--- a/scripts/core/sxmo_upgrade.sh
++++ b/scripts/core/sxmo_upgrade.sh
+@@ -37,7 +37,7 @@ update_nixos() {
+ sxmo_wakelock.sh lock sxmo_upgrading infinite
+ 
+ case "$SXMO_OS" in
+-	alpine|postmarketos) update_apk;;
++	alpine|postmarketos|chimera) update_apk;;
+ 	arch|archarm) update_pacman;;
+ 	nixos) update_nixos;;
+ esac
+diff --git a/scripts/core/sxmo_vvmdconfig.sh b/scripts/core/sxmo_vvmdconfig.sh
+index 6cfab48..412e0d7 100755
+--- a/scripts/core/sxmo_vvmdconfig.sh
++++ b/scripts/core/sxmo_vvmdconfig.sh
+@@ -52,7 +52,7 @@ editfile() {
+ 		VALUE="$(printf %s "$CHOICE" | cut -d= -f2-)"
+ 		NEWVALUE="$(valuemenu "$KEY" "$VALUE")"
+ 
+-		sed -i "$FILE" -e "s|^$CHOICE$|$KEY=$NEWVALUE|"
++		sed -i '' -e "s|^$CHOICE$|$KEY=$NEWVALUE|" "$FILE"
+ 	done
+ }
+ 
+diff --git a/scripts/modem/sxmo_modemtext.sh b/scripts/modem/sxmo_modemtext.sh
+index cc9487a..a69576f 100755
+--- a/scripts/modem/sxmo_modemtext.sh
++++ b/scripts/modem/sxmo_modemtext.sh
+@@ -105,7 +105,7 @@ sendtextmenu() {
+ 			# Remove Attachment
+ 			"$icon_cls $icon_att"*)
+ 				FILE="$(printf %s "$CONFIRM" | awk -F' :: ' '{print $2}')"
+-				sed -i "\|$FILE|d" "$SXMO_LOGDIR/$NUMBER/draft.attachments.txt"
++				sed -i '' "\|$FILE|d" "$SXMO_LOGDIR/$NUMBER/draft.attachments.txt"
+ 				if [ ! -s "$SXMO_LOGDIR/$NUMBER/draft.attachments.txt" ] ; then
+ 					rm "$SXMO_LOGDIR/$NUMBER/draft.attachments.txt"
+ 				fi

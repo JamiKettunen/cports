@@ -1,0 +1,13 @@
+diff --git a/programs/sxmo_vibrate.c b/programs/sxmo_vibrate.c
+index 9c28fa6..8fff4a6 100644
+--- a/programs/sxmo_vibrate.c
++++ b/programs/sxmo_vibrate.c
+@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
+ 	char *vibra_event_dev = "/dev/input/by-path/platform-vibrator-event";
+ 	/* set vibrator device event file from env */
+ 	char *tmp;
+-	if (tmp = getenv("SXMO_VIBRATE_DEV"))
++	if ((tmp = getenv("SXMO_VIBRATE_DEV")))
+ 		vibra_event_dev = strdup(tmp);
+ 
+ 	fd = open(vibra_event_dev, O_RDWR | O_CLOEXEC);
