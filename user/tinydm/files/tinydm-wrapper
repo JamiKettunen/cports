@@ -1,0 +1,5 @@
+#!/bin/sh
+# TODO: exit if /etc/default/tinydm doesn't exist or AUTOLOGIN_USER isn't specified manually?
+[ -f /etc/default/tinydm ] &&  . /etc/default/tinydm
+: ${AUTOLOGIN_USER:=$(id -nu 1000)}
+exec autologin $AUTOLOGIN_USER tinydm-run-session
