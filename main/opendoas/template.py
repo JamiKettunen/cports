@@ -1,10 +1,11 @@
 pkgname = "opendoas"
 pkgver = "6.8.2"
-pkgrel = 3
+pkgrel = 4
 build_style = "configure"
 configure_args = [
     "--with-pam",
     "--with-timestamp",
+    "--with-doas-confdir",
     "--prefix=/usr",
     "--pamdir=/usr/lib/pam.d",
 ]
@@ -29,4 +30,4 @@ def pre_configure(self):
 def post_install(self):
     self.install_license("LICENSE")
     # default conf
-    self.install_file(self.files_path / "doas.conf", "etc")
+    self.install_file(self.files_path / "doas.conf", "etc/doas.d", name="chimera.conf")
