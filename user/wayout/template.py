@@ -1,0 +1,12 @@
+pkgname = "wayout"
+pkgver = "0.1.4"
+pkgrel = 0
+build_style = "meson"
+hostmakedepends = ["meson", "pkgconf", "scdoc"]
+makedepends = ["wayland-protocols", "wayland-devel", "pango-devel"]
+pkgdesc = "Output text as OSD/widget to a Wayland desktop"
+maintainer = "Jami Kettunen <jami.kettunen@protonmail.com>"
+license = "GPL-3.0-or-later"
+url = "https://git.sr.ht/~proycon/wayout"
+source = f"{url}/archive/{pkgver}.tar.gz"
+sha256 = "5c947a0384b05dd9277a58547d93ad5659ecf8c56f28921de03b4feb73218b25"
