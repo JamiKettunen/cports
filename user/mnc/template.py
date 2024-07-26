@@ -1,0 +1,11 @@
+pkgname = "mnc"
+pkgver = "0.4"
+pkgrel = 0
+build_style = "go"
+hostmakedepends = ["go"]
+pkgdesc = "Get seconds until next cronjob is due"
+maintainer = "Jami Kettunen <jami.kettuenen@protonmail.com>"
+license = "Unlicense"
+url = "https://git.sr.ht/~anjan/mnc"
+source = f"{url}/archive/{pkgver}.tar.gz"
+sha256 = "1d409aeab5f2022b2e108d52b0cccc44d9d7145e4bf39b1de98df3509c5e853a"
