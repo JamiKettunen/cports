@@ -11,6 +11,38 @@ index 851bd39..322b1a5 100755
  
  # Change the default terminal command
  export TERMCMD="sxmo_terminal.sh"
+diff --git a/configs/default_hooks/sxmo_hook_block_suspend.sh b/configs/default_hooks/sxmo_hook_block_suspend.sh
+index a5a7f82..b7aab1c 100755
+--- a/configs/default_hooks/sxmo_hook_block_suspend.sh
++++ b/configs/default_hooks/sxmo_hook_block_suspend.sh
+@@ -56,6 +56,10 @@ hotspot_active() {
+ 	nmcli -t c show --active | grep -q ^Hotspot
+ }
+ 
++# TODO: expand to allow blocking on other tcp port activity as well
++# e.g. ss -Htn '( src :22 or src :25565 )'
++# or possibly even check any actively used port at all: ss -Htun
++# (also what about UDP ports?)
+ ssh_connected() {
+ 	[ -n "$(ss -Htn src :22)" ]
+ }
+diff --git a/configs/default_hooks/sxmo_hook_logout.sh b/configs/default_hooks/sxmo_hook_logout.sh
+index 15247e1..61df517 100755
+--- a/configs/default_hooks/sxmo_hook_logout.sh
++++ b/configs/default_hooks/sxmo_hook_logout.sh
+@@ -5,9 +5,9 @@
+ # "cool off" before we restart wm, but otherwise everything *should* die with the
+ # wm
+ superctl stop sxmo_soundmonitor
+-superctl stop wireplumber
+-superctl stop pipewire-pulse
+-superctl stop pipewire
++#superctl stop wireplumber
++#superctl stop pipewire-pulse
++#superctl stop pipewire
+ 
+ # give pipewire time
+ sleep 5s
 diff --git a/configs/default_hooks/sxmo_hook_restart_modem_daemons.sh b/configs/default_hooks/sxmo_hook_restart_modem_daemons.sh
 index f48fcef..70aa07c 100755
 --- a/configs/default_hooks/sxmo_hook_restart_modem_daemons.sh
@@ -56,11 +88,27 @@ index f48fcef..70aa07c 100755
  	esac
  }
  
+diff --git a/configs/default_hooks/sxmo_hook_start.sh b/configs/default_hooks/sxmo_hook_start.sh
+index 50fa86e..1e220be 100755
+--- a/configs/default_hooks/sxmo_hook_start.sh
++++ b/configs/default_hooks/sxmo_hook_start.sh
+@@ -30,8 +30,9 @@ if [ -z "$SXMO_NO_AUDIO" ]; then
+ 		superctl start pulseaudio
+ 	elif [ "$(command -v pipewire)" ]; then
+ 		# pipewire-pulse will start pipewire
+-		superctl start pipewire-pulse
+-		superctl start wireplumber
++		#superctl start pipewire-pulse
++		#superctl start wireplumber
++		:
+ 	fi
+ 
+ 	# monitor for headphone for statusbar
 diff --git a/configs/default_hooks/sxmo_hook_wallpaper.sh b/configs/default_hooks/sxmo_hook_wallpaper.sh
-index 82a5274..be191a2 100755
+index 82a5274..5e4df2a 100755
 --- a/configs/default_hooks/sxmo_hook_wallpaper.sh
 +++ b/configs/default_hooks/sxmo_hook_wallpaper.sh
-@@ -8,6 +8,7 @@
+@@ -8,11 +8,12 @@
  # This script is executed once, and must output the wallpaper to display
  
  installed_wallpapers() {
@@ -68,6 +116,24 @@ index 82a5274..be191a2 100755
  	xdg_data_path wallpapers 0 "\0" | xargs -r0I{} find "{}" -name "$SXMO_OS.*"
  }
  
+ sxmo_wallpaper() {
+-	xdg_data_path sxmo/background.jpg
++	xdg_data_path backgrounds/chimera/bg-l.svg
+ }
+ 
+ all_wallpapers() {
+diff --git a/configs/profile.d/sxmo_init.sh b/configs/profile.d/sxmo_init.sh
+index fbe5ce5..a5d354d 100644
+--- a/configs/profile.d/sxmo_init.sh
++++ b/configs/profile.d/sxmo_init.sh
+@@ -94,6 +94,7 @@ _sxmo_load_environments() {
+ 
+ 	# The user can already force a $SXMO_DEVICE_NAME value in ~/.profile
+ 	if [ -z "$SXMO_DEVICE_NAME" ]; then
++		# TODO: /sys/devices/virtual/dmi/id/product_name ("V3", "MS-7C95")
+ 		if [ -e /proc/device-tree/compatible ]; then
+ 			SXMO_DEVICE_NAME="$(tr -c '\0[:alnum:].,-' '_' < /proc/device-tree/compatible |
+ 				tr '\0' '\n' | head -n1)"
 diff --git a/scripts/appscripts/sxmo_reddit.sh b/scripts/appscripts/sxmo_reddit.sh
 index f908729..2c6b566 100755
 --- a/scripts/appscripts/sxmo_reddit.sh
@@ -150,24 +216,6 @@ index 5c6ba8a..75579b4 100755
  }
  
  editcontact() {
-diff --git a/scripts/core/sxmo_migrate.sh b/scripts/core/sxmo_migrate.sh
-index 91fbc31..10888fb 100755
---- a/scripts/core/sxmo_migrate.sh
-+++ b/scripts/core/sxmo_migrate.sh
-@@ -85,11 +85,11 @@ resolvedifference() {
- 			refversion="$(fetchversion "$defaultfile")"
- 			userversion="$(fetchversion "$userfile")"
- 			if [ -n "$userversion" ]; then
--				sed -i "s/configversion: $userversion/configversion: $refversion/" "$userfile" || abort=1
-+				sed -i '' "s/configversion: $userversion/configversion: $refversion/" "$userfile" || abort=1
- 			elif [ -n "$refversion" ]; then
- 				refline="$(head -n5 "$defaultfile" | grep -m1 "configversion: ")"
- 				# fall back in case the userfile doesn't contain a configversion at all yet
--				sed -i "2i$refline" "$userfile" || abort=1
-+				sed -i '' "2i$refline" "$userfile" || abort=1
- 			fi
- 			;;
- 		*)
 diff --git a/scripts/core/sxmo_mmsdconfig.sh b/scripts/core/sxmo_mmsdconfig.sh
 index b923c78..772bee9 100755
 --- a/scripts/core/sxmo_mmsdconfig.sh
@@ -181,6 +229,19 @@ index b923c78..772bee9 100755
  	done
  }
  
+diff --git a/scripts/core/sxmo_networks.sh b/scripts/core/sxmo_networks.sh
+index d0327bf..5c10406 100755
+--- a/scripts/core/sxmo_networks.sh
++++ b/scripts/core/sxmo_networks.sh
+@@ -10,7 +10,7 @@
+ 
+ set -e
+ 
+-VPNDEVICE="$(nmcli con show --active | grep -E 'wireguard|vpn' | awk '{ print $1 }' | paste -s -d '|')"
++VPNDEVICE="$(nmcli con show --active | grep -E 'wireguard|vpn' | awk '{ print $1 }' | paste -s -d '|' -)"
+ 
+ nofail() {
+ 	"$@" || return 0
 diff --git a/scripts/core/sxmo_status.sh b/scripts/core/sxmo_status.sh
 index 2e50b28..f0ac0cc 100755
 --- a/scripts/core/sxmo_status.sh
@@ -253,6 +314,18 @@ index 6cfab48..412e0d7 100755
  	done
  }
  
+diff --git a/scripts/modem/sxmo_modemaudio.sh b/scripts/modem/sxmo_modemaudio.sh
+index 41acf03..f435396 100755
+--- a/scripts/modem/sxmo_modemaudio.sh
++++ b/scripts/modem/sxmo_modemaudio.sh
+@@ -3,6 +3,7 @@
+ # shellcheck source=scripts/core/sxmo_common.sh
+ . sxmo_common.sh
+ 
++# TODO: silence if callaudio{cli,d} missing?
+ ca_dbus_get_prop() {
+ 	dbus-send --session --print-reply --dest=org.mobian_project.CallAudio \
+ 		--reply-timeout=2500 /org/mobian_project/CallAudio org.freedesktop.DBus.Properties.Get \
 diff --git a/scripts/modem/sxmo_modemtext.sh b/scripts/modem/sxmo_modemtext.sh
 index cc9487a..a69576f 100755
 --- a/scripts/modem/sxmo_modemtext.sh

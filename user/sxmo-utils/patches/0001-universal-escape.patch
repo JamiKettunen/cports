@@ -1,0 +1,67 @@
+--- a/scripts/core/sxmo_migrate.sh
++++ b/scripts/core/sxmo_migrate.sh
+@@ -31,18 +31,18 @@ resolvedifference() {
+ 	defaultfile="$2"
+ 
+ 	(
+-		printf "\e[31mThe file \e[32m%s\e[31m differs\e[0m\n" "$userfile"
++		printf "\033[31mThe file \033[32m%s\033[31m differs\033[0m\n" "$userfile"
+ 		smartdiff -ud "$defaultfile" "$userfile"
+ 	) | more
+ 
+-	printf "\e[31mMigration options for \e[32m%s\e[31m:\e[0m\n" "$userfile"
++	printf "\033[31mMigration options for \033[32m%s\033[31m:\033[0m\n" "$userfile"
+ 
+ 	printf "1 - Use [d]efault. Apply the Sxmo default, discarding all your own changes.\n"
+ 	printf "2 - Open [e]ditor and merge the changes yourself; take care to set the same configversion.\n"
+ 	printf "3 - Use your [u]ser version as-is; you verified it's compatible. (Auto-updates configversion only).\n"
+ 	printf "4 - [i]gnore, do not resolve and don't change anything, ask again next time. (default)\n"
+ 
+-	printf "\e[33mHow do you want to resolve this? Choose one of the options above [1234deui]\e[0m "
++	printf "\033[33mHow do you want to resolve this? Choose one of the options above [1234deui]\033[0m "
+ 
+ 	read -r reply < /dev/tty
+ 	abort=0
+@@ -85,11 +85,11 @@ resolvedifference() {
+ 			refversion="$(fetchversion "$defaultfile")"
+ 			userversion="$(fetchversion "$userfile")"
+ 			if [ -n "$userversion" ]; then
+-				sed -i "s/configversion: $userversion/configversion: $refversion/" "$userfile" || abort=1
++				sed -i '' "s/configversion: $userversion/configversion: $refversion/" "$userfile" || abort=1
+ 			elif [ -n "$refversion" ]; then
+ 				refline="$(head -n5 "$defaultfile" | grep -m1 "configversion: ")"
+ 				# fall back in case the userfile doesn't contain a configversion at all yet
+-				sed -i "2i$refline" "$userfile" || abort=1
++				sed -i '' "2i$refline" "$userfile" || abort=1
+ 			fi
+ 			;;
+ 		*)
+@@ -226,7 +226,7 @@ checkhooks() {
+ 		esac
+ 		if [ -f "$defaulthook" ]; then
+ 			if diff "$hook" "$defaulthook" > /dev/null && [ "$MODE" != "sync" ]; then
+-				printf "\e[33mHook %s is identical to the default, so you don't need a custom hook, remove it? [y/N]\e[0m" "$hook"
++				printf "\033[33mHook %s is identical to the default, so you don't need a custom hook, remove it? [y/N]\033[0m" "$hook"
+ 				read -r reply < /dev/tty
+ 				if [ "y" = "$reply" ]; then
+ 					rm "$hook"
+@@ -250,7 +250,7 @@ checkhooks() {
+ 		elif [ "$MODE" != "sync" ]; then
+ 			(
+ 				smartdiff -ud "/dev/null" "$hook"
+-				printf "\e[31mThe hook \e[32m%s\e[31m does not exist (anymore), remove it? [y/N] \e[0m\n" "$hook"
++				printf "\033[31mThe hook \033[32m%s\033[31m does not exist (anymore), remove it? [y/N] \033[0m\n" "$hook"
+ 			) | more
+ 			read -r reply < /dev/tty
+ 			if [ "y" = "$reply" ]; then
+--- a/scripts/modem/sxmo_dtmf.sh
++++ b/scripts/modem/sxmo_dtmf.sh
+@@ -3,7 +3,7 @@
+ # Copyright 2022 Sxmo Contributors
+ 
+ CALLID="$1"
+-ESCAPE="$(printf '\e')"
++ESCAPE="$(printf '\033')"
+ 
+ # Found on stackoverflow
+ # https://stackoverflow.com/questions/8725925/how-to-read-just-a-single-character-in-shell-script

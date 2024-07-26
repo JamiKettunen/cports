@@ -1,0 +1,29 @@
+diff --git a/configs/default_hooks/sxmo_hook_contextmenu.sh b/configs/default_hooks/sxmo_hook_contextmenu.sh
+index 05dff7b..3858054 100755
+--- a/configs/default_hooks/sxmo_hook_contextmenu.sh
++++ b/configs/default_hooks/sxmo_hook_contextmenu.sh
+@@ -796,10 +796,12 @@ case "$WMCLASS" in
+ 			$icon_grd Apps                                               ^ 0 ^ sxmo_appmenu.sh applications
+ 			$icon_grd Binaries                                           ^ 0 ^ sxmo_brun.sh
+ 			$icon_dir Files                                              ^ 0 ^ sxmo_files.sh
+-			$icon_phn Dialer                                             ^ 0 ^ sxmo_modemdial.sh
+-			$icon_msg Texts                                              ^ 0 ^ sxmo_modemtext.sh
+-			$icon_usr Contacts                                           ^ 0 ^ sxmo_contactmenu.sh
+ 			$(
++				if [-z "$SXMO_NO_MODEM" ]; then
++					echo "$icon_phn Dialer ^ 0 ^ sxmo_modemdial.sh"
++					echo "$icon_msg Texts ^ 0 ^ sxmo_modemtext.sh"
++					echo "$icon_usr Contacts ^ 0 ^ sxmo_contactmenu.sh"
++				fi
+ 				rfkill list bluetooth -no ID,SOFT,HARD | grep -vq " blocked" &&
+ 				printf %b "$icon_bth Bluetooth ^ 1 ^ sxmo_bluetoothmenu.sh"
+ 			)
+@@ -814,7 +816,7 @@ case "$WMCLASS" in
+ 			)
+ 			$icon_net Networks                                           ^ 0 ^ sxmo_networks.sh
+ 			$icon_mus Audio                                              ^ 0 ^ sxmo_audio.sh
+-			$icon_phn Modem                                              ^ 0 ^ sxmo_appmenu.sh modem
++			$([-z "$SXMO_NO_MODEM" ] && echo "$icon_phn Modem ^ 0 ^ sxmo_appmenu.sh modem")
+ 			$icon_win Windows                                            ^ 0 ^ sxmo_wmmenu.sh
+ 			$icon_cfg Config                                             ^ 0 ^ sxmo_appmenu.sh config
+ 			$icon_pwr Power                                              ^ 0 ^ sxmo_appmenu.sh power

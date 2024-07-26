@@ -1,0 +1,13 @@
+diff --git a/scripts/core/sxmo_urlhandler.sh b/scripts/core/sxmo_urlhandler.sh
+index 1ecd19a..d0bf439 100755
+--- a/scripts/core/sxmo_urlhandler.sh
++++ b/scripts/core/sxmo_urlhandler.sh
+@@ -52,7 +52,7 @@ COMMAND="$(
+ 		$(command -v firefox    >/dev/null && echo 'firefox -new-window URL')
+ 		$(command -v netsurf    >/dev/null && echo 'netsurf URL')
+ 		$(command -v surf       >/dev/null && echo 'surf URL')
+-		$(command -v echo       >/dev/null && echo 'echo URL | xsel -i')
++		$(command -v xsel       >/dev/null && echo 'echo URL | xsel -i')
+ 		$(command -v youtube-dl >/dev/null && echo 'youtube-dl -o- URL | mpv -v -')
+ 		$(command -v youtube-dl >/dev/null && echo 'youtube-dl URL')
+ 		$(command -v curl       >/dev/null && echo "curl URL | $EDITOR -")

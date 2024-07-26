@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "NOTE: It is recommended you run sxmo_migrate.sh to check your configuration
+      files and custom hooks against the defaults (it will not make any changes
+      unless explicitly told to)"

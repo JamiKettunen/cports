@@ -1,0 +1,15 @@
+diff --git a/scripts/core/sxmo_urlhandler.sh b/scripts/core/sxmo_urlhandler.sh
+index 04a1382..1ecd19a 100755
+--- a/scripts/core/sxmo_urlhandler.sh
++++ b/scripts/core/sxmo_urlhandler.sh
+@@ -53,8 +53,8 @@ COMMAND="$(
+ 		$(command -v netsurf    >/dev/null && echo 'netsurf URL')
+ 		$(command -v surf       >/dev/null && echo 'surf URL')
+ 		$(command -v xsel       >/dev/null && echo 'echo URL | xsel -i')
+-		$(command -v youtube-dl >/dev/null && echo 'youtube-dl -o- URL | mpv -v -')
+-		$(command -v youtube-dl >/dev/null && echo 'youtube-dl URL')
++		$(command -v yt-dlp     >/dev/null && echo 'yt-dlp -o- URL | mpv -v -')
++		$(command -v yt-dlp     >/dev/null && echo 'yt-dlp URL')
+ 		$(command -v curl       >/dev/null && echo "curl URL | $EDITOR -")
+ 		$(command -v wget       >/dev/null && echo 'wget URL')
+ 		$(command -v aria2c     >/dev/null && echo 'aria2c URL')

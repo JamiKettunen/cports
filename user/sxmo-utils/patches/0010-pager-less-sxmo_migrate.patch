@@ -1,0 +1,22 @@
+diff --git a/scripts/core/sxmo_migrate.sh b/scripts/core/sxmo_migrate.sh
+index bc80934..dbc4ca5 100755
+--- a/scripts/core/sxmo_migrate.sh
++++ b/scripts/core/sxmo_migrate.sh
+@@ -33,7 +33,7 @@ resolvedifference() {
+ 	(
+ 		printf "\033[31mThe file \033[32m%s\033[31m differs\033[0m\n" "$userfile"
+ 		smartdiff -ud "$defaultfile" "$userfile"
+-	) | more
++	) | ${PAGER:-less}
+ 
+ 	printf "\033[31mMigration options for \033[32m%s\033[31m:\033[0m\n" "$userfile"
+ 
+@@ -251,7 +251,7 @@ checkhooks() {
+ 			(
+ 				smartdiff -ud "/dev/null" "$hook"
+ 				printf "\033[31mThe hook \033[32m%s\033[31m does not exist (anymore), remove it? [y/N] \033[0m\n" "$hook"
+-			) | more
++			) | ${PAGER:-less}
+ 			read -r reply < /dev/tty
+ 			if [ "y" = "$reply" ]; then
+ 				rm "$hook"

@@ -1,0 +1,15 @@
+--- a/configs/default_hooks/sxmo_hook_block_suspend.sh
++++ b/configs/default_hooks/sxmo_hook_block_suspend.sh
+@@ -57,11 +57,7 @@ hotspot_active() {
+ }
+ 
+ ssh_connected() {
+-	netstat -tn | awk '
+-		BEGIN { status = 1 }
+-		$4 ~ /:22$/ { status = 0; exit }
+-		END { exit status }
+-		'
++	[ -n "$(ss -Htn src :22)" ]
+ }
+ 
+ active_mosh() {
