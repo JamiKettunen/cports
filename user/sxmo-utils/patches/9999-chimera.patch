@@ -89,7 +89,7 @@ index f48fcef..70aa07c 100755
  }
  
 diff --git a/configs/default_hooks/sxmo_hook_start.sh b/configs/default_hooks/sxmo_hook_start.sh
-index 50fa86e..1e220be 100755
+index 50fa86e..eabdaeb 100755
 --- a/configs/default_hooks/sxmo_hook_start.sh
 +++ b/configs/default_hooks/sxmo_hook_start.sh
 @@ -30,8 +30,9 @@ if [ -z "$SXMO_NO_AUDIO" ]; then
@@ -104,6 +104,20 @@ index 50fa86e..1e220be 100755
  	fi
  
  	# monitor for headphone for statusbar
+@@ -98,7 +99,12 @@ if [ -z "$SXMO_NO_MODEM" ] && command -v ModemManager > /dev/null; then
+ fi
+ 
+ # Start the desktop widget (e.g. clock)
+-superctl start sxmo_conky
++if [ "$SXMO_WM" = "sway" ]; then
++	superctl start sxmo_desktop_widget
++else
++	# FIXME: isn't this completely cooked?!
++	superctl start sxmo_conky
++fi
+ 
+ # Monitor the battery
+ superctl start sxmo_battery_monitor
 diff --git a/configs/default_hooks/sxmo_hook_wallpaper.sh b/configs/default_hooks/sxmo_hook_wallpaper.sh
 index 82a5274..5e4df2a 100755
 --- a/configs/default_hooks/sxmo_hook_wallpaper.sh
@@ -256,38 +270,6 @@ index 2e50b28..f0ac0cc 100755
  	free
  }
  
-diff --git a/scripts/core/sxmo_timezonechange.sh b/scripts/core/sxmo_timezonechange.sh
-index f680a96..b590a30 100755
---- a/scripts/core/sxmo_timezonechange.sh
-+++ b/scripts/core/sxmo_timezonechange.sh
-@@ -24,6 +24,15 @@ change_systemd() {
- 	echo "Timezone changed ok"
- }
- 
-+change_fallback() {
-+	echo "Changing timezone to $1"
-+
-+	doas sxmo_set_timezone.sh "$1"
-+	sxmo_hook_statusbar.sh time
-+
-+	echo "Timezone changed ok"
-+}
-+
- menu() {
- 	zoneinfo_dir=$(xdg_data_path zoneinfo)
- 	T="$(
-@@ -39,9 +48,11 @@ if [ $# -gt 0 ]; then
- 	trap "read -r" EXIT
- 	set -e
- 
-+	# FIXME: call change_fallback once confirming $@ is e.g. Europe/Helsinki
- 	case "$SXMO_OS" in
- 		alpine|postmarketos) change_alpine "$@";;
- 		arch|archarm|debian) change_systemd "$@";;
-+		chimera) echo "Change the timezone via ln -sf ../usr/share/zoneinfo/$@ /etc/localtime";;
- 		nixos) echo "Change the timezone in configuration.nix with time.timeZone = \"[timezone]\"";;
- 		*) echo "Changing the timezone isn't implemented on your distro yet";;
- 	esac
 diff --git a/scripts/core/sxmo_upgrade.sh b/scripts/core/sxmo_upgrade.sh
 index 9607b1a..f69d720 100755
 --- a/scripts/core/sxmo_upgrade.sh

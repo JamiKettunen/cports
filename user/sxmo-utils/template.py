@@ -1,6 +1,7 @@
 pkgname = "sxmo-utils"
-pkgver = "1.16.3_git20240721"
+pkgver = "1.16.3_git20240825"
 pkgrel = 0
+_commit = "c5f4abff77a3b1c2ed3b54f7ae79acd0ad904120"
 #archs = ["x86_64", "aarch64"]
 build_style = "makefile"
 make_cmd = "gmake"
@@ -42,7 +43,6 @@ pkgdesc = "Scripts and C programs to support Sxmo"
 maintainer = "Jami Kettunen <jami.kettunen@protonmail.com>"
 license = "AGPL-3.0-only"
 url = "https://sxmo.org"
-_commit = "c5f4abff77a3b1c2ed3b54f7ae79acd0ad904120"
 source = f"https://git.sr.ht/~mil/sxmo-utils/archive/{_commit}.tar.gz"
 sha256 = "27eec3543f5fb20f907de294f5ab7ad135d16b9ebb5d19e1ecf8d24fff9d5517"
 file_modes = {
@@ -97,7 +97,7 @@ def post_install(self):
 
 
 @subpackage("sxmo-utils-meta")
-def _meta(self):
+def _(self):
     self.subdesc = "recommends package"
     self.options = ["empty"]
     self.install_if = [self.parent]
@@ -131,7 +131,7 @@ def _meta(self):
 
 
 @subpackage("sxmo-utils-sway")
-def _sway(self):
+def _(self):
     self.subdesc = "sway session"
     self.options = ["empty"]
     self.install_if = [self.parent]
@@ -157,37 +157,4 @@ def _sway(self):
     return []
 
 
-# TODO: X11 variant instead with i3lock/conky/dwm/svkbd/autocutsel/sxiv/xrandr/feh/dunst
-
-
-# FIXME:
-# - dinitctl enable sxmo-setpermissions (TODO: add service)
-
-
-# TODO:
-# - drop X11 session switch entry entirely (maybe it already is without dwm detected)
-# - main/opendoas
-#   - add https://gitlab.alpinelinux.org/alpine/aports/-/blob/master/main/doas/configuration-directory.patch to main/opendoas/patches
-#   - confkgure with --with-doas-confdir
-#   - bump-pkgrel
-#   - submit upstream?
-# - optional docs? scdoc mandatory now
-# - sxmo_vibrate build warning (https://paste.c-net.org/ribxa3tinrru)
-# - disable modemmanager integration (and other calls/texting/contacts related stuff), configurable already on non-LTE devices?
-#   - set SXMO_NO_MODEM=1 at least, should further tweaks be done
-# - enable cronie (crond) by default?
-# - hide bar when launching waydroid?
-# - SXMO_DEBUG=1 -> ${XDG_STATE_HOME:-$HOME}/sxmo.log
-# - fix sxmo_autorotate.sh to read monitor-sensor (iio-sensor-proxy) output
-#   - see sxmo_battery_monitor.sh which already does this with upower
-# - do something with ambient light sensor (iio) and change brightness which GNOME couldn't get right? including smooth transitions over 1 second at least
-# - auto-open gnome keyring?
-# - tweak top bar right side to show power draw in watts etc
-# - audio volume shown always as muted?!
-# - swayfx? what about wlroots-git/sway-git
-# - /usr/share/sxmo/default_hooks/sxmo_hook_desktop_widget.sh not auto-started?
-# - cannot type '|' for some reason (even tho layout looks correct mostly)?!
-# - better lockscreen theming
-# - better overall theming (https://wiki.postmarketos.org/wiki/Sxmo/Tips_and_Tricks#wayland/sway / https://porkyofthepine.org/blog/rice_sxmo_sway.html)
-# - what's the deal with stuff printed in top panel right side status? "!:       0"
-# - holding keys (especially backspace) is annoying with wvkbd: need to have finger still the whole damn time
+# TODO: X11 variant instead with i3lock/conky/dwm/svkbd/autocutsel/sxiv/xrandr/feh/dunst? meh..

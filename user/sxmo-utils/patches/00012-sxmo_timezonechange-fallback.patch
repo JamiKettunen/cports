@@ -1,0 +1,29 @@
+diff --git a/scripts/core/sxmo_timezonechange.sh b/scripts/core/sxmo_timezonechange.sh
+index f680a96..11448f3 100755
+--- a/scripts/core/sxmo_timezonechange.sh
++++ b/scripts/core/sxmo_timezonechange.sh
+@@ -24,6 +24,15 @@ change_systemd() {
+ 	echo "Timezone changed ok"
+ }
+ 
++change_fallback() {
++	echo "Changing timezone to $1 (fallback)"
++
++	doas ln -sf "../usr/share/zoneinfo/$1" /etc/localtime
++	sxmo_hook_statusbar.sh time
++
++	echo "Timezone changed ok"
++}
++
+ menu() {
+ 	zoneinfo_dir=$(xdg_data_path zoneinfo)
+ 	T="$(
+@@ -43,7 +52,7 @@ if [ $# -gt 0 ]; then
+ 		alpine|postmarketos) change_alpine "$@";;
+ 		arch|archarm|debian) change_systemd "$@";;
+ 		nixos) echo "Change the timezone in configuration.nix with time.timeZone = \"[timezone]\"";;
+-		*) echo "Changing the timezone isn't implemented on your distro yet";;
++		*) change_fallback "$@";;
+ 	esac
+ else
+ 	menu
