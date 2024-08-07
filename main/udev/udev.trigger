@@ -4,7 +4,7 @@ for x in "$@"; do
     case "$x" in
         *rules.d*)
             if [ -S /run/udev/control ]; then
-                    /usr/bin/udevadm control --reload || :
+                    /usr/bin/udevadm control --reload && /usr/bin/udevadm trigger || :
             fi
             ;;
         *hwdb.d*)
