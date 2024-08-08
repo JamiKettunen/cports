@@ -1,0 +1,200 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3aa0516e..865c972b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -4,15 +4,11 @@ project(maliit-keyboard VERSION 2.3.1)
+ 
+ option(enable-hunspell "Use hunspell for error correction (maliit-keyboard-plugin only)" ON)
+ option(enable-tests "Build tests" ON)
++option(with-qt6 "Built with Qt 6 instead of Qt 5" OFF)
+ 
+ # Install paths
+ include(GNUInstallDirs)
+ 
+-if(NOT DEFINED QT5_QML_INSTALL_DIR)
+-    set(QT5_QML_INSTALL_DIR "${LIB_INSTALL_DIR}/qt5/qml" CACHE PATH
+-            "Installation directory for Qt 5 QML plugins [LIB_INSTALL_DIR/qt5/qml]")
+-endif()
+-
+ set(HUNSPELL_DICT_PATH "/usr/share/hunspell" CACHE PATH "Directory containing hunspell dictionary files")
+ set(MALIIT_KEYBOARD_QML_DIR "${CMAKE_INSTALL_LIBDIR}/maliit/keyboard2/qml" CACHE PATH "Directory containing maliit-keyboard QML files")
+ set(MALIIT_KEYBOARD_DATA_DIR "${CMAKE_INSTALL_DATADIR}/maliit/keyboard2" CACHE PATH "Directory containing maliit-keyboard data files")
+@@ -28,11 +24,20 @@ find_package(MaliitPlugins 0.99.1 REQUIRED)
+ find_package(GLib2 REQUIRED)
+ find_package(GIO REQUIRED)
+ 
+-find_package(Qt5DBus)
++if(with-qt6)
++    find_package(Qt6 6.0 REQUIRED COMPONENTS DBus QuickControls2 Multimedia) # TODO: Core5Compat
++    set(QT_VERSION_MAJOR 6)
++else()
++    find_package(Qt5 REQUIRED COMPONENTS DBus QuickControls2 Multimedia)
++    find_package(Qt5Feedback)
++    set(QT_VERSION_MAJOR 5)
++endif()
++
++if(NOT DEFINED QT_PLUGINS_INSTALL_DIR)
++    set(QT_PLUGINS_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/qt${QT_VERSION_MAJOR}/plugins" CACHE PATH
++            "Installation directory for Qt ${QT_VERSION_MAJOR} plugins [LIB_INSTALL_DIR/qt${QT_VERSION_MAJOR}/plugins]")
++endif()
+ 
+-find_package(Qt5QuickControls2 REQUIRED)
+-find_package(Qt5Multimedia)
+-find_package(Qt5Feedback)
+ find_package(Intl REQUIRED)
+ 
+ find_package(AnthyUnicode)
+@@ -87,7 +92,7 @@ set(WESTERNSUPPORT_SOURCES
+ 
+ # TODO install logic/languageplugininterface.h and logic/abstractplugininterface.h as HEADERS
+ 
+-set(maliit-keyboard-libraries Qt5::Core)
++set(maliit-keyboard-libraries Qt::Core)
+ set(maliit-keyboard-definitions HUNSPELL_DICT_PATH="${HUNSPELL_DICT_PATH}"
+         MALIIT_GETTEXT_PACKAGE="${PROJECT_NAME}"
+         MALIIT_LOCALE_DIR="${CMAKE_INSTALL_LOCALEDIR}/locale"
+@@ -105,7 +110,7 @@ if(enable-hunspell)
+ endif()
+ 
+ add_library(maliit-keyboard-lib STATIC ${MALIIT_KEYBOARD_LIB_SOURCES})
+-target_link_libraries(maliit-keyboard-lib Qt5::Core Maliit::Plugins)
++target_link_libraries(maliit-keyboard-lib Qt::Core Maliit::Plugins)
+ target_include_directories(maliit-keyboard-lib PUBLIC src/lib)
+ target_compile_definitions(maliit-keyboard-lib PRIVATE ${maliit-keyboard-definitions})
+ 
+@@ -117,6 +122,9 @@ set(MALIIT_KEYBOARD_VIEW_SOURCES
+ 
+ add_library(maliit-keyboard-view STATIC ${MALIIT_KEYBOARD_VIEW_SOURCES})
+ target_link_libraries(maliit-keyboard-view Maliit::Plugins maliit-keyboard-lib)
++#if (with-qt6)
++#    target_link_libraries(maliit-keyboard-view Qt::Core5Compat)
++#endif ()
+ target_include_directories(maliit-keyboard-view PUBLIC src)
+ 
+ set(QGSETTINGS_SOURCES
+@@ -129,7 +137,7 @@ set(QGSETTINGS_SOURCES
+         src/3rdparty/QGSettings/util.h)
+ 
+ add_library(gsettings-qt STATIC ${QGSETTINGS_SOURCES})
+-target_link_libraries(gsettings-qt Qt5::Core ${GIO_LIBRARIES})
++target_link_libraries(gsettings-qt Qt::Core ${GIO_LIBRARIES})
+ target_include_directories(gsettings-qt PUBLIC ${GIO_INCLUDE_DIRS} src/3rdparty)
+ target_compile_definitions(gsettings-qt PRIVATE -DQT_NO_KEYWORDS)
+ 
+@@ -153,7 +161,7 @@ set(MALIIT_KEYBOARD_COMMON_SOURCES
+         src/plugin/device.h)
+ 
+ add_library(maliit-keyboard-common STATIC ${MALIIT_KEYBOARD_COMMON_SOURCES})
+-target_link_libraries(maliit-keyboard-common Qt5::DBus Qt5::QuickControls2 Maliit::Plugins maliit-keyboard-lib maliit-keyboard-view gsettings-qt Qt5::Multimedia ${Intl_LIBRARIES})
++target_link_libraries(maliit-keyboard-common Qt::DBus Qt::QuickControls2 Maliit::Plugins maliit-keyboard-lib maliit-keyboard-view gsettings-qt Qt::Multimedia ${Intl_LIBRARIES})
+ if (Qt5Feedback_FOUND)
+     target_link_libraries(maliit-keyboard-common Qt5::Feedback)
+     target_compile_definitions(maliit-keyboard-common PUBLIC HAVE_QT5_FEEDBACK)
+@@ -256,7 +264,7 @@ function(abstract_language_plugin _language _full_language)
+     endforeach()
+     add_library(${_target}plugin MODULE ${PLUGIN_SOURCES})
+     set_target_properties(${_target}plugin PROPERTIES OUTPUT_NAME ${_language}plugin)
+-    target_link_libraries(${_target}plugin Qt5::Core Maliit::Plugins maliit-keyboard-common ${abstract_language_plugin_LIBRARIES})
++    target_link_libraries(${_target}plugin Qt::Core Maliit::Plugins maliit-keyboard-common ${abstract_language_plugin_LIBRARIES})
+     target_include_directories(${_target}plugin PRIVATE src/lib/logic ${abstract_language_plugin_INCLUDE_DIRS})
+     target_compile_definitions(${_target}plugin PRIVATE ${abstract_language_plugin_DEFINITIONS})
+     install(TARGETS ${_target}plugin
+@@ -385,7 +393,7 @@ add_subdirectory(po)
+ if(enable-tests)
+     enable_testing()
+ 
+-    find_package(Qt5Test)
++    find_package(Qt${QT_VERSION_MAJOR}Test)
+ 
+     add_library(test-utils STATIC
+             tests/unittests/common/inputmethodhostprobe.cpp
+@@ -393,7 +401,7 @@ if(enable-tests)
+             tests/unittests/common/utils.cpp
+             tests/unittests/common/utils.h)
+ 
+-    target_link_libraries(test-utils PUBLIC Maliit::Plugins Qt5::Core Qt5::Gui Qt5::Test westernsupport)
++    target_link_libraries(test-utils PUBLIC Maliit::Plugins Qt::Core Qt::Gui Qt::Test westernsupport)
+     target_include_directories(test-utils PUBLIC tests/unittests tests/unittests/common src src/lib)
+ 
+     function(create_test name)
+diff --git a/plugins/westernsupport/spellchecker.cpp b/plugins/westernsupport/spellchecker.cpp
+index d55eeb35..5d71ce9e 100644
+--- a/plugins/westernsupport/spellchecker.cpp
++++ b/plugins/westernsupport/spellchecker.cpp
+@@ -54,7 +54,11 @@ private:
+ 
+ #include <QFile>
+ #include <QTextStream>
++#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
++#include <QtCore5Compat/QTextCodec>
++#else
+ #include <QTextCodec>
++#endif
+ #include <QStringList>
+ #include <QDebug>
+ #include <QDir>
+@@ -304,7 +308,7 @@ bool SpellChecker::setLanguage(const QString &language)
+ 
+     d->aff_file = dictPath() + QDir::separator() + affMatches[0];
+     d->dic_file = dictPath() + QDir::separator() + dicMatches[0];
+-    d->user_dictionary_file = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + QDir::separator() + language + "_userDictionary.dic";
++    d->user_dictionary_file = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + QDir::separator() + language + "_userDictionary.dic";
+ 
+     qDebug() << "spellechecker.cpp in setLanguage() aff_file=" << d->aff_file << "dic_file=" << d->dic_file << "user dictionary=" << d->user_dictionary_file;
+ 
+diff --git a/plugins/westernsupport/spellpredictworker.cpp b/plugins/westernsupport/spellpredictworker.cpp
+index d7c721aa..3df865a0 100644
+--- a/plugins/westernsupport/spellpredictworker.cpp
++++ b/plugins/westernsupport/spellpredictworker.cpp
+@@ -61,7 +61,7 @@ void SpellPredictWorker::setLanguage(QString locale, QString pluginPath)
+ {
+     // locale for secondary layouts I.E., dvorak will be formatted as locale@layout, swiss keyboard as "fr-ch"
+     // in this case we want to drop the layout portion
+-    QStringList tmpLocales = locale.split(QRegExp("(@|\\-)"));
++    QStringList tmpLocales = locale.split(QRegularExpression("(@|\\-)"));
+     QString baseLocale;
+     if (tmpLocales.size() > 1) {
+         baseLocale = tmpLocales[0];
+diff --git a/src/view/abstracttexteditor.cpp b/src/view/abstracttexteditor.cpp
+index bf7a69e1..04e8866c 100644
+--- a/src/view/abstracttexteditor.cpp
++++ b/src/view/abstracttexteditor.cpp
+@@ -392,7 +392,7 @@ void AbstractTextEditor::onKeyReleased(const Key &key)
+ 
+         if (d->preedit_enabled) {
+             if (!enablePreeditAtInsertion &&
+-                    (d->text->surroundingRight().left(1).contains(QRegExp(R"([\w])")) || email_detected)) {
++                    (d->text->surroundingRight().left(1).contains(QRegularExpression(R"([\w])")) || email_detected)) {
+                 // We're editing in the middle of a word or entering an email address, so just insert characters directly
+                 d->text->appendToPreedit(text);
+                 commitPreedit();
+@@ -1180,7 +1180,9 @@ void AbstractTextEditor::sendKeySequence(const QString &action, const QKeySequen
+         const int modifiers = actionSequence[i] & AllModifiers;
+         QString text("");
+         if (modifiers == Qt::NoModifier || modifiers == Qt::ShiftModifier) {
+-            text = QString(key);
++	    // FIXME: how is QString(key) supposed to be converted here?!
++	    // error: conversion from 'const int' to 'QChar' is ambiguous
++            text = QString(QChar(key));
+         }
+         sendKeyPressAndReleaseEvents(key, static_cast<Qt::KeyboardModifiers>(modifiers), text);
+     }
+@@ -1240,15 +1242,15 @@ void AbstractTextEditor::checkPreeditReentry(bool uncommittedDelete)
+         } else {
+             lastChar = text()->surrounding().at(currentOffset-1);
+         }
+-        if(!QRegExp(R"(\W+)").exactMatch(lastChar) && !d->word_engine->languageFeature()->isSymbol(lastChar)) {
+-            QStringList leftWords = text()->surroundingLeft().trimmed().split(QRegExp(R"([\s\d]+)"));
++        if(!QRegularExpression(R"(\W+)").match(lastChar).hasMatch() && !d->word_engine->languageFeature()->isSymbol(lastChar)) {
++            QStringList leftWords = text()->surroundingLeft().trimmed().split(QRegularExpression(R"([\s\d]+)"));
+             int trimDiff = text()->surroundingLeft().size() - text()->surroundingLeft().trimmed().size();
+             if(leftWords.last().isEmpty()) {
+                 // If removed char was punctuation trimming will result in an empty entry
+                 leftWords.removeLast();
+                 trimDiff += 1;
+             }
+-            if(d->text->surroundingRight().left(1).contains(QRegExp(R"([\w])"))) {
++            if(d->text->surroundingRight().left(1).contains(QRegularExpression(R"([\w])"))) {
+                 // Don't enter pre-edit in the middle of a word
+                 return;
+             }
