@@ -1,0 +1,31 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2b624da..27c831d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.5)
+ 
+ project(maliit-framework VERSION 2.3.0)
+ 
++#set(CMAKE_CXX_STANDARD 11)
++#set(CMAKE_CXX_EXTENSIONS OFF)
++#set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
++
+ # Build options
+ 
+ option(enable-docs "Build documentation" ON)
+@@ -77,6 +81,7 @@ add_library(maliit-common STATIC
+             common/maliit/namespaceinternal.h
+             common/maliit/settingdata.cpp
+             common/maliit/settingdata.h)
++set_property(TARGET maliit-common PROPERTY POSITION_INDEPENDENT_CODE ON)
+ target_link_libraries(maliit-common Qt::Core)
+ target_include_directories(maliit-common PUBLIC common)
+ 
+@@ -127,6 +132,7 @@ qt5_add_dbus_interface(CONNECTION_SOURCES dbus_interfaces/minputmethodserver1int
+ endif()
+ 
+ add_library(maliit-connection STATIC ${CONNECTION_SOURCES})
++set_property(TARGET maliit-connection PROPERTY POSITION_INDEPENDENT_CODE ON)
+ target_link_libraries(maliit-connection Qt::Core Qt::DBus Qt::Gui maliit-common)
+ if(enable-wayland)
+     target_link_libraries(maliit-connection Wayland::Client PkgConfig::XKBCOMMON)

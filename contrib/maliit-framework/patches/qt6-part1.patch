@@ -1,0 +1,553 @@
+Patch-Source: https://github.com/maliit/framework/pull/121
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -86,6 +86,7 @@ if(enable-wayland)
+          connection/waylandinputmethodconnection.h)
+ 
+     ecm_add_qtwayland_client_protocol(CONNECTION_SOURCES PROTOCOL ${WAYLANDPROTOCOLS_PATH}/unstable/input-method/input-method-unstable-v1.xml BASENAME input-method-unstable-v1)
++    ecm_add_qtwayland_client_protocol(CONNECTION_SOURCES PROTOCOL ${WAYLANDPROTOCOLS_PATH}/unstable/text-input/text-input-unstable-v1.xml BASENAME text-input-unstable-v1)
+ 
+     add_definitions(-DHAVE_WAYLAND)
+ endif()
+--- a/connection/waylandinputmethodconnection.cpp
++++ b/connection/waylandinputmethodconnection.cpp
+@@ -18,7 +18,7 @@
+ 
+ #include "wayland-client.h"
+ #include <qwayland-input-method-unstable-v1.h>
+-#include <QtWaylandClient/private/qwayland-text-input-unstable-v2.h>
++#include <qwayland-text-input-unstable-v1.h>
+ 
+ #include <xkbcommon/xkbcommon.h>
+ 
+@@ -113,37 +113,37 @@ xkb_keysym_t keyFromQt(int qt_key)
+     }
+ }
+ 
+-QtWayland::zwp_text_input_v2::preedit_style preeditStyleFromMaliit(Maliit::PreeditFace face)
++QtWayland::zwp_text_input_v1::preedit_style preeditStyleFromMaliit(Maliit::PreeditFace face)
+ {
+     switch (face) {
+     case Maliit::PreeditDefault:
+-        return QtWayland::zwp_text_input_v2::preedit_style_default;
++        return QtWayland::zwp_text_input_v1::preedit_style_default;
+     case Maliit::PreeditNoCandidates:
+-        return QtWayland::zwp_text_input_v2::preedit_style_incorrect;
++        return QtWayland::zwp_text_input_v1::preedit_style_incorrect;
+     case Maliit::PreeditKeyPress:
+-        return QtWayland::zwp_text_input_v2::preedit_style_highlight;
++        return QtWayland::zwp_text_input_v1::preedit_style_highlight;
+     case Maliit::PreeditUnconvertible:
+-        return QtWayland::zwp_text_input_v2::preedit_style_inactive;
++        return QtWayland::zwp_text_input_v1::preedit_style_inactive;
+     case Maliit::PreeditActive:
+-        return QtWayland::zwp_text_input_v2::preedit_style_active;
++        return QtWayland::zwp_text_input_v1::preedit_style_active;
+     default:
+-        return QtWayland::zwp_text_input_v2::preedit_style_none;
++        return QtWayland::zwp_text_input_v1::preedit_style_none;
+     }
+ }
+ 
+ Maliit::TextContentType contentTypeFromWayland(uint32_t purpose)
+ {
+     switch (purpose) {
+-    case QtWayland::zwp_text_input_v2::content_purpose_normal:
++    case QtWayland::zwp_text_input_v1::content_purpose_normal:
+         return Maliit::FreeTextContentType;
+-    case QtWayland::zwp_text_input_v2::content_purpose_digits:
+-    case QtWayland::zwp_text_input_v2::content_purpose_number:
++    case QtWayland::zwp_text_input_v1::content_purpose_digits:
++    case QtWayland::zwp_text_input_v1::content_purpose_number:
+         return Maliit::NumberContentType;
+-    case QtWayland::zwp_text_input_v2::content_purpose_phone:
++    case QtWayland::zwp_text_input_v1::content_purpose_phone:
+         return Maliit::PhoneNumberContentType;
+-    case QtWayland::zwp_text_input_v2::content_purpose_url:
++    case QtWayland::zwp_text_input_v1::content_purpose_url:
+         return Maliit::UrlContentType;
+-    case QtWayland::zwp_text_input_v2::content_purpose_email:
++    case QtWayland::zwp_text_input_v1::content_purpose_email:
+         return Maliit::EmailContentType;
+     default:
+         return Maliit::CustomContentType;
+@@ -344,7 +344,7 @@ void WaylandInputMethodConnection::sendPreeditString(const QString &string,
+     }
+ 
+     Q_FOREACH (const Maliit::PreeditTextFormat& format, preedit_formats) {
+-        QtWayland::zwp_text_input_v2::preedit_style style = preeditStyleFromMaliit(format.preeditFace);
++        QtWayland::zwp_text_input_v1::preedit_style style = preeditStyleFromMaliit(format.preeditFace);
+         uint32_t index = string.leftRef(format.start).toUtf8().size();
+         uint32_t length = string.leftRef(format.start + format.length).toUtf8().size() - index;
+         qCDebug(lcWaylandConnection) << Q_FUNC_INFO << "preedit_styling" << index << length;
+@@ -563,10 +563,10 @@ void InputMethodContext::zwp_input_method_context_v1_content_type(uint32_t hint,
+     qCDebug(lcWaylandConnection) << Q_FUNC_INFO;
+ 
+     m_stateInfo[ContentTypeAttribute] = contentTypeFromWayland(purpose);
+-    m_stateInfo[AutoCapitalizationAttribute] = matchesFlag(hint, QtWayland::zwp_text_input_v2::content_hint_auto_capitalization);
+-    m_stateInfo[CorrectionAttribute] = matchesFlag(hint, QtWayland::zwp_text_input_v2::content_hint_auto_correction);
+-    m_stateInfo[PredictionAttribute] = matchesFlag(hint, QtWayland::zwp_text_input_v2::content_hint_auto_completion);
+-    m_stateInfo[HiddenTextAttribute] = matchesFlag(hint, QtWayland::zwp_text_input_v2::content_hint_hidden_text);
++    m_stateInfo[AutoCapitalizationAttribute] = matchesFlag(hint, QtWayland::zwp_text_input_v1::content_hint_auto_capitalization);
++    m_stateInfo[CorrectionAttribute] = matchesFlag(hint, QtWayland::zwp_text_input_v1::content_hint_auto_correction);
++    m_stateInfo[PredictionAttribute] = matchesFlag(hint, QtWayland::zwp_text_input_v1::content_hint_auto_completion);
++    m_stateInfo[HiddenTextAttribute] = matchesFlag(hint, QtWayland::zwp_text_input_v1::content_hint_hidden_text);
+ }
+ 
+ void InputMethodContext::zwp_input_method_context_v1_invoke_action(uint32_t button, uint32_t index)
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -13,24 +13,15 @@ option(enable-glib "Build GLib support" ON)
+ 
+ option(enable-xcb "Compile with xcb support" ON)
+ option(enable-wayland "Compile with support for wayland" ON)
+-option(enable-qt5-inputcontext "Compile with Qt 5 input context" ON)
++option(enable-qt-inputcontext "Compile with Qt input context" ON)
+ 
+ option(enable-hwkeyboard "Enable support for the hardware keyboard" ON)
+ option(enable-dbus-activation "Enable dbus activation support for maliit-server" OFF)
++option(with-qt6 "Built with Qt 6 instead of Qt 5" OFF)
+ 
+ # Install paths
+ include(GNUInstallDirs)
+ 
+-if(NOT DEFINED QT5_PLUGINS_INSTALL_DIR)
+-    set(QT5_PLUGINS_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/qt5/plugins" CACHE PATH
+-            "Installation directory for Qt 5 plugins [LIB_INSTALL_DIR/qt5/plugins]")
+-endif()
+-
+-if(NOT DEFINED QT5_MKSPECS_INSTALL_DIR)
+-    set(QT5_MKSPECS_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/qt5/mkspecs" CACHE PATH
+-            "Installation directory for Qt 5 mkspecs files [LIB_INSTALL_DIR/qt5/mkspecs]")
+-endif()
+-
+ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+ 
+ set(CMAKE_INCLUDE_CURRENT_DIR ON)
+@@ -38,20 +29,44 @@ set(CMAKE_AUTOMOC ON)
+ 
+ find_package(PkgConfig REQUIRED)
+ 
+-find_package(Qt5Core)
+-find_package(Qt5DBus)
+-find_package(Qt5Gui REQUIRED PRIVATE)
+-find_package(Qt5Quick)
++if(with-qt6)
++  find_package(Qt6 6.0 REQUIRED COMPONENTS Core DBus Gui Quick)
++endif()
++
++if(Qt6_FOUND)
++  set(QT_VERSION_MAJOR 6)
++else()
++  find_package(Qt5 REQUIRED COMPONENTS Core DBus Gui Quick)
++  set(QT_VERSION_MAJOR 5)
++endif()
++
++if(NOT DEFINED QT_PLUGINS_INSTALL_DIR)
++    set(QT_PLUGINS_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/qt${QT_VERSION_MAJOR}/plugins" CACHE PATH
++            "Installation directory for Qt ${QT_VERSION_MAJOR} plugins [LIB_INSTALL_DIR/qt${QT_VERSION_MAJOR}/plugins]")
++endif()
++
++if(NOT DEFINED QT_MKSPECS_INSTALL_DIR)
++    set(QT_MKSPECS_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/qt${QT_VERSION_MAJOR}/mkspecs" CACHE PATH
++            "Installation directory for Qt 5 mkspecs files [LIB_INSTALL_DIR/qt${QT_VERSION_MAJOR}/mkspecs]")
++endif()
+ 
+ if(enable-wayland)
++    if (Qt6_FOUND)
++      find_package(Qt6 REQUIRED COMPONENTS WaylandClient WaylandGlobalPrivate)
++    else()
++      find_package(Qt5 5.14 REQUIRED COMPONENTS WaylandClient XkbCommonSupport)
++    endif()
+     find_package(WaylandProtocols REQUIRED PRIVATE)
+     find_package(QtWaylandScanner REQUIRED)
+     find_package(Wayland REQUIRED)
+-    find_package(Qt5WaylandClient 5.14 REQUIRED PRIVATE)
+-    find_package(Qt5XkbCommonSupport REQUIRED PRIVATE)
+     pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
+ endif()
+ 
++if (Qt6_FOUND)
++  include_directories(PRIVATE ${Qt6Gui_PRIVATE_INCLUDE_DIRS})
++else()
++  include_directories(PRIVATE ${Qt5Gui_PRIVATE_INCLUDE_DIRS})
++endif()
+ include_directories(src common)
+ 
+ add_library(maliit-common STATIC
+@@ -59,7 +74,7 @@ add_library(maliit-common STATIC
+             common/maliit/namespaceinternal.h
+             common/maliit/settingdata.cpp
+             common/maliit/settingdata.h)
+-target_link_libraries(maliit-common Qt5::Core)
++target_link_libraries(maliit-common Qt::Core)
+ target_include_directories(maliit-common PUBLIC common)
+ 
+ set(CONNECTION_SOURCES
+@@ -94,21 +109,27 @@ endif()
+ set_source_files_properties(dbus_interfaces/minputmethodcontext1interface.xml dbus_interfaces/minputmethodserver1interface.xml
+                             PROPERTIES INCLUDE maliit/settingdata.h)
+ 
++if (Qt6_FOUND)
++qt6_add_dbus_adaptor(CONNECTION_SOURCES dbus_interfaces/minputmethodcontext1interface.xml dbusserverconnection.h DBusServerConnection)
++qt6_add_dbus_adaptor(CONNECTION_SOURCES dbus_interfaces/minputmethodserver1interface.xml dbusinputcontextconnection.h DBusInputContextConnection)
++
++qt6_add_dbus_interface(CONNECTION_SOURCES dbus_interfaces/minputmethodcontext1interface.xml minputmethodcontext1interface_interface)
++qt6_add_dbus_interface(CONNECTION_SOURCES dbus_interfaces/minputmethodserver1interface.xml minputmethodserver1interface_interface)
++else()
+ qt5_add_dbus_adaptor(CONNECTION_SOURCES dbus_interfaces/minputmethodcontext1interface.xml dbusserverconnection.h DBusServerConnection)
+ qt5_add_dbus_adaptor(CONNECTION_SOURCES dbus_interfaces/minputmethodserver1interface.xml dbusinputcontextconnection.h DBusInputContextConnection)
+ 
+ qt5_add_dbus_interface(CONNECTION_SOURCES dbus_interfaces/minputmethodcontext1interface.xml minputmethodcontext1interface_interface)
+ qt5_add_dbus_interface(CONNECTION_SOURCES dbus_interfaces/minputmethodserver1interface.xml minputmethodserver1interface_interface)
++endif()
+ 
+ add_library(maliit-connection STATIC ${CONNECTION_SOURCES})
+-target_link_libraries(maliit-connection Qt5::Core Qt5::DBus Qt5::Gui maliit-common)
++target_link_libraries(maliit-connection Qt::Core Qt::DBus Qt::Gui maliit-common)
+ if(enable-wayland)
+     target_link_libraries(maliit-connection Wayland::Client PkgConfig::XKBCOMMON)
+-    target_include_directories(maliit-connection PRIVATE ${Qt5WaylandClient_PRIVATE_INCLUDE_DIRS})
+ endif()
+-target_include_directories(maliit-connection PUBLIC connection)
+ 
+-include_directories(${Qt5Gui_PRIVATE_INCLUDE_DIRS})
++target_include_directories(maliit-connection PUBLIC connection)
+ 
+ set(PLUGINS_SOURCES
+     src/maliit/plugins/abstractinputmethod.cpp
+@@ -213,7 +234,7 @@ endif()
+ 
+ add_library(maliit-plugins SHARED ${PLUGINS_SOURCES} ${PLUGINS_HEADER})
+ target_link_libraries(maliit-plugins PRIVATE maliit-common maliit-connection ${PLUGINS_LIBRARIES})
+-target_link_libraries(maliit-plugins PUBLIC Qt5::Core Qt5::Gui Qt5::Quick)
++target_link_libraries(maliit-plugins PUBLIC Qt::Core Qt::Gui Qt::Quick)
+ target_include_directories(maliit-plugins PRIVATE ${PLUGINS_INCLUDE_DIRS})
+ 
+ set_target_properties(maliit-plugins PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}
+@@ -288,14 +309,14 @@ add_definitions(-DMALIIT_FRAMEWORK_USE_INTERNAL_API
+ add_executable(maliit-server passthroughserver/main.cpp)
+ target_link_libraries(maliit-server maliit-plugins maliit-connection)
+ 
+-if(enable-qt5-inputcontext)
++if(enable-qt-inputcontext)
+     set(INPUT_CONTEXT_SOURCES
+             input-context/main.cpp
+             input-context/minputcontext.cpp
+             input-context/minputcontext.h)
+ 
+     add_library(maliitplatforminputcontextplugin MODULE ${INPUT_CONTEXT_SOURCES})
+-    target_link_libraries(maliitplatforminputcontextplugin maliit-connection Qt5::Quick)
++    target_link_libraries(maliitplatforminputcontextplugin maliit-connection Qt::Quick)
+ endif()
+ 
+ if(enable-wayland)
+@@ -307,31 +328,36 @@ if(enable-wayland)
+     ecm_add_qtwayland_client_protocol(INPUT_PANEL_SHELL_SOURCES PROTOCOL ${WAYLANDPROTOCOLS_PATH}/unstable/input-method/input-method-unstable-v1.xml BASENAME input-method-unstable-v1)
+ 
+     add_library(inputpanel-shell MODULE ${INPUT_PANEL_SHELL_SOURCES})
+-    target_link_libraries(inputpanel-shell Qt5::WaylandClient PkgConfig::XKBCOMMON Wayland::Client)
+-    target_include_directories(inputpanel-shell PRIVATE ${Qt5WaylandClient_PRIVATE_INCLUDE_DIRS} ${Qt5XkbCommonSupport_PRIVATE_INCLUDE_DIRS})
++    target_link_libraries(inputpanel-shell Qt::WaylandClient PkgConfig::XKBCOMMON Wayland::Client)
++    if (Qt6_FOUND)
++      target_link_libraries(inputpanel-shell Qt::WaylandGlobalPrivate)
++      target_include_directories(inputpanel-shell PRIVATE ${Qt6WaylandClient_PRIVATE_INCLUDE_DIRS} ${Qt6WaylandGlobalPrivate_PRIVATE_INCLUDE_DIRS} ${Qt6XkbCommonSupport_PRIVATE_INCLUDE_DIRS})
++    else()
++      target_include_directories(inputpanel-shell PRIVATE ${Qt5WaylandClient_PRIVATE_INCLUDE_DIRS} ${Qt5XkbCommonSupport_PRIVATE_INCLUDE_DIRS})
++    endif()
+ endif()
+ 
+ if(enable-examples)
+-    find_package(Qt5Widgets)
++    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+     add_executable(maliit-exampleapp-plainqt
+             examples/apps/plainqt/mainwindow.cpp
+             examples/apps/plainqt/mainwindow.h
+             examples/apps/plainqt/plainqt.cpp)
+-    target_link_libraries(maliit-exampleapp-plainqt Qt5::Gui Qt5::Widgets)
++    target_link_libraries(maliit-exampleapp-plainqt Qt::Gui Qt::Widgets)
+ 
+     add_library(cxxhelloworldplugin MODULE
+             examples/plugins/cxx/helloworld/helloworldinputmethod.cpp
+             examples/plugins/cxx/helloworld/helloworldinputmethod.h
+             examples/plugins/cxx/helloworld/helloworldplugin.cpp
+             examples/plugins/cxx/helloworld/helloworldplugin.h)
+-    target_link_libraries(cxxhelloworldplugin maliit-plugins Qt5::Widgets)
++    target_link_libraries(cxxhelloworldplugin maliit-plugins Qt::Widgets)
+ 
+     add_library(cxxoverrideplugin MODULE
+                 examples/plugins/cxx/override/overrideinputmethod.cpp
+                 examples/plugins/cxx/override/overrideinputmethod.h
+                 examples/plugins/cxx/override/overrideplugin.cpp
+                 examples/plugins/cxx/override/overrideplugin.h)
+-    target_link_libraries(cxxoverrideplugin maliit-plugins Qt5::Widgets)
++    target_link_libraries(cxxoverrideplugin maliit-plugins Qt::Widgets)
+ endif()
+ 
+ # Documentation
+@@ -395,7 +421,7 @@ install(FILES src/mimserver.h
+ install(FILES ${CMAKE_BINARY_DIR}/maliit-framework.pc ${CMAKE_BINARY_DIR}/maliit-plugins.pc ${CMAKE_BINARY_DIR}/maliit-server.pc
+         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+ install(FILES ${CMAKE_BINARY_DIR}/maliit-framework.prf ${CMAKE_BINARY_DIR}/maliit-plugins.prf ${CMAKE_BINARY_DIR}/maliit-defines.prf
+-        DESTINATION ${QT5_MKSPECS_INSTALL_DIR}/features)
++        DESTINATION ${QT_MKSPECS_INSTALL_DIR}/features)
+ 
+ install(EXPORT MaliitPluginsTargets FILE MaliitPluginsTargets.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MaliitPlugins)
+ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MaliitPluginsConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/MaliitPluginsConfigVersion.cmake
+@@ -432,12 +458,12 @@ if(enable-glib)
+ endif()
+ 
+ if(enable-qt5-inputcontext)
+-    install(TARGETS maliitplatforminputcontextplugin LIBRARY DESTINATION ${QT5_PLUGINS_INSTALL_DIR}/platforminputcontexts)
++    install(TARGETS maliitplatforminputcontextplugin LIBRARY DESTINATION ${QT_PLUGINS_INSTALL_DIR}/platforminputcontexts)
+ endif()
+ 
+ if(enable-wayland)
+     install(TARGETS inputpanel-shell
+-            LIBRARY DESTINATION ${QT5_PLUGINS_INSTALL_DIR}/wayland-shell-integration)
++            LIBRARY DESTINATION ${QT_PLUGINS_INSTALL_DIR}/wayland-shell-integration)
+ endif()
+ 
+ if(enable-dbus-activation)
+@@ -456,7 +482,7 @@ endif()
+ if(enable-tests)
+     enable_testing()
+ 
+-    find_package(Qt5Test)
++    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
+ 
+     set(TEST_PLUGINS_DIR ${CMAKE_BINARY_DIR}/tests/plugins)
+ 
+@@ -497,7 +523,7 @@ if(enable-tests)
+             tests/utils/core-utils.h
+             tests/utils/gui-utils.cpp
+             tests/utils/gui-utils.h)
+-    target_link_libraries(test-utils PUBLIC Qt5::Core Qt5::Gui Qt5::Test maliit-connection)
++    target_link_libraries(test-utils PUBLIC Qt::Core Qt::Gui Qt::Test maliit-connection)
+     target_include_directories(test-utils INTERFACE tests/utils)
+     target_compile_definitions(test-utils PUBLIC
+             -DMALIIT_TEST_PLUGINS_DIR="${CMAKE_INSTALL_FULL_LIBDIR}/maliit-framework-tests/plugins"
+@@ -508,7 +534,7 @@ if(enable-tests)
+             tests/stubs/mkeyboardstatetracker_stub.h
+             tests/stubs/fakeproperty.cpp
+             tests/stubs/fakeproperty.h)
+-    target_link_libraries(test-stubs PUBLIC Qt5::Core)
++    target_link_libraries(test-stubs PUBLIC Qt::Core)
+     target_include_directories(test-stubs INTERFACE tests/stubs)
+ 
+     function(create_test name)
+--- a/connection/mimserverconnection.h
++++ b/connection/mimserverconnection.h
+@@ -15,6 +15,7 @@
+ #define MIMSERVERCONNECTION_H
+ 
+ #include <maliit/namespace.h>
++#include <maliit/settingdata.h>
+ 
+ #include <QtCore>
+ 
+--- a/connection/waylandinputmethodconnection.cpp
++++ b/connection/waylandinputmethodconnection.cpp
+@@ -338,15 +338,15 @@ void WaylandInputMethodConnection::sendPreeditString(const QString &string,
+ 
+     if (replace_length > 0) {
+         int cursor = widgetState().value(CursorPositionAttribute).toInt();
+-        uint32_t index = string.midRef(qMin(cursor + replace_start, cursor), qAbs(replace_start)).toUtf8().size();
+-        uint32_t length = string.midRef(cursor + replace_start, replace_length).toUtf8().size();
++        uint32_t index = string.mid(qMin(cursor + replace_start, cursor), qAbs(replace_start)).toUtf8().size();
++        uint32_t length = string.mid(cursor + replace_start, replace_length).toUtf8().size();
+         d->context()->delete_surrounding_text(index, length);
+     }
+ 
+     Q_FOREACH (const Maliit::PreeditTextFormat& format, preedit_formats) {
+         QtWayland::zwp_text_input_v1::preedit_style style = preeditStyleFromMaliit(format.preeditFace);
+-        uint32_t index = string.leftRef(format.start).toUtf8().size();
+-        uint32_t length = string.leftRef(format.start + format.length).toUtf8().size() - index;
++        uint32_t index = string.left(format.start).toUtf8().size();
++        uint32_t length = string.left(format.start + format.length).toUtf8().size() - index;
+         qCDebug(lcWaylandConnection) << Q_FUNC_INFO << "preedit_styling" << index << length;
+         d->context()->preedit_styling(index, length, style);
+     }
+@@ -356,8 +356,8 @@ void WaylandInputMethodConnection::sendPreeditString(const QString &string,
+         cursor_pos = string.size() + 1 - cursor_pos;
+     }
+ 
+-    qCDebug(lcWaylandConnection) << Q_FUNC_INFO << "preedit_cursor" << string.leftRef(cursor_pos).toUtf8().size();
+-    d->context()->preedit_cursor(string.leftRef(cursor_pos).toUtf8().size());
++    qCDebug(lcWaylandConnection) << Q_FUNC_INFO << "preedit_cursor" << string.left(cursor_pos).toUtf8().size();
++    d->context()->preedit_cursor(string.left(cursor_pos).toUtf8().size());
+     qCDebug(lcWaylandConnection) << Q_FUNC_INFO << "preedit_string" << string;
+     d->context()->preedit_string(d->context()->serial(), string, string);
+ }
+@@ -384,12 +384,12 @@ void WaylandInputMethodConnection::sendCommitString(const QString &string,
+ 
+     if (replace_length > 0) {
+         int cursor = widgetState().value(CursorPositionAttribute).toInt();
+-        uint32_t index = string.midRef(qMin(cursor + replace_start, cursor), qAbs(replace_start)).toUtf8().size();
+-        uint32_t length = string.midRef(cursor + replace_start, replace_length).toUtf8().size();
++        uint32_t index = string.mid(qMin(cursor + replace_start, cursor), qAbs(replace_start)).toUtf8().size();
++        uint32_t length = string.mid(cursor + replace_start, replace_length).toUtf8().size();
+         d->context()->delete_surrounding_text(index, length);
+     }
+ 
+-    cursor_pos = string.leftRef(cursor_pos).toUtf8().size();
++    cursor_pos = string.left(cursor_pos).toUtf8().size();
+     d->context()->cursor_position(cursor_pos, cursor_pos);
+     d->context()->commit_string(d->context()->serial(), string);
+ }
+@@ -470,8 +470,8 @@ void WaylandInputMethodConnection::setSelection(int start, int length)
+         return;
+ 
+     QString surrounding = widgetState().value(SurroundingTextAttribute).toString();
+-    uint32_t index(surrounding.leftRef(start + length).toUtf8().size());
+-    uint32_t anchor(surrounding.leftRef(start).toUtf8().size());
++    uint32_t index(surrounding.left(start + length).toUtf8().size());
++    uint32_t anchor(surrounding.left(start).toUtf8().size());
+ 
+     d->context()->cursor_position(index, anchor);
+     d->context()->commit_string(d->context()->serial(), QString());
+--- a/examples/plugins/cxx/helloworld/helloworldinputmethod.cpp
++++ b/examples/plugins/cxx/helloworld/helloworldinputmethod.cpp
+@@ -16,8 +16,8 @@
+ #include <maliit/plugins/abstractinputmethodhost.h>
+ 
+ #include <QDebug>
+-#include <QApplication>
+-#include <QDesktopWidget>
++#include <QGuiApplication>
++#include <QScreen>
+ 
+ namespace {
+ 
+@@ -89,7 +89,7 @@ void HelloWorldInputMethod::show()
+     }
+ 
+     // Set size of our container to screen size
+-    const QSize screenSize = QApplication::desktop()->screenGeometry().size();
++    const QSize screenSize = QGuiApplication::primaryScreen()->size();
+     mainWidget->parentWidget()->resize(screenSize);
+ 
+     // Set size of the input method
+--- a/examples/plugins/cxx/override/overrideinputmethod.cpp
++++ b/examples/plugins/cxx/override/overrideinputmethod.cpp
+@@ -16,8 +16,8 @@
+ #include <maliit/plugins/abstractinputmethodhost.h>
+ 
+ #include <QDebug>
+-#include <QApplication>
+-#include <QDesktopWidget>
++#include <QGuiApplication>
++#include <QScreen>
+ #include <QKeyEvent>
+ 
+ namespace {
+@@ -81,7 +81,7 @@ void OverrideInputMethod::show()
+     }
+ 
+     // Set size of the input method
+-    const QSize &screenSize = QApplication::desktop()->screenGeometry().size();
++    const QSize &screenSize = QGuiApplication::primaryScreen()->size();
+     const QSize size(screenSize.width() - 200, 200);
+ 
+     surface->setGeometry(QRect(QPoint((screenSize.width() - size.width()) / 2,
+--- a/input-context/minputcontext.cpp
++++ b/input-context/minputcontext.cpp
+@@ -624,7 +624,7 @@ void MInputContext::onInvokeAction(const QString &action, const QKeySequence &se
+         const int modifiers = sequence[i] & AllModifiers;
+         QString text("");
+         if (modifiers == Qt::NoModifier || modifiers == Qt::ShiftModifier) {
+-            text = QString(key);
++            text = QString(QChar::fromLatin1(key));
+         }
+         keyEvent(QEvent::KeyPress, key, modifiers, text, false, 1);
+         keyEvent(QEvent::KeyRelease, key, modifiers, text, false, 1);
+--- a/src/msharedattributeextensionmanager.cpp
++++ b/src/msharedattributeextensionmanager.cpp
+@@ -39,7 +39,7 @@ MSharedAttributeExtensionManager::~MSharedAttributeExtensionManager()
+ void MSharedAttributeExtensionManager::registerPluginSetting(const QString &fullName, Maliit::SettingEntryType type,
+                                                              QVariantMap attributes)
+ {
+-    QString key = fullName.section(1, -1);
++    QString key = fullName.section(QChar(), 0);
+     QSharedPointer<MSharedAttributeExtensionManagerPluginSetting> value(new MSharedAttributeExtensionManagerPluginSetting(key, type, attributes));
+ 
+     sharedAttributeExtensions[key] = value;
+--- a/src/quick/inputmethodquick.h
++++ b/src/quick/inputmethodquick.h
+@@ -16,6 +16,7 @@
+ 
+ #include <maliit/plugins/abstractinputmethod.h>
+ #include <maliit/plugins/keyoverride.h>
++#include "keyoverridequick.h"
+ #include "maliitquick.h"
+ 
+ #include <QEvent>
+--- a/tests/ft_mimpluginmanager/ft_mimpluginmanager.cpp
++++ b/tests/ft_mimpluginmanager/ft_mimpluginmanager.cpp
+@@ -15,7 +15,6 @@
+ #include <unknownplatform.h>
+ 
+ #include <QProcess>
+-#include <QRegExp>
+ #include <QGuiApplication>
+ #include <QPointer>
+ 
+--- a/tests/ut_mimpluginmanager/ut_mimpluginmanager.cpp
++++ b/tests/ut_mimpluginmanager/ut_mimpluginmanager.cpp
+@@ -11,7 +11,6 @@
+ #include "core-utils.h"
+ 
+ #include <QProcess>
+-#include <QRegExp>
+ #include <QCoreApplication>
+ #include <QPointer>
+ #include <QTimer>
+--- a/tests/ut_mimpluginmanagerconfig/ut_mimpluginmanagerconfig.cpp
++++ b/tests/ut_mimpluginmanagerconfig/ut_mimpluginmanagerconfig.cpp
+@@ -19,7 +19,6 @@
+ 
+ #include <QTest>
+ #include <QProcess>
+-#include <QRegExp>
+ #include <QCoreApplication>
+ #include <QPointer>
+ #include <QTimer>
+--- a/tests/utils/core-utils.cpp
++++ b/tests/utils/core-utils.cpp
+@@ -16,6 +16,7 @@
+ #include <QtDebug>
+ #include <QtCore>
+ #include <QtTest>
++#include <QRegularExpression>
+ 
+ namespace {
+     const QString TestingInSandboxEnvVariable("TESTING_IN_SANDBOX");
+@@ -30,12 +31,12 @@ namespace {
+     // Returns true on success, false on error
+     bool setPathFromEnvironmentVariable(QString *path, QString envVar) {
+         const QStringList env(QProcess::systemEnvironment());
+-        int index = env.indexOf(QRegExp('^' + envVar + "=.*", Qt::CaseInsensitive));
++        int index = env.indexOf(QRegularExpression('^' + envVar + "=.*", QRegularExpression::CaseInsensitiveOption));
+ 
+         if (index != -1) {
+             QString pathCandidate = env.at(index);
+             pathCandidate = pathCandidate.remove(
+-                                QRegExp('^' + envVar + '=', Qt::CaseInsensitive));
++                                QRegularExpression('^' + envVar + '=', QRegularExpression::CaseInsensitiveOption));
+             if (!pathCandidate.isEmpty()) {
+                 *path = pathCandidate;
+                 return true;
+@@ -57,11 +58,11 @@ bool isTestingInSandbox()
+ {
+     bool testingInSandbox = false;
+     const QStringList env(QProcess::systemEnvironment());
+-    int index = env.indexOf(QRegExp('^' + TestingInSandboxEnvVariable + "=.*", Qt::CaseInsensitive));
++    int index = env.indexOf(QRegularExpression('^' + TestingInSandboxEnvVariable + "=.*", QRegularExpression::CaseInsensitiveOption));
+     if (index != -1) {
+         QString statusCandidate = env.at(index);
+         statusCandidate = statusCandidate.remove(
+-                              QRegExp('^' + TestingInSandboxEnvVariable + '=', Qt::CaseInsensitive));
++                              QRegularExpression('^' + TestingInSandboxEnvVariable + '=', QRegularExpression::CaseInsensitiveOption));
+         bool statusOk = false;
+         int status = statusCandidate.toInt(&statusOk);
+         if (statusOk && (status == 0 || status == 1)) {

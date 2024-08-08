@@ -1,0 +1,134 @@
+Patch-Source: https://github.com/maliit/framework/pull/122
+--- a/common/maliit/namespace.h
++++ b/common/maliit/namespace.h
+@@ -16,6 +16,7 @@
+ 
+ #include <QMetaType>
+ #include <QSharedPointer>
++#include <QList>
+ 
+ //! \ingroup common
+ namespace Maliit {
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -35,9 +35,11 @@ endif()
+ 
+ if(Qt6_FOUND)
+   set(QT_VERSION_MAJOR 6)
++  set(QT_MIN_VERSION "6.0.0")
+ else()
+   find_package(Qt5 REQUIRED COMPONENTS Core DBus Gui Quick)
+   set(QT_VERSION_MAJOR 5)
++  set(QT_MIN_VERSION "5.14")
+ endif()
+ 
+ if(NOT DEFINED QT_PLUGINS_INSTALL_DIR)
+@@ -54,7 +56,7 @@ if(enable-wayland)
+     if (Qt6_FOUND)
+       find_package(Qt6 REQUIRED COMPONENTS WaylandClient WaylandGlobalPrivate)
+     else()
+-      find_package(Qt5 5.14 REQUIRED COMPONENTS WaylandClient XkbCommonSupport)
++      find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS WaylandClient XkbCommonSupport)
+     endif()
+     find_package(WaylandProtocols REQUIRED PRIVATE)
+     find_package(QtWaylandScanner REQUIRED)
+--- a/src/MaliitPluginsConfig.cmake.in
++++ b/src/MaliitPluginsConfig.cmake.in
+@@ -1,7 +1,7 @@
+ include(CMakeFindDependencyMacro)
+ 
+-find_dependency(Qt5Core @Qt5Core_VERSION@)
+-find_dependency(Qt5Gui @Qt5Gui_VERSION@)
+-find_dependency(Qt5Quick @Qt5Quick_VERSION@)
++find_dependency(Qt@QT_VERSION_MAJOR@Core @QT_MIN_VERSION@)
++find_dependency(Qt@QT_VERSION_MAJOR@Gui @QT_MIN_VERSION@)
++find_dependency(Qt@QT_VERSION_MAJOR@Quick @QT_MIN_VERSION@)
+ 
+-include("${CMAKE_CURRENT_LIST_DIR}/MaliitPluginsTargets.cmake")
+\ No newline at end of file
++include("${CMAKE_CURRENT_LIST_DIR}/MaliitPluginsTargets.cmake")
+--- a/src/qt/plugins/shellintegration/qwaylandinputpanelshellintegration.cpp
++++ b/src/qt/plugins/shellintegration/qwaylandinputpanelshellintegration.cpp
+@@ -1,4 +1,4 @@
+-/* 
++/*
+  * Copyright (c) 2017 Jan Arne Petersen
+  *
+  * This library is free software; you can redistribute it and/or
+@@ -14,15 +14,8 @@
+ 
+ #include "qwaylandinputpanelsurface.h"
+ 
+-QT_BEGIN_NAMESPACE
+-
+-namespace QtWaylandClient
+-{
+-
+ QWaylandInputPanelShellIntegration::QWaylandInputPanelShellIntegration()
+-    : QWaylandShellIntegration()
+-{
+-}
++    : QWaylandShellIntegrationTemplate(1) {}
+ 
+ QWaylandInputPanelShellIntegration::~QWaylandInputPanelShellIntegration()
+ {
+@@ -30,7 +23,7 @@ QWaylandInputPanelShellIntegration::~QWaylandInputPanelShellIntegration()
+ 
+ bool QWaylandInputPanelShellIntegration::initialize(QWaylandDisplay *display)
+ {
+-    auto result = QWaylandShellIntegration::initialize(display);
++    auto result = QWaylandShellIntegrationTemplate::initialize(display);
+     const auto globals = display->globals();
+     for (auto global: globals) {
+         if (global.interface == QLatin1String("zwp_input_panel_v1")) {
+@@ -48,7 +41,3 @@ QWaylandInputPanelShellIntegration::createShellSurface(QWaylandWindow *window)
+ 
+     return new QWaylandInputPanelSurface(ip_surface, window);
+ }
+-
+-}
+-
+-QT_END_NAMESPACE
+\ No newline at end of file
+--- a/src/qt/plugins/shellintegration/qwaylandinputpanelshellintegration.h
++++ b/src/qt/plugins/shellintegration/qwaylandinputpanelshellintegration.h
+@@ -1,4 +1,4 @@
+-/* 
++/*
+  * Copyright (c) 2017 Jan Arne Petersen
+  *
+  * This library is free software; you can redistribute it and/or
+@@ -11,17 +11,16 @@
+ #ifndef QWAYLANDINPUTPANELSHELLINTEGRATION_H
+ #define QWAYLANDINPUTPANELSHELLINTEGRATION_H
+ 
+-#include <QtWaylandClient/private/qwaylandshellintegration_p.h>
+-
+ #include "qwayland-input-method-unstable-v1.h"
++#include <QtWaylandClient/private/qwayland-text-input-unstable-v1.h>
++#include <QtWaylandClient/private/qwaylandclientshellapi_p.h>
+ 
+-QT_BEGIN_NAMESPACE
+-
+-namespace QtWaylandClient
+-{
++using namespace QtWaylandClient;
+ 
+-class QWaylandInputPanelShellIntegration: public QWaylandShellIntegration
+-{
++class QWaylandInputPanelShellIntegration
++    : public QWaylandShellIntegrationTemplate<
++          QWaylandInputPanelShellIntegration>,
++      public QtWayland::zwp_text_input_manager_v1 {
+ public:
+     QWaylandInputPanelShellIntegration();
+     ~QWaylandInputPanelShellIntegration() override;
+@@ -33,8 +32,4 @@ class QWaylandInputPanelShellIntegration: public QWaylandShellIntegration
+     QScopedPointer<QtWayland::zwp_input_panel_v1> m_panel;
+ };
+ 
+-}
+-
+-QT_END_NAMESPACE
+-
+ #endif //QWAYLANDINPUTPANELSHELLINTEGRATION_H
