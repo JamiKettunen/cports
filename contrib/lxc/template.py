@@ -40,8 +40,8 @@ url = "https://linuxcontainers.org/lxc"
 source = f"https://github.com/lxc/lxc/archive/refs/tags/v{pkgver}.tar.gz"
 sha256 = "4d8805adecd80ce9270fca5caf06a732bf043b5ad3a994ad1b976071517ff976"
 file_modes = {"usr/libexec/lxc/lxc-user-nic": ("root", "root", 0o4755)}
-# CFI: lxc-info crash with waydroid
-hardening = ["vis", "!cfi"]
+# FIXME: even vis breaks lxc-info upon launching waydroid
+hardening = ["!vis", "!cfi"]
 
 
 # TODO: look into src/tests/? should they run here? install into -tests subpkg or not at all?
