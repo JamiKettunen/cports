@@ -1,6 +1,6 @@
 pkgname = "virt-manager"
 pkgver = "4.1.0"
-pkgrel = 1
+pkgrel = 2
 build_style = "python_pep517"
 make_check_args = [
     "-k",
@@ -63,6 +63,13 @@ source = (
     f"https://releases.pagure.org/virt-manager/virt-manager-{pkgver}.tar.gz"
 )
 sha256 = "950681d7b32dc61669278ad94ef31da33109bf6fcf0426ed82dfd7379aa590a2"
+
+_arch = self.profile().arch
+match _arch:
+    case "x86_64" | "aarch64" | "riscv64":
+        depends += [f"qemu-system-{_arch}"]
+    case "ppc64le" | "ppc64":
+        depends += ["qemu-system-ppc64"]
 
 
 def post_install(self):
