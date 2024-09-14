@@ -1,0 +1,7 @@
+type = scripted
+command = /usr/libexec/mount-android.wrapper
+restart = no
+stop-command = /usr/lib/lxc-android/umount-android
+depends-on = early-fs-fstab.target
+before = early-fs-local.target
+logfile = /var/log/android-mounts.log

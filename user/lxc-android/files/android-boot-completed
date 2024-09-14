@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+timeout 0.5 setprop sys.boot_completed 1
+touch /run/dinit/completed-boot

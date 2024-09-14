@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Clear pre-existing logs (if any exist)
+>/var/log/logcat.log
+
+# Wait for the container
+if ! lxc-wait -n android -t 10 -s "RUNNING"; then
+    echo "android container failed to start within 10 seconds"
+    exit 1
+fi
+
+# Output Android logcat stdout/stderr and block until
+logcat
