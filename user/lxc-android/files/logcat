@@ -1,0 +1,4 @@
+type = process
+command = /usr/libexec/logcat.wrapper
+depends-on = android-mounts
+logfile = /var/log/logcat.log
