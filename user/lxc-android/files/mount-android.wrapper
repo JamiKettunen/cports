@@ -1,0 +1,26 @@
+#!/bin/sh
+>/var/log/android-mounts.log
+
+# undo mess Halium initrd left behind (ubuntu.img), we want all cleanly under /android
+umount /var/lib/lxc/android/rootfs /android/system
+
+# cleanup also e.g. leftover /dev/mapper/{system,vendor}_a from Halium initrd
+# TODO: does this affect /android already mounted from /dev/mapper/system_a?
+for s in $(dmsetup ls); do
+    case ${s} in system*|vendor*) dmsetup remove_all; break ;; esac
+done
+
+#mkdir -p /android
+/usr/lib/lxc-android/mount-android || exit 1
+
+# duplicate some Halium initrd work in case the service restarts
+# TODO: also mount userdata if needed (booting non-Halium initrd)?
+#mkdir -p /userdata
+#mount /dev/disk/by-partlabel/userdata /userdata
+#mkdir -p /userdata/android-data /userdata/cache
+if [ -d /userdata/android-data ] && ! grep -q " /android/data " /proc/mounts; then
+    mount -o bind /userdata/android-data /android/data || exit 1
+fi
+if [ ! -e /userdata/cache ] || ! grep -q " /android/cache " /proc/mounts; then
+    mount -o bind /userdata/cache /android/cache || exit 1
+fi

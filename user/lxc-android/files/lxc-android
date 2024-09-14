@@ -1,0 +1,7 @@
+type = process
+command = /usr/libexec/lxc-android.wrapper
+stop-command = /usr/lib/lxc-android/lxc-android-stop
+depends-on = android-mounts
+ready-notification = pipevar:LXC_ANDROID_READY_FD
+logfile = /var/log/lxc-android.log
+stop-timeout = 15.0

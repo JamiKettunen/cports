@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+>/var/log/lxc-android.log
+
+ANDROID_SDK_VERSION=$(sed -n 's/ro.build.version.sdk=//p' /system/build.prop)
+if [ "$ANDROID_SDK_VERSION" -ge 29 ]; then
+	# A10+ won't boot without this, tmpfs mounted in /var/lib/lxc/android/pre-start.sh
+	# and /usr/lib/lxc-android/lxc-android-notify later populates it
+	[ -L /apex ] || ln -sr /android/apex /apex
+
+	# libhybris
+	[ -L /linkerconfig ] || ln -sr /android/linkerconfig /linkerconfig
+fi
+
+# NOTE: non-blocking so notify script can provide proper ready-notification
+lxc-start -n android
+
+/usr/lib/lxc-android/lxc-android-notify
