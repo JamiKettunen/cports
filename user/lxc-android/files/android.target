@@ -1,0 +1,6 @@
+# Halium LXC container Android system init has been done
+
+type = scripted
+command = /usr/bin/setprop sys.boot_completed 1
+depends-on = lxc-android
+before = login.target
