@@ -1,0 +1,59 @@
+diff --git a/hybris/common/mm/Makefile.am b/hybris/common/mm/Makefile.am
+index 4fbf862..89a4f74 100644
+--- a/hybris/common/mm/Makefile.am
++++ b/hybris/common/mm/Makefile.am
+@@ -39,7 +39,6 @@ mm_la_CPPFLAGS = \
+ 	$(ARCH_FLAGS) \
+ 	$(ANDROID_HEADERS_CFLAGS)
+ mm_la_LDFLAGS = \
+-	-lsupc++ \
+ 	-module \
+ 	-avoid-version
+ 
+diff --git a/hybris/common/n/Makefile.am b/hybris/common/n/Makefile.am
+index 02c56c2..3f2c1eb 100644
+--- a/hybris/common/n/Makefile.am
++++ b/hybris/common/n/Makefile.am
+@@ -43,7 +43,6 @@ n_la_CPPFLAGS = \
+ 	$(ARCH_FLAGS) \
+ 	$(ANDROID_HEADERS_CFLAGS)
+ n_la_LDFLAGS = \
+-	-lsupc++ \
+ 	-module \
+ 	-avoid-version
+ 
+diff --git a/hybris/common/o/Makefile.am b/hybris/common/o/Makefile.am
+index 3ef8e2c..dcac760 100644
+--- a/hybris/common/o/Makefile.am
++++ b/hybris/common/o/Makefile.am
+@@ -55,7 +55,6 @@ o_la_CPPFLAGS += -DHAS_ANDROID_9_0_0
+ endif
+ 
+ o_la_LDFLAGS = \
+-	-lsupc++ \
+ 	-module \
+ 	-avoid-version
+ 
+diff --git a/hybris/common/q/Makefile.am b/hybris/common/q/Makefile.am
+index 2010153..ba6ae85 100644
+--- a/hybris/common/q/Makefile.am
++++ b/hybris/common/q/Makefile.am
+@@ -66,7 +66,6 @@ q_la_CPPFLAGS += -DHAS_ANDROID_11_0_0
+ endif
+ 
+ q_la_LDFLAGS = \
+-	-lsupc++ \
+ 	-module \
+ 	-avoid-version
+ 
+diff --git a/hybris/common/Makefile.am b/hybris/common/Makefile.am
+index 9bfc1db..f71874a 100644
+--- a/hybris/common/Makefile.am
++++ b/hybris/common/Makefile.am
+@@ -99,6 +99,5 @@ libhybris_common_la_LDFLAGS = \
+ 	-lrt \
+ 	-pthread \
+ 	-lc \
+-	-lstdc++ \
+ 	-lpthread \
+ 	-version-info "$(LT_CURRENT)":"$(LT_REVISION)":"$(LT_AGE)"

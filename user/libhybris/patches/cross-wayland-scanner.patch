@@ -1,0 +1,22 @@
+--- a/hybris/platforms/common/Makefile.am
++++ b/hybris/platforms/common/Makefile.am
+@@ -20,7 +20,7 @@ BUILT_SOURCES = wayland-android-protocol.c \
+ 		wayland-android-server-protocol.h
+ 
+ %-protocol.c : %.xml
+-	$(AM_V_GEN)$(WAYLAND_SCANNER) code < $< > $@
++	$(AM_V_GEN)$(WAYLAND_SCANNER) private-code < $< > $@
+ 
+ %-server-protocol.h : %.xml
+ 	$(AM_V_GEN)$(WAYLAND_SCANNER) server-header < $< > $@
+--- a/hybris/configure.ac
++++ b/hybris/configure.ac
+@@ -86,7 +86,7 @@ AC_ARG_ENABLE(wayland,
+ 	PKG_CHECK_MODULES(WAYLAND_EGL, [wayland-egl >= 1.15],, exit)
+ 	WAYLAND_PREFIX=`$PKG_CONFIG --variable=prefix wayland-client`
+ 
+-	AC_PATH_PROG([WAYLAND_SCANNER], [wayland-scanner],, [${WAYLAND_PREFIX}/bin$PATH_SEPARATOR$PATH])
++	AC_PATH_PROG([WAYLAND_SCANNER], [wayland-scanner],, [/usr/bin$PATH_SEPARATOR$PATH])
+ 	AC_DEFINE(WANT_WAYLAND, [], [We want Wayland support])
+ ],
+   [wayland="no"])

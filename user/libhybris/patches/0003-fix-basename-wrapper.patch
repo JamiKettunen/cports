@@ -1,0 +1,26 @@
+diff --git a/hybris/common/n/hybris_compat.cpp b/hybris/common/n/hybris_compat.cpp
+index 5238409..6aaf6f6 100644
+--- a/hybris/common/n/hybris_compat.cpp
++++ b/hybris/common/n/hybris_compat.cpp
+@@ -31,7 +31,7 @@
+ #ifndef __GLIBC__
+ const char *gnu_basename(const char *path)
+ {
+-    char *base = strrchr(path, '/');
++    const char *base = strrchr(path, '/');
+     return base ? base + 1 : path;
+ }
+ #endif
+diff --git a/hybris/common/o/hybris_compat.cpp b/hybris/common/o/hybris_compat.cpp
+index 5238409..6aaf6f6 100644
+--- a/hybris/common/o/hybris_compat.cpp
++++ b/hybris/common/o/hybris_compat.cpp
+@@ -31,7 +31,7 @@
+ #ifndef __GLIBC__
+ const char *gnu_basename(const char *path)
+ {
+-    char *base = strrchr(path, '/');
++    const char *base = strrchr(path, '/');
+     return base ? base + 1 : path;
+ }
+ #endif

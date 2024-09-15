@@ -1,0 +1,28 @@
+--- a/hybris/common/q/linker.cpp
++++ b/hybris/common/q/linker.cpp
+@@ -1468,7 +1468,9 @@ static bool load_library(android_namespace_t* ns,
+   // Open the file.
+   int fd = open_library(ns, zip_archive_cache, name, needed_by, &file_offset, &realpath);
+   if (fd == -1) {
+-    DL_ERR("library \"%s\" not found", name);
++    const char *env = getenv("HYBRIS_LD_DEBUG");
++    if (env != NULL)
++      DL_ERR("library \"%s\" not found", name);
+     return false;
+   }
+ 
+diff --git a/hybris/common/o/linker.cpp b/hybris/common/o/linker.cpp
+index a95deb5..a490ad1 100644
+--- a/hybris/common/o/linker.cpp
++++ b/hybris/common/o/linker.cpp
+@@ -1414,7 +1414,9 @@ static bool load_library(android_namespace_t* ns,
+   // Open the file.
+   int fd = open_library(ns, zip_archive_cache, name, needed_by, &file_offset, &realpath);
+   if (fd == -1) {
+-    DL_ERR("library \"%s\" not found", name);
++    const char *env = getenv("HYBRIS_LD_DEBUG");
++    if (env != NULL)
++      DL_ERR("library \"%s\" not found", name);
+     return false;
+   }
+ 
