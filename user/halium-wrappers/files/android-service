@@ -1,0 +1,6 @@
+type = process
+command = /usr/libexec/android-service.wrapper start
+stop-command = /usr/libexec/android-service.wrapper stop
+load-options = export-service-name
+depends-on = android.target
+ready-notification = pipevar:ANDROID_SERVICE_READY_FD

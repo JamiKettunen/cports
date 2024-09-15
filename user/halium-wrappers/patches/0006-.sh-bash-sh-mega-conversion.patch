@@ -1,0 +1,96 @@
+From e65672941c0f48f52217e3c3335272e4577ad014 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Tue, 17 Sep 2024 22:25:01 +0300
+Subject: [PATCH 06/14] *.sh: bash -> sh mega-conversion
+
+no point in requiring bash here so we might as well switch, also:
+- drop unneeded head call since whereis will always return one line with
+  a known -f value
+- fix ${@} quoting issue for final exec
+---
+ src/android-service.sh | 14 ++++++--------
+ src/halium-lxc-exec.sh | 11 ++++++-----
+ 2 files changed, 12 insertions(+), 13 deletions(-)
+
+diff --git a/src/android-service.sh b/src/android-service.sh
+index a36628d..527833a 100644
+--- a/src/android-service.sh
++++ b/src/android-service.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/bin/sh
+ 
+ #HWCOMPOSER_SERVICES="(vendor.hwcomposer-.*|vendor.qti.hardware.display.composer)"
+ ANDROID_SERVICE_SINGLE="${1}"
+@@ -17,7 +17,7 @@ current_status() {
+ }
+ 
+ start() {
+-	[ "$(current_status)" == "running" ] && return 0
++	[ "$(current_status)" = "running" ] && return 0
+ 
+ 	# Start operation is weird since it's kickstarted by Android's
+ 	# init - thus we assume that if ${ANDROID_SERVICE_STAMP} doesn't
+@@ -37,18 +37,16 @@ start() {
+ }
+ 
+ stop() {
+-	[ "$(current_status)" == "stopped" ] && return 0
++	[ "$(current_status)" = "stopped" ] && return 0
+ 
+ 	# Try to gracefully stop via the Android-provided facilities
+ 	android_stop ${service_service}
+ 
+-	if [ "${ANDROID_SERVICE_FORCE_KILL}" != "yes" ]; then
++	if [ -z "${ANDROID_SERVICE_FORCE_KILL}" ]; then
+ 		WAITFORSERVICE_VALUE="stopped" timeout 5 waitforservice init.svc.${service_service}
+-	fi
+-
+-	if [ "${ANDROID_SERVICE_FORCE_KILL}" == "yes" ] ; then
++	else
+ 		pid=$(lxc-attach -n ${LXC_CONTAINER_NAME} -- /bin/pidof ${service_process} \;)
+-		[ "${pid}" != "" ] && android_kill -9 ${pid}
++		[ -n "${pid}" ] && android_kill -9 ${pid}
+ 		setprop init.svc.${service_service} stopped
+ 	fi
+ }
+diff --git a/src/halium-lxc-exec.sh b/src/halium-lxc-exec.sh
+index f099b89..49359c8 100755
+--- a/src/halium-lxc-exec.sh
++++ b/src/halium-lxc-exec.sh
+@@ -1,21 +1,22 @@
+-#!/bin/bash
++#!/bin/sh
+ 
+ error() {
+ 	echo "E: $@" >&2
+ 	exit 1
+ }
+ 
+-TARGET_BINARY="${0/android_/}"
++HOST_BINARY="${0##*/}"
++TARGET_BINARY="${HOST_BINARY#android_}"
+ LXC_CONTAINER_NAME="android"
+ LXC_CONTAINER_PATH="/var/lib/lxc/${LXC_CONTAINER_NAME}/rootfs"
+ ANDROID_SEARCH_PATH="${LXC_CONTAINER_PATH}/system/bin ${LXC_CONTAINER_PATH}/system/xbin ${LXC_CONTAINER_PATH}/rootfs/vendor/bin/"
+ 
+ ########################################################################
+ 
+-[ "${UID}" == 0 ] || error "This wrapper must be run from root"
++[ $(id -u) -eq 0 ] || error "This wrapper must be run as root"
+ [ -e "${LXC_CONTAINER_PATH}" ] || error "Unable to find LXC container"
+ 
+-found_path=$(whereis -b -B ${ANDROID_SEARCH_PATH} -f ${TARGET_BINARY} | head -n 1 | awk '{ print $2 }')
++found_path=$(whereis -b -B ${ANDROID_SEARCH_PATH} -f ${TARGET_BINARY} | awk '{ print $2 }')
+ 
+ [ -n "${found_path}" ] || error "Unable to find ${TARGET_BINARY}"
+ 
+@@ -23,4 +24,4 @@ found_path=$(whereis -b -B ${ANDROID_SEARCH_PATH} -f ${TARGET_BINARY} | head -n
+ unset LD_PRELOAD
+ 
+ # Finally execute
+-exec /usr/bin/lxc-attach -n ${LXC_CONTAINER_NAME} -- ${found_path/${LXC_CONTAINER_PATH}/} ${@} \;
++exec /usr/bin/lxc-attach -n ${LXC_CONTAINER_NAME} -- ${found_path#${LXC_CONTAINER_PATH}} "${@}" \;
+-- 
+2.46.0
+

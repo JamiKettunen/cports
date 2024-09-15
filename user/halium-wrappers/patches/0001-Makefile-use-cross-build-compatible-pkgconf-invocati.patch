@@ -1,0 +1,33 @@
+From 7f3a99f1ac95007e1de138ae9360e152ddf9d3b0 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Sun, 15 Sep 2024 04:13:23 +0300
+Subject: [PATCH 01/14] Makefile: use cross-build compatible pkgconf invocation
+
+---
+ src/Makefile | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/src/Makefile b/src/Makefile
+index 1908d35..31a3acd 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -1,12 +1,13 @@
++PKG_CONFIG ?= pkg-config
+ TRIPLET ?= $(shell gcc -dumpmachine)
+ DESTDIR ?= /
+ 
+ PACKAGES = libandroid-properties
+ GLESSHADERCACHE_PACKAGES = glesv2 gl
+ 
+-CFLAGS = -O2 $(shell pkg-config --cflags $(PACKAGES))
+-LIBS = $(shell pkg-config --libs $(PACKAGES))
+-GLESSHADERCACHE_LIBS = $(shell pkg-config --libs $(GLESSHADERCACHE_PACKAGES))
++CFLAGS = -O2 $(shell $(PKG_CONFIG) --cflags $(PACKAGES))
++LIBS = $(shell $(PKG_CONFIG) --libs $(PACKAGES))
++GLESSHADERCACHE_LIBS = $(shell $(PKG_CONFIG) --libs $(GLESSHADERCACHE_PACKAGES))
+ 
+ SYMLINKS = \
+ 	android_bootctl \
+-- 
+2.46.0
+

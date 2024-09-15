@@ -1,0 +1,27 @@
+From 4ed6fc56a9e66b341256724fd1d378c7177854e0 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Tue, 17 Sep 2024 21:30:09 +0300
+Subject: [PATCH 03/14] Makefile: build all binaries as expected
+
+otherwise they'll be built during install phase which does work but this
+is better
+---
+ src/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Makefile b/src/Makefile
+index eb864e8..2db78cb 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -23,7 +23,7 @@ SYMLINKS = \
+ 	logcat \
+ 	lshal
+ 
+-all: waitforservice libtls-padding.so
++all: waitforservice libtls-padding.so libglesshadercache.so libgtk6216workaround.so
+ 
+ waitforservice: waitforservice.c
+ 	# hybris-common lacks a proper pkg-config definition
+-- 
+2.46.0
+

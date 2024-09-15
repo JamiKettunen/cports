@@ -1,0 +1,43 @@
+From 44df48554f4161d6d5779061b9ffa1a3959902a2 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Tue, 17 Sep 2024 21:31:06 +0300
+Subject: [PATCH 02/14] Makefile: allow changing sbin directory
+
+to make packaging easier for usrmerge distributions
+---
+ src/Makefile | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/Makefile b/src/Makefile
+index 31a3acd..eb864e8 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -1,6 +1,7 @@
+ PKG_CONFIG ?= pkg-config
+ TRIPLET ?= $(shell gcc -dumpmachine)
+ DESTDIR ?= /
++SBINDIR ?= /usr/sbin
+ 
+ PACKAGES = libandroid-properties
+ GLESSHADERCACHE_PACKAGES = glesv2 gl
+@@ -39,7 +40,7 @@ libglesshadercache.so: glesshadercache.c
+ 
+ install: waitforservice libtls-padding.so libglesshadercache.so libgtk6216workaround.so halium-lxc-exec.sh android-service.sh systemd/android-service@.service systemd/android-service@hwcomposer.service.d/10-hwcomposer.conf
+ 	install -d $(DESTDIR)/usr/bin
+-	install -d $(DESTDIR)/usr/sbin
++	install -d $(DESTDIR)$(SBINDIR)
+ 	install -d $(DESTDIR)/usr/lib/halium-wrappers
+ 	install -d $(DESTDIR)/usr/lib/$(TRIPLET)
+ 	install -d $(DESTDIR)/usr/lib/systemd/system
+@@ -54,7 +55,7 @@ install: waitforservice libtls-padding.so libglesshadercache.so libgtk6216workar
+ 	install -m 644 systemd/android-service@hwcomposer.service.d/10-hwcomposer.conf $(DESTDIR)/usr/lib/systemd/system/android-service@hwcomposer.service.d
+ 
+ 	for link in $(SYMLINKS); do \
+-		ln -s /usr/lib/halium-wrappers/halium-lxc-exec.sh $(DESTDIR)/usr/sbin/$${link}; \
++		ln -s /usr/lib/halium-wrappers/halium-lxc-exec.sh $(DESTDIR)$(SBINDIR)/$${link}; \
+ 	done
+ 
+ .PHONY: all install
+-- 
+2.46.0
+

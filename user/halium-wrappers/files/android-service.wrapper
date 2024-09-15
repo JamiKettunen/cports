@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# prevent launching "source template" service itself
+[ "${DINIT_SERVICE}" = "android-service" ] && exit 1
+
+# we assume an "android-" prefix for the symlinks
+case "${DINIT_SERVICE}" in "android-"*) true ;; *) exit 1 ;; esac
+
+export ANDROID_SERVICE="${DINIT_SERVICE#android-}" ANDROID_SERVICE_FORCE_KILL
+
+if [ -f "/etc/android-${ANDROID_SERVICE}.conf" ]; then
+  . "/etc/android-${ANDROID_SERVICE}.conf"
+fi
+
+exec /usr/lib/halium-wrappers/android-service.sh "${ANDROID_SERVICE}" "${1}"

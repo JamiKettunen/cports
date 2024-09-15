@@ -1,0 +1,27 @@
+From 37451d4fb76dc5440e143c5a52d1ec98aa97bab2 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Tue, 17 Sep 2024 23:47:15 +0300
+Subject: [PATCH 07/14] halium-lxc-exec.sh: fix locating vendor binaries
+
+an extra /rootfs was being appended while LXC_CONTAINER_PATH already
+contained this at the end
+---
+ src/halium-lxc-exec.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/halium-lxc-exec.sh b/src/halium-lxc-exec.sh
+index 49359c8..8600575 100755
+--- a/src/halium-lxc-exec.sh
++++ b/src/halium-lxc-exec.sh
+@@ -9,7 +9,7 @@ HOST_BINARY="${0##*/}"
+ TARGET_BINARY="${HOST_BINARY#android_}"
+ LXC_CONTAINER_NAME="android"
+ LXC_CONTAINER_PATH="/var/lib/lxc/${LXC_CONTAINER_NAME}/rootfs"
+-ANDROID_SEARCH_PATH="${LXC_CONTAINER_PATH}/system/bin ${LXC_CONTAINER_PATH}/system/xbin ${LXC_CONTAINER_PATH}/rootfs/vendor/bin/"
++ANDROID_SEARCH_PATH="${LXC_CONTAINER_PATH}/system/bin ${LXC_CONTAINER_PATH}/system/xbin ${LXC_CONTAINER_PATH}/vendor/bin"
+ 
+ ########################################################################
+ 
+-- 
+2.46.0
+

@@ -1,0 +1,25 @@
+From f4707384609d8d414eec481b7cbcd5b26fe00a42 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Sun, 22 Sep 2024 12:14:05 +0300
+Subject: [PATCH 09/14] halium-lxc-exec.sh: configurable LXC_CONTAINER_PATH
+
+---
+ src/halium-lxc-exec.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/halium-lxc-exec.sh b/src/halium-lxc-exec.sh
+index 83eb66d..8385c3a 100755
+--- a/src/halium-lxc-exec.sh
++++ b/src/halium-lxc-exec.sh
+@@ -8,7 +8,7 @@ error() {
+ HOST_BINARY="${0##*/}"
+ TARGET_BINARY="${HOST_BINARY#android_}"
+ LXC_CONTAINER_NAME="android"
+-LXC_CONTAINER_PATH="/var/lib/lxc/${LXC_CONTAINER_NAME}/rootfs"
++LXC_CONTAINER_PATH="$(sed -n 's/^lxc.rootfs.path = //p' /var/lib/lxc/${LXC_CONTAINER_NAME}/config)"
+ ANDROID_SEARCH_PATH="${LXC_CONTAINER_PATH}/system/bin ${LXC_CONTAINER_PATH}/system/xbin ${LXC_CONTAINER_PATH}/vendor/bin"
+ 
+ ########################################################################
+-- 
+2.46.0
+
