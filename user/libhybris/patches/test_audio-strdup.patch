@@ -1,0 +1,13 @@
+Patch-Source: https://github.com/libhybris/libhybris/pull/555
+--- a/hybris/tests/test_audio.c
++++ b/hybris/tests/test_audio.c
+@@ -15,6 +15,9 @@
+  *
+  */
+ 
++/* Allows system/audio.h to see strdup() */
++#define _POSIX_C_SOURCE 200809L
++
+ #include <android-config.h>
+ #include <memory.h>
+ #include <assert.h>

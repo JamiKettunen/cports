@@ -1,0 +1,53 @@
+Patch-Source: https://github.com/droidian/libhybris/commit/2efc511
+--- a/hybris/egl/platforms/hwcomposer/hwcomposer.h
++++ b/hybris/egl/platforms/hwcomposer/hwcomposer.h
+@@ -58,6 +58,17 @@ struct ANativeWindow *HWCNativeWindowCreate(unsigned int width, unsigned int hei
+  */
+ void HWCNativeWindowDestroy(struct ANativeWindow *window);
+ 
++/** Set the buffer count of a native window.
++ *
++ * The default buffer count is 2.
++ * Returns 0 on success.
++ *
++ * \param cnt The new buffer count to use
++ *
++ * \sa HWCNativeWindowCreate
++ */
++int HWCNativeWindowSetBufferCount(struct ANativeWindow *window, int cnt);
++
+ /** Get the current fence FD on a buffer.
+  *
+  * The buffer must be a buffer passed from the HWC layer trough the present
+--- a/hybris/egl/platforms/hwcomposer/hwcomposer_window.cpp
++++ b/hybris/egl/platforms/hwcomposer/hwcomposer_window.cpp
+@@ -77,6 +77,11 @@ extern "C" void HWCNativeWindowDestroy(struct ANativeWindow *window)
+     delete window;
+ }
+ 
++extern "C" int HWCNativeWindowSetBufferCount(struct ANativeWindow *window, int cnt)
++{
++    return static_cast<HWComposerNativeWindow *>(window)->setBufferCount(cnt);
++}
++
+ struct _BufferFenceAccessor : public HWComposerNativeWindowBuffer {
+     int get() { return fenceFd; }
+     void set(int fd) { fenceFd = fd; };
+--- a/hybris/egl/platforms/hwcomposer/hwcomposer_window.h
++++ b/hybris/egl/platforms/hwcomposer/hwcomposer_window.h
+@@ -48,6 +48,7 @@ class HWComposerNativeWindow : public EGLBaseNativeWindow {
+ 
+     int getFenceBufferFd(HWComposerNativeWindowBuffer *buffer);
+     void setFenceBufferFd(HWComposerNativeWindowBuffer *buffer, int fd);
++    virtual int setBufferCount(int cnt);
+ protected:
+     // overloads from BaseNativeWindow
+     virtual int setSwapInterval(int interval);
+@@ -70,7 +71,6 @@ class HWComposerNativeWindow : public EGLBaseNativeWindow {
+     virtual int setUsage(uint64_t usage);
+     virtual int setBuffersFormat(int format);
+     virtual int setBuffersDimensions(int width, int height);
+-    virtual int setBufferCount(int cnt);
+     virtual void present(HWComposerNativeWindowBuffer *buffer) = 0;
+ 
+ private:

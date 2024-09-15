@@ -1,0 +1,96 @@
+--- a/hybris/common/hooks.c
++++ b/hybris/common/hooks.c
+@@ -912,6 +912,7 @@ static int _hybris_hook_pthread_cond_destroy(pthread_cond_t *cond)
+     }
+ 
+     if (!hybris_is_pointer_in_shm((void*)realcond)) {
++#ifdef __GLIBC__ // FIXME: what to do here for musl? error: no member named '__data' in 'pthread_cond_t'
+         /* Bionic and glibc implementations of pthread_cond_destroy are different.
+          * Bionic implementation does not block whereas the glibc implementation
+          * requires that there are no threads waiting for the condition variable
+@@ -919,6 +920,7 @@ static int _hybris_hook_pthread_cond_destroy(pthread_cond_t *cond)
+          * requirement. To prevent deadlocks reset the reference count of the
+          * condition variable. */
+         realcond->__data.__wrefs = 0;
++#endif
+         ret = pthread_cond_destroy(realcond);
+         free(realcond);
+     }
+@@ -1555,10 +1557,14 @@ static int _hybris_hook_fgetpos64(FILE *fp, bionic_fpos64_t *pos)
+ {
+     TRACE_HOOK("fp %p pos %p", fp, pos);
+ 
++#ifdef __GLIBC__
+     fpos64_t my_fpos;
+     int ret = fgetpos64(_get_actual_fp(fp), &my_fpos);
+ 
+     *pos = my_fpos.__pos;
++#else
++    int ret = fgetpos(_get_actual_fp(fp), pos);
++#endif
+ 
+     return ret;
+ }
+@@ -1673,11 +1679,15 @@ static int _hybris_hook_fsetpos64(FILE *fp, const bionic_fpos64_t *pos)
+ {
+     TRACE_HOOK("fp %p pos %p", fp, pos);
+ 
++#ifdef __GLIBC__
+     fpos64_t my_fpos;
+     my_fpos.__pos = *pos;
+     memset(&my_fpos.__state, 0, sizeof(mbstate_t));
+ 
+     return fsetpos64(_get_actual_fp(fp), &my_fpos);
++#else
++    return fsetpos(_get_actual_fp(fp), pos);
++#endif
+ }
+ 
+ static long _hybris_hook_ftell(FILE *fp)
+@@ -3364,11 +3374,11 @@ static struct _hook hooks_n[] = {
+     HOOK_DIRECT_NO_DEBUG(fopen64),
+     HOOK_INDIRECT(freopen64),
+     HOOK_INDIRECT(fileno_unlocked),
+-    /* dirent.h */
+ #ifdef __GLIBC__
++    /* dirent.h */
+     HOOK_INDIRECT(scandirat),
+-#endif
+     HOOK_TO(scandirat64, _hybris_hook_scandirat),
++#endif
+ };
+ 
+ static struct _hook hooks_p[] = {
+--- a/hybris/common/q/hybris_compat.h
++++ b/hybris/common/q/hybris_compat.h
+@@ -82,9 +82,16 @@ extern "C" size_t strlcat(char *dst, const char *src, size_t size);
+ /*
+  * From bionic/libc/include/bits/elf_arm64.h
+  */
++// TODO: should these be redefined?!
++#ifndef R_AARCH64_TLS_DTPREL64
+ #define R_AARCH64_TLS_DTPREL64          1028    /* Module-relative offset. */
++#endif
++#ifndef R_AARCH64_TLS_DTPMOD64
+ #define R_AARCH64_TLS_DTPMOD64          1029    /* Module index. */
++#endif
++//#ifndef R_AARCH64_TLS_TPREL64
+ #define R_AARCH64_TLS_TPREL64           1030    /* TP-relative offset. */
++//#endif
+ 
+ /*
+  * From bionic/libc/include/bits/elf_arm64.h
+--- a/hybris/common/q/hybris_compat.cpp
++++ b/hybris/common/q/hybris_compat.cpp
+@@ -27,3 +27,11 @@
+  */
+ 
+ #include "hybris_compat.h"
++
++#ifndef __GLIBC__
++const char *gnu_basename(const char *path)
++{
++    const char *base = strrchr(path, '/');
++    return base ? base + 1 : path;
++}
++#endif
