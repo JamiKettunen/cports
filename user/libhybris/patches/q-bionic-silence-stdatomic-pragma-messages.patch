@@ -1,0 +1,16 @@
+diff --git a/hybris/common/q/bionic/libc/include/stdatomic.h b/hybris/common/q/bionic/libc/include/stdatomic.h
+index ff2d9b8..1363d2c 100644
+--- a/hybris/common/q/bionic/libc/include/stdatomic.h
++++ b/hybris/common/q/bionic/libc/include/stdatomic.h
+@@ -32,11 +32,6 @@
+ 
+ #include <sys/cdefs.h>
+ 
+-#define XSTR(x) STR(x)
+-#define STR(x) #x
+-#pragma message "__cplusplus=" XSTR(__cplusplus)
+-#pragma message "_USING_LIBCXX=" XSTR(_USING_LIBCXX)
+-
+ #if defined(__cplusplus) && __cplusplus >= 201103L && defined(_USING_LIBCXX)
+ # ifdef __clang__
+ # 	if __has_feature(cxx_atomic)

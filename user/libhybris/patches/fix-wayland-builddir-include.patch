@@ -1,0 +1,24 @@
+diff --git a/hybris/egl/platforms/wayland/Makefile.am b/hybris/egl/platforms/wayland/Makefile.am
+index 44ffe2b..ae4f605 100644
+--- a/hybris/egl/platforms/wayland/Makefile.am
++++ b/hybris/egl/platforms/wayland/Makefile.am
+@@ -4,6 +4,7 @@ eglplatform_wayland_la_SOURCES = eglplatform_wayland.cpp wayland_window.cpp $(to
+ eglplatform_wayland_la_CXXFLAGS = \
+ 	-I$(top_srcdir)/common \
+ 	-I$(top_srcdir)/platforms/common \
++	-I$(top_builddir)/platforms/common \
+ 	-I$(top_srcdir)/platforms/wayland \
+ 	-I$(top_srcdir)/include \
+ 	-I$(top_srcdir)/egl \
+diff --git a/hybris/vulkan/platforms/wayland/Makefile.am b/hybris/vulkan/platforms/wayland/Makefile.am
+index bc54d9a..5faf536 100644
+--- a/hybris/vulkan/platforms/wayland/Makefile.am
++++ b/hybris/vulkan/platforms/wayland/Makefile.am
+@@ -4,6 +4,7 @@ vulkanplatform_wayland_la_SOURCES = vulkanplatform_wayland.cpp wayland_window.cp
+ vulkanplatform_wayland_la_CXXFLAGS = \
+ 	-I$(top_srcdir)/common \
+ 	-I$(top_srcdir)/platforms/common \
++	-I$(top_builddir)/platforms/common \
+ 	-I$(top_srcdir)/platforms/wayland \
+ 	-I$(top_srcdir)/include \
+ 	-I$(top_srcdir)/vulkan \

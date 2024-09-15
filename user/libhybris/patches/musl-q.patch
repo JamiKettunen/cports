@@ -1,0 +1,61 @@
+--- a/hybris/common/q/dlfcn.cpp
++++ b/hybris/common/q/dlfcn.cpp
+@@ -42,6 +42,10 @@
+ #include "private/bionic_tls.h"
+ #include "private/ScopedPthreadMutexLocker.h"
+ 
++#ifndef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
++#define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP {{PTHREAD_MUTEX_RECURSIVE}}
++#endif
++
+ #define __LINKER_PUBLIC__ __attribute__((visibility("default")))
+ 
+ extern "C" {
+--- a/hybris/common/q/hybris_compat.h
++++ b/hybris/common/q/hybris_compat.h
+@@ -95,4 +95,23 @@ extern "C" size_t strlcat(char *dst, const char *src, size_t size);
+ #define DT_AARCH64_PAC_PLT              0x70000003
+ #define DT_AARCH64_VARIANT_PCS          0x70000005
+ 
++#if defined (__aarch64__)
++
++/*#ifndef R_AARCH64_TLS_DTPREL32
++#define R_AARCH64_TLS_DTPREL32 1031
++#endif*/
++
++#ifndef R_AARCH64_IRELATIVE
++#define R_AARCH64_IRELATIVE 1032
++#endif
++
++#endif
++
++#ifndef __GLIBC__
++#ifndef basename
++const char *gnu_basename(const char *path);
++#define basename gnu_basename
++#endif
++#endif
++
+ #endif
+--- a/hybris/common/q/linker.cpp
++++ b/hybris/common/q/linker.cpp
+@@ -26,6 +26,8 @@
+  * SUCH DAMAGE.
+  */
+ 
++#include "hybris_compat.h"
++
+ #include <android/api-level.h>
+ #include <errno.h>
+ #include <fcntl.h>
+--- a/hybris/common/q/linker_namespaces.cpp
++++ b/hybris/common/q/linker_namespaces.cpp
+@@ -34,6 +34,8 @@
+ #include <dlfcn.h>
+ #include <algorithm>
+ 
++#include "hybris_compat.h"
++
+ bool android_namespace_t::is_accessible(const std::string& file) {
+   if (!is_isolated_) {
+     return true;
