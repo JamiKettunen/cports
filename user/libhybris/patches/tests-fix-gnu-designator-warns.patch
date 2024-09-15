@@ -1,0 +1,19 @@
+diff --git a/hybris/tests/test_input.c b/hybris/tests/test_input.c
+index 86326e3..d71c219 100644
+--- a/hybris/tests/test_input.c
++++ b/hybris/tests/test_input.c
+@@ -68,10 +68,10 @@ int main(int argc, char** argv)
+ 	listener.context = NULL;
+ 
+ 	struct InputStackConfiguration config = {
+-		enable_touch_point_visualization : true,
+-		default_layer_for_touch_point_visualization : 10000,
+-		input_area_width : 1024,
+-		input_area_height : 1024
++		.enable_touch_point_visualization = true,
++		.default_layer_for_touch_point_visualization = 10000,
++		.input_area_width = 1024,
++		.input_area_height = 1024,
+ 	};
+ 
+ 	android_input_stack_initialize(&listener, &config);
