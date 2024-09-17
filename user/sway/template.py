@@ -1,6 +1,6 @@
 pkgname = "sway"
 pkgver = "1.9"
-pkgrel = 4
+pkgrel = 5
 build_style = "meson"
 hostmakedepends = [
     "libcap-progs",
@@ -16,8 +16,9 @@ makedepends = [
     "pcre2-devel",
     "wayland-devel",
     "wayland-protocols",
-    "wlroots0.17-devel",
+    "wlroots0.17-droidian-devel",
 ]
+depends = ["wlroots0.17-droidian"]
 pkgdesc = "Wayland compositor compatible with i3"
 maintainer = "flukey <flukey@vapourmail.eu>"
 license = "MIT"
