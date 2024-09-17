@@ -1,0 +1,12 @@
+--- a/render/android/renderer.c
++++ b/render/android/renderer.c
+@@ -173,6 +173,9 @@ static struct wlr_android_buffer *get_or_create_buffer(struct wlr_android_render
+ 	// This needs to be reworked. Still, this renderer is pretty much only usable
+ 	// by the hwcomposer backend only anyway.
+ 	struct wlr_hwcomposer_output *hwc_output = (struct wlr_hwcomposer_output *)output;
++	if (!hwc_output) {
++		wlr_log(WLR_ERROR, "No hwc_output :(");
++	}
+ 	if (!hwc_output || !hwc_output->egl_window) {
+ 		wlr_log(WLR_ERROR, "No native window set");
+ 		buffer->egl_surface = EGL_NO_SURFACE;
