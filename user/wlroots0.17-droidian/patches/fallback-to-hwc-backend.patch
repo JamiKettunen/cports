@@ -1,0 +1,27 @@
+diff --git a/backend/backend.c b/backend/backend.c
+index b350bf4d..e12dca46 100644
+--- a/backend/backend.c
++++ b/backend/backend.c
+@@ -370,7 +370,6 @@ struct wlr_backend *wlr_backend_autocreate(struct wl_display *display,
+ 	session = session_create_and_wait(display);
+ 	if (!session) {
+ 		wlr_log(WLR_ERROR, "Failed to start a DRM session");
+-		goto error;
+ 	}
+ 
+ 	struct wlr_backend *libinput = attempt_libinput_backend(display, session);
+@@ -387,11 +386,13 @@ struct wlr_backend *wlr_backend_autocreate(struct wl_display *display,
+ 
+ 	if (!attempt_drm_backend(display, multi, session)) {
+ 		wlr_log(WLR_ERROR, "Failed to open any DRM device");
+-		goto error;
++	} else {
++		goto success;
+ 	}
+ 
+ 	const char *egl_platform = getenv("EGL_PLATFORM");
+ 	if (egl_platform) {
++		wlr_log(WLR_INFO, "EGL_PLATFORM is set, falling back to hwcomposer backend");
+ 		struct wlr_backend *hwc_backend =
+ 			attempt_hwcomposer_backend(display);
+ 		if (hwc_backend) {
