@@ -1,0 +1,15 @@
+With hwcomposer fallback we don't want to wait too long as that is the
+most typical path especially on older e.g. kernel v4.4 devices where
+this would always hang for 10 seconds otherwise (:
+
+--- a/backend/session/session.c
++++ b/backend/session/session.c
+@@ -20,7 +20,7 @@
+ 
+ #include <libseat.h>
+ 
+-#define WAIT_GPU_TIMEOUT 10000 // ms
++#define WAIT_GPU_TIMEOUT 200 // ms
+ 
+ static void handle_enable_seat(struct libseat *seat, void *data) {
+ 	struct wlr_session *session = data;
