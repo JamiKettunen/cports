@@ -1,0 +1,31 @@
+--- a/src/dinit.cc
++++ b/src/dinit.cc
+@@ -195,6 +195,9 @@ namespace {
+     constexpr auto dinit_exec = literal(SBINDIR) + "/" + "dinit";
+     constexpr auto error_exec_sd = literal("Error executing ") + shutdown_exec + ": ";
+     constexpr auto error_exec_dinit = literal("Error executing ") + dinit_exec + ": ";
++    // HYBRIS HACK: Panic command handler in case dinit fails to boot the system
++    constexpr auto panic_exec = literal(SBINDIR) + "/" + "dinit-panic";
++    constexpr auto error_exec_panic = literal("Error executing ") + panic_exec + ": ";
+ }
+ 
+ // Options handled in dinit_main
+@@ -718,7 +721,17 @@ int dinit_main(int argc, char **argv)
+             // Services all stopped but there was no shutdown issued. Inform user, wait for ack, and
+             // re-start boot sequence.
+             sync(); // Sync to minimise data loss if user elects to power off / hard reset
+-            confirm_restart_boot();
++            // HYBRIS HACK: There's likely no working VT for user input in confirm_restart_boot()
++            log_msg_end(" Will run dinit-panic or reboot.");
++            flush_log();
++            sync();
++
++            execl(panic_exec.c_str(), panic_exec.c_str(), nullptr);
++            log(loglevel_t::ERROR, error_exec_panic, strerror(errno));
++            flush_log();
++            sync();
++            shutdown_type = shutdown_type_t::REBOOT;
++
+             if (services->count_active_services() != 0) {
+                 // Recovery service started
+                 goto run_event_loop;

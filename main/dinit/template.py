@@ -2,7 +2,7 @@ pkgname = "dinit"
 pkgver = "0.19.0"
 # temporary so we get our features
 _gitrev = "92cb58eedaf930fed60d17b6247c1f2155c78ec8"
-pkgrel = 0
+pkgrel = 1
 build_style = "gnu_configure"
 configure_args = ["--syscontrolsocket=/run/dinitctl"]
 configure_gen = []
