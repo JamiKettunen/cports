@@ -69,13 +69,13 @@ Patch-Source: https://github.com/bell-sw/alpaquita-aports/blob/stream/core/musl-
  		case REL_PLT:
  			*reloc_addr = sym_val + addend;
 +			if (def.sym && (def.sym->st_info&0xf) == STT_GNU_IFUNC)
-+				ifunc = 1;
++				{}
  			break;
  		case REL_USYMBOLIC:
  			memcpy(reloc_addr, &(size_t){sym_val + addend}, sizeof(size_t));
  			break;
 +		case REL_IRELATIVE:
-+			ifunc = 1;
++			break;
  		case REL_RELATIVE:
  			*reloc_addr = (size_t)base + addend;
  			break;
