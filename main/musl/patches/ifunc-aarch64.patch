@@ -1,0 +1,21 @@
+Patch-Source: https://github.com/bell-sw/alpaquita-aports/blob/stream/core/musl-perf/0105-ifunc-aarch64-support.patch
+--- a/arch/aarch64/reloc.h
++++ b/arch/aarch64/reloc.h
+@@ -19,6 +19,7 @@
+ #define REL_DTPOFF      R_AARCH64_TLS_DTPREL64
+ #define REL_TPOFF       R_AARCH64_TLS_TPREL64
+ #define REL_TLSDESC     R_AARCH64_TLSDESC
++#define REL_IRELATIVE   R_AARCH64_IRELATIVE
+ 
+ #define CRTJMP(pc,sp) __asm__ __volatile__( \
+ 	"mov sp,%1 ; br %0" : : "r"(pc), "r"(sp) : "memory" )
+--- a/include/elf.h
++++ b/include/elf.h
+@@ -2513,6 +2513,7 @@ enum
+ #define R_AARCH64_TLS_TPREL    1030
+ #define R_AARCH64_TLS_TPREL64  1030
+ #define R_AARCH64_TLSDESC      1031
++#define R_AARCH64_IRELATIVE    1032
+ 
+ 
+ #define R_ARM_NONE		0
