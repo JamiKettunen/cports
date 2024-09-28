@@ -3760,10 +3760,10 @@ The allowed variables are:
 * `git` *(bool)* Setting this to `True` treats the `url` as feed of commits
   for the project. In this case results are not sorted by version but only
   the first match is compared with the current `pkgver`. `git` is
-  automatically set if `_commit` is set in the `template.py`. When set
-  `pkgver` automatically gets the value of `_commit` and `pattern` defaults
-  to `(?<=commit\/).*(?=<\/id>)`. `url` is guessed for GitHub and GitLab with
-  `_branch` mostly defaulting to `main`.
+  automatically set if `_commit` (or `_gitrev`) is set in the `template.py`.
+  When set `pkgver` automatically gets the value of `_commit` and `pattern`
+  defaults to `(?<=commit\/).*(?=<\/id>)`. `url` is guessed for GitHub and
+  GitLab with `_branch` mostly defaulting to `main`.
 
 You can define some functions:
 

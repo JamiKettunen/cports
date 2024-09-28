@@ -490,11 +490,11 @@ def update_check(pkg, verbose=False, error=False):
 
     # git update-check
 
-    if pkg._commit:
+    if pkg._commit or pkg._gitrev:
         uc.git = True
         if not uc.pattern:
             uc.pattern = r"(?<=commit\/).*(?=\"\/>)"
-        uc.pkgver = pkg._commit
+        uc.pkgver = pkg._commit or pkg._gitrev
         if not uc.url:
             src = pkg.source[0]
             if not pkg._branch:
@@ -574,7 +574,7 @@ def update_check(pkg, verbose=False, error=False):
 
         if uc.git:
             if uc.pkgver != v:
-                checkvers.append((pkg._commit, v))
+                checkvers.append((pkg._commit or pkg._gitrev, v))
         else:
             ret = apkcli.compare_version(
                 uc.pkgver.replace("-", "."), v.replace("-", "."), False
