@@ -464,6 +464,7 @@ core_fields = [
     ("go_check_tags", [], list, False, False, False),
     # git update-check
     ("_commit", None, str, False, False, False),
+    ("_gitrev", None, str, False, False, False),
     ("_branch", None, str, False, False, False),
 ]
 
@@ -475,6 +476,7 @@ core_fields_priority = [
     ("pkgver", True),
     ("pkgrel", True),
     ("_commit", False),
+    ("_gitrev", False),
     ("_branch", False),
     ("archs", True),
     ("build_wrksrc", True),
