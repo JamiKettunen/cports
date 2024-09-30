@@ -15,22 +15,12 @@ license = "custom:none"
 url = "https://github.com/droidian/lxc-android"
 source = f"https://github.com/JamiKettunen/lxc-android/archive/{_commit}.tar.gz"
 sha256 = "f7ae746bfe4bd0711eecd964c446e0794dc060c0ea4c54eccaa84381f6cf02f4"
-#file_modes = {"usr/libexec/lxc/lxc-user-nic": ("root", "root", 0o4755)}
-#options = ["!distlicense"]
 
 
 def install(self):
     self.rm("lib/systemd", recursive=True)
     self.rm("etc/systemd", recursive=True)
-
-    # legacy kernel 3.4 firmware loader crap gone from modern udev
-    self.rm("etc/udev/rules.d/50-firmware.rules")
-    # alsa-utils remains unpackaged (for now)
-    self.rm("etc/udev/rules.d/90-alsa-restore.rules")
-    self.rm("etc/udev/rules.d/90-alsa-ucm.rules")
-    # FIXME: /usr/lib/udev/rules.d/60-persistent-v4l.rules already exists and should be overridden with nothing...
-    # TODO: move these to /run/udev/rules.d creating the /dev/null symlinks at runtime?
-    self.rm("etc/udev/rules.d/60-persistent-v4l.rules")
+    self.rm("etc/udev/rules.d", recursive=True)  # created via tmpfiles
 
     # install all
     for f in self.cwd.iterdir():
@@ -40,6 +30,7 @@ def install(self):
             continue
         self.install_files(f, "")
 
+    # custom
     self.install_file(
         self.files_path / "mount-android.wrapper", "usr/libexec", mode=0o755
     )
@@ -50,11 +41,12 @@ def install(self):
     self.install_service(self.files_path / "lxc-android")
     self.install_service(self.files_path / "android.target", enable=True)
 
-    # FIXME: /var/lib/lxc/android/{config,post-stop.sh,pre-start.sh} now invalid path
+    # avoid packaged files in /var + udev rule overrides
+    self.rename("var/lib/lxc", "usr/lib/lxc", relative=False)
+    self.install_tmpfiles(self.files_path / "tmpfiles.conf")
 
-
-#@subpackage("lxc-android-emmc")
-#def _(self):
-#    self.subdesc = "hint mmcblk0 as UDISKS_SYSTEM"
-#    # FIXME: autosplit to lxc-android-udev already
-#    return ["usr/lib/udev/rules.d/99-android.rules"]
+    # make Halium initrd play ball and mount its stuff in a more sensible place (we want all under /android)..
+    # this is more or less the ideal cleanest config, rest of the stuff is cleaned up in /usr/lib/lxc-android/mount-android
+    # for reference: https://github.com/Halium/initramfs-tools-halium/blob/dynparts/scripts/halium
+    self.install_dir("usr/lib/lxc/android/rootfs")
+    (self.destdir / "usr/lib/lxc/android/rootfs/MOUNTED_AT_root-android").touch()
