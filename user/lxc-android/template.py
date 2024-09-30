@@ -1,6 +1,7 @@
 pkgname = "lxc-android"
-pkgver = "36"
+pkgver = "36_git20240930"
 pkgrel = 0
+_commit = "c5a12a422f011ada2a19d2adf61feb36dd2a3d56"
 depends = [
     "lxc",
     "parse-android-dynparts",
@@ -12,8 +13,8 @@ pkgdesc = "Configuration to start Android inside an LXC container"
 maintainer = "Jami Kettunen <jami.kettunen@protonmail.com>"
 license = "custom:none"
 url = "https://github.com/droidian/lxc-android"
-source = f"{url}/archive/refs/tags/droidian/next/1%25{pkgver}.tar.gz"
-sha256 = "b88de056356f9a123755aed784744c9edabac439d7d33b5c23502f496eaa89a2"
+source = f"https://github.com/JamiKettunen/lxc-android/archive/{_commit}.tar.gz"
+sha256 = "f7ae746bfe4bd0711eecd964c446e0794dc060c0ea4c54eccaa84381f6cf02f4"
 #file_modes = {"usr/libexec/lxc/lxc-user-nic": ("root", "root", 0o4755)}
 #options = ["!distlicense"]
 
@@ -21,13 +22,6 @@ sha256 = "b88de056356f9a123755aed784744c9edabac439d7d33b5c23502f496eaa89a2"
 def install(self):
     self.rm("lib/systemd", recursive=True)
     self.rm("etc/systemd", recursive=True)
-
-    # fix forbidden paths not applied due to bsdpatch
-    self.mv("lib/udev", "usr/lib")
-    self.mkdir("usr/bin")
-    self.mv("usr/sbin/mount-android.sh", "usr/bin")
-    self.mv("etc/udev/rules.d/90-btdevice-cursorfix.rules", "usr/lib/udev/rules.d")
-    self.mv("etc/udev/rules.d/90-touchscreen.rules", "usr/lib/udev/rules.d")
 
     # legacy kernel 3.4 firmware loader crap gone from modern udev
     self.rm("etc/udev/rules.d/50-firmware.rules")
