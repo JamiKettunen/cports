@@ -1,0 +1,431 @@
+pkgname = "mesa-git"
+pkgver = "24.3.0_git20240907"
+pkgrel = 0
+build_style = "meson"
+configure_args = [
+    "-Db_ndebug=true",
+    "-Ddefault_library=shared",
+    "-Degl=enabled",
+    "-Dgbm=enabled",
+    "-Dgles1=enabled",
+    "-Dgles2=enabled",
+    "-Dglvnd=disabled",
+    "-Dglx=dri",
+    "-Dllvm=enabled",
+    "-Dlmsensors=enabled",
+    "-Dosmesa=true",
+    "-Dplatforms=x11,wayland",
+    "-Dshared-glapi=enabled",
+    "-Dvideo-codecs=all",
+]
+hostmakedepends = [
+    "bison",
+    "cbindgen",
+    "flex",
+    "glslang-progs",
+    "meson",
+    "pkgconf",
+    "python-mako",
+    "python-ply",
+    "python-pycparser",
+    "python-pyyaml",
+    "wayland-progs",
+    "wayland-protocols",
+]
+makedepends = [
+    "clang-devel",
+    "llvm-devel",
+    # base driver/platform stuff
+    "libdrm-devel",
+    # wayland
+    "wayland-devel",
+    "wayland-protocols",
+    # x11
+    "libx11-devel",
+    "libxcb-devel",
+    "libxdamage-devel",
+    "libxext-devel",
+    "libxfixes-devel",
+    "libxrandr-devel",
+    "libxshmfence-devel",
+    "libxv-devel",
+    "libxxf86vm-devel",
+    # misc libs
+    "elfutils-devel",
+    "libarchive-devel",
+    "libexpat-devel",
+    "libffi-devel",
+    "libsensors-devel",
+    "libxml2-devel",
+    "lua5.4-devel",
+    "ncurses-devel",
+    "zlib-ng-compat-devel",
+    "zstd-devel",
+    # video accel
+    "libva-bootstrap",
+]
+provides = [f"mesa={pkgver}-r{pkgrel}"]
+replaces = [f"mesa<{pkgver.rsplit('_')[0]}"]
+pkgdesc = "Mesa 3D Graphics Library git commit {_commit[:7]}"
+maintainer = "q66 <q66@chimera-linux.org>"
+license = "MIT"
+url = "https://www.mesa3d.org"
+# so we don't also download vendored system libs, just rlib names
+_subproject_list = [
+    "equivalent",
+    "hashbrown",
+    "indexmap",
+    "once-cell",
+    "paste",
+    "pest",
+    "pest_derive",
+    "pest_generator",
+    "pest_meta",
+    "proc-macro2",
+    "quote",
+    "roxmltree",
+    "syn",
+    "ucd-trie",
+    "unicode-ident",
+]
+_commit = "af15cceff44d7ecc234fe61d2d81bf811c9e2e66"
+source = f"https://gitlab.freedesktop.org/mesa/mesa/-/archive/{_commit}.tar.gz"
+sha256 = "d1cd2222a55b79d91ea928e638e6670e439d9c76861de2e015392d6b1d45e365"
+# lots of issues in swrast and so on
+hardening = ["!int"]
+# cba to deal with cross patching nonsense
+options = ["!cross", "linkundefver", "!debug"]
+
+_gallium_drivers = []
+_vulkan_drivers = []
+_have_llvm = False
+
+# llvmpipe only properly supports a few archs
+match self.profile().arch:
+    case "x86_64" | "aarch64" | "ppc64le" | "riscv64":
+        _have_llvm = True
+    case _:
+        configure_args += ["-Ddraw-use-llvm=false"]
+        # llvmpipe is strictly better so only bring this in where it isn't
+        _gallium_drivers += ["softpipe"]
+
+if _have_llvm:
+    configure_args += ["-Dllvm-orcjit=true"]
+    _gallium_drivers += ["llvmpipe"]
+    _vulkan_drivers += ["swrast"]
+
+# these are good assumptions on all targets we support for now
+_have_nvidia = True
+_have_amd = True
+# intel_clc fails on big
+_have_intel = self.profile().endian != "big"
+_have_hwdec = True
+_have_virgl = True
+
+# these change with platforms
+_have_intel_igpu = False
+_have_vmware = False
+_have_nine = False
+_have_arm = False
+_have_opencl = False
+_have_vulkan = False
+_have_zink = False
+
+match self.profile().arch:
+    case "x86_64":
+        _have_intel = True
+        _have_intel_igpu = True
+        _have_vmware = True
+        _have_nine = True
+    case "aarch64":
+        _have_arm = True
+    case "ppc64le":
+        configure_args += ["-Dpower8=true"]
+    case "ppc64":
+        configure_args += ["-Dpower8=false"]
+
+_have_opencl = _have_amd or _have_intel
+_have_vulkan = _have_amd or _have_intel or _have_arm
+_have_zink = _have_vulkan
+
+if _have_amd:
+    _gallium_drivers += ["r300", "r600", "radeonsi"]
+    if _have_vulkan:
+        _vulkan_drivers += ["amd"]
+
+if _have_intel:
+    _gallium_drivers += ["iris"]
+    if _have_vulkan:
+        _vulkan_drivers += ["intel"]
+
+if _have_intel_igpu:
+    _gallium_drivers += ["crocus", "i915"]
+    if _have_vulkan:
+        _vulkan_drivers += ["intel_hasvk"]
+
+if _have_nvidia:
+    _gallium_drivers += ["nouveau"]
+    _vulkan_drivers += ["nouveau"]
+    if _have_arm:
+        _gallium_drivers += ["tegra"]
+
+if _have_arm:
+    _gallium_drivers += [
+        "v3d",
+        "vc4",
+        "freedreno",
+        "etnaviv",
+        "lima",
+        "panfrost",
+    ]
+    if _have_vulkan:
+        _vulkan_drivers += ["broadcom", "freedreno", "panfrost"]
+
+if _have_virgl:
+    _gallium_drivers += ["virgl"]
+    _vulkan_drivers += ["virtio"]
+
+if _have_nine:
+    configure_args += ["-Dgallium-nine=true"]
+
+if _have_vmware:
+    _gallium_drivers += ["svga"]
+    configure_args += ["-Dgallium-xa=enabled"]
+else:
+    configure_args += ["-Dgallium-xa=disabled"]
+
+if _have_opencl:
+    makedepends += [
+        "libclc",
+        "spirv-llvm-translator-devel",
+        "spirv-tools-devel",
+    ]
+    configure_args += [
+        "-Dgallium-opencl=icd",
+        "-Dgallium-rusticl=true",
+    ]
+
+# nvk/nouveau or rusticl need rust
+if _have_opencl or _have_nvidia:
+    hostmakedepends += ["rust-bindgen", "rust"]
+    makedepends += ["rust"]
+
+if _have_hwdec:
+    configure_args += ["-Dgallium-vdpau=disabled", "-Dgallium-va=enabled"]
+else:
+    configure_args += ["-Dgallium-vdpau=disabled", "-Dgallium-va=disabled"]
+
+if _have_vulkan:
+    makedepends += ["vulkan-loader-devel"]
+    configure_args += [
+        "-Dvulkan-layers=device-select,overlay"
+        + (",intel-nullhw" if _have_intel else "")
+    ]
+
+if _have_zink:
+    _gallium_drivers += ["zink"]
+
+configure_args += ["-Dgallium-drivers=" + ",".join(_gallium_drivers)]
+configure_args += ["-Dvulkan-drivers=" + ",".join(_vulkan_drivers)]
+
+
+def post_patch(self):
+    self.do(
+        "meson",
+        "subprojects",
+        "download",
+        *_subproject_list,
+        allow_network=True,
+    )
+
+
+def init_configure(self):
+    ljobs = 4 if self.make_jobs >= 4 else self.make_jobs
+    # mesa links a lot of big .so's at once so ensure there is not more than four
+    self.configure_args += [f"-Dbackend_max_links={ljobs}"]
+
+
+def post_install(self):
+    self.install_file(
+        self.files_path / "00-radeonsi-gnome-no-glthread.conf",
+        "usr/share/drirc.d",
+    )
+    self.install_license("docs/license.rst")
+
+
+@subpackage("libglapi-git")
+def _(self):
+    self.pkgdesc = "Free implementation of the GL API"
+    self.subdesc = "runtime library"
+    self.depends += [self.parent]
+    self.provides = [self.with_pkgver("libglapi")]
+    self.replaces = [f"libglapi<{pkgver.rsplit('_')[0]}"]
+
+    return ["usr/lib/libglapi.so.*"]
+
+
+@subpackage("libgbm-git")
+def _(self):
+    self.pkgdesc = "Generic Buffer Management"
+    self.subdesc = "runtime library"
+    self.provides = [self.with_pkgver("libgbm")]
+    self.replaces = [f"libgbm<{pkgver.rsplit('_')[0]}"]
+
+    return ["usr/lib/libgbm.so.*"]
+
+
+@subpackage("libgbm-git-devel")
+def _(self):
+    self.pkgdesc = "Generic Buffer Management"
+    self.provides = [self.with_pkgver("libgbm-devel")]
+    self.replaces = [f"libgbm-devel<{pkgver.rsplit('_')[0]}"]
+
+    return [
+        "usr/include/gbm.h",
+        "usr/lib/libgbm.so",
+        "usr/lib/pkgconfig/gbm.pc",
+    ]
+
+
+@subpackage("libosmesa-git")
+def _(self):
+    self.pkgdesc = "Mesa off-screen interface"
+    self.subdesc = "runtime library"
+    self.depends += [self.parent]
+    self.provides = [self.with_pkgver("libosmesa")]
+    self.replaces = [f"libosmesa<{pkgver.rsplit('_')[0]}"]
+
+    return ["usr/lib/libOSMesa.so.*"]
+
+
+@subpackage("libgles1-git")
+def _(self):
+    self.pkgdesc = "Free implementation of OpenGL ES 1.x API"
+    self.subdesc = "runtime library"
+    self.depends += [self.parent]
+    self.provides = [self.with_pkgver("libgles1")]
+    self.replaces = [f"libgles1<{pkgver.rsplit('_')[0]}"]
+
+    return ["usr/lib/libGLESv1_CM.so.*"]
+
+
+@subpackage("libgles2-git")
+def _(self):
+    self.pkgdesc = "Free implementation of OpenGL ES 2.x API"
+    self.subdesc = "runtime library"
+    self.depends += [self.parent]
+    self.provides = [self.with_pkgver("libgles2")]
+    self.replaces = [f"libgles2<{pkgver.rsplit('_')[0]}"]
+
+    return ["usr/lib/libGLESv2.so.*"]
+
+
+@subpackage("libegl-git")
+def _(self):
+    self.pkgdesc = "Free implementation of the EGL API"
+    self.subdesc = "runtime library"
+    self.depends += [self.parent]
+    self.provides = [self.with_pkgver("libegl")]
+    self.replaces = [f"libegl<{pkgver.rsplit('_')[0]}"]
+
+    return ["usr/lib/libEGL.so.*"]
+
+
+@subpackage("libgl-git")
+def _(self):
+    self.pkgdesc = "Free implementation of the OpenGL API"
+    self.subdesc = "runtime library"
+    self.depends += [self.parent]
+    self.provides = [self.with_pkgver("libgl")]
+    self.replaces = [f"libgl<{pkgver.rsplit('_')[0]}"]
+
+    return ["usr/lib/libGL.so.*"]
+
+
+@subpackage("libxatracker-git", _have_vmware)
+def _(self):
+    self.pkgdesc = "X acceleration library"
+    self.subdesc = "runtime library"
+    self.provides = [self.with_pkgver("libxatracker")]
+    self.replaces = [f"libxatracker<{pkgver.rsplit('_')[0]}"]
+
+    return ["usr/lib/libxatracker*.so.*"]
+
+
+@subpackage("mesa-gallium-nine-git", _have_nine)
+def _(self):
+    self.pkgdesc = "Mesa implementation of D3D9"
+    self.provides = [self.with_pkgver("mesa-gallium-nine")]
+    self.replaces = [f"mesa-gallium-nine<{pkgver.rsplit('_')[0]}"]
+
+    return ["usr/lib/d3d"]
+
+
+@subpackage("mesa-opencl-git", _have_opencl)
+def _(self):
+    self.pkgdesc = "Mesa implementation of OpenCL"
+    self.depends += ["libclc"]
+    self.provides = [self.with_pkgver("mesa-opencl")]
+    self.replaces = [f"mesa-opencl<{pkgver.rsplit('_')[0]}"]
+
+    return [
+        "etc/OpenCL",
+        "usr/lib/gallium-pipe",
+        "usr/lib/libMesaOpenCL.so.*",
+        "usr/lib/libRusticlOpenCL.so.*",
+    ]
+
+
+@subpackage("mesa-vaapi-git", _have_hwdec)
+def _(self):
+    self.pkgdesc = "Mesa VA-API drivers"
+    self.provides = [self.with_pkgver("mesa-vaapi")]
+    self.replaces = [f"mesa-vaapi<{pkgver.rsplit('_')[0]}"]
+
+    return ["usr/lib/dri/*_drv_video.so"]
+
+
+@subpackage("mesa-libgallium-git")
+def _(self):
+    self.pkgdesc = "Mesa gallium loader"
+    self.provides = [self.with_pkgver("mesa-libgallium")]
+    self.replaces = [f"mesa-libgallium<{pkgver.rsplit('_')[0]}"]
+
+    return ["usr/lib/libgallium-*.so"]
+
+
+@subpackage("mesa-dri-git")
+def _(self):
+    self.pkgdesc = "Mesa DRI drivers"
+    self.install_if = [self.parent]
+    self.provides = [self.with_pkgver("mesa-dri")]
+    self.replaces = [f"mesa-dri<{pkgver.rsplit('_')[0]}"]
+
+    return ["usr/lib/dri"]
+
+
+@subpackage("mesa-vulkan-git", _have_vulkan)
+def _(self):
+    self.pkgdesc = "Mesa Vulkan drivers"
+    self.install_if = [self.with_pkgver("mesa-dri"), "vulkan-loader"]
+    self.provides = [self.with_pkgver("mesa-vulkan")]
+    self.replaces = [f"mesa-vulkan<{pkgver.rsplit('_')[0]}"]
+
+    return [
+        "usr/bin/mesa-overlay-control.py",
+        "usr/lib/libvulkan_*.so",
+        "usr/lib/libVkLayer_*.so",
+        "usr/share/drirc.d/00-radv-defaults.conf",
+        "usr/share/vulkan/explicit_layer.d/VkLayer_*.json",
+        "usr/share/vulkan/implicit_layer.d/VkLayer_*.json",
+        "usr/share/vulkan/icd.d/*_icd*.json",
+    ]
+
+
+@subpackage("mesa-git-devel")
+def _(self):
+    self.depends += ["libgbm-devel"]
+    self.provides = [self.with_pkgver("mesa-devel")]
+    self.replaces = [f"mesa-devel<{pkgver.rsplit('_')[0]}"]
+
+    return self.default_devel()

@@ -1,0 +1,2 @@
+print(sys.path)
+from ../../main/mesa/template import *

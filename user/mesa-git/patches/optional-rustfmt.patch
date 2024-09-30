@@ -1,0 +1,28 @@
+From 0b8069d47df0983ceb2146a4228e97c9f3070032 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Mon, 2 Sep 2024 11:35:40 +0300
+Subject: [PATCH] nouveau/headers: Avoid FTBFS when rustfmt is missing
+
+This is optional elsewhere and seemingly the intention was already to
+ignore failures, but it didn't catch FileNotFoundError when rustfmt
+isn't even available.
+---
+ src/nouveau/headers/lib_rs_gen.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/nouveau/headers/lib_rs_gen.py b/src/nouveau/headers/lib_rs_gen.py
+index d53f5e871fc..0db41dc5cc3 100644
+--- a/src/nouveau/headers/lib_rs_gen.py
++++ b/src/nouveau/headers/lib_rs_gen.py
+@@ -111,7 +111,7 @@ def main():
+             f.write(TEMPLATE_RS.render(root=root))
+             try:
+                 subprocess.run(['rustfmt', args.out_rs], check=True)
+-            except subprocess.CalledProcessError:
++            except (subprocess.CalledProcessError, FileNotFoundError):
+                 pass
+ 
+     except Exception:
+-- 
+2.46.0
+

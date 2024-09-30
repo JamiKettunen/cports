@@ -1,0 +1,417 @@
+pkgname = "mesa-git"
+pkgver = "24.2.0_git20240704"
+pkgrel = 0
+build_style = "meson"
+configure_args = [
+    "-Db_ndebug=true",
+    "-Ddefault_library=shared",
+    "-Ddri3=enabled",
+    "-Degl=enabled",
+    "-Dgbm=enabled",
+    "-Dgles1=enabled",
+    "-Dgles2=enabled",
+    "-Dglvnd=disabled",
+    "-Dglx=dri",
+    "-Dllvm=enabled",
+    "-Dlmsensors=enabled",
+    "-Dosmesa=true",
+    "-Dplatforms=x11,wayland",
+    "-Dshared-glapi=enabled",
+    "-Dvideo-codecs=all",
+]
+hostmakedepends = [
+    "bison",
+    "cbindgen",
+    "flex",
+    "glslang-progs",
+    "meson",
+    "pkgconf",
+    "python-mako",
+    "python-ply",
+    "python-pycparser",
+    "wayland-progs",
+    "wayland-protocols",
+]
+makedepends = [
+    "clang-devel",
+    "llvm-devel",
+    # base driver/platform stuff
+    "libdrm-devel",
+    # wayland
+    "wayland-devel",
+    "wayland-protocols",
+    # x11
+    "libx11-devel",
+    "libxcb-devel",
+    "libxdamage-devel",
+    "libxext-devel",
+    "libxfixes-devel",
+    "libxrandr-devel",
+    "libxshmfence-devel",
+    "libxv-devel",
+    "libxxf86vm-devel",
+    # misc libs
+    "elfutils-devel",
+    "libarchive-devel",
+    "libexpat-devel",
+    "libffi-devel",
+    "libsensors-devel",
+    "libxml2-devel",
+    "lua5.4-devel",
+    "ncurses-devel",
+    "zlib-ng-compat-devel",
+    "zstd-devel",
+    # video accel
+    "libva-bootstrap",
+]
+provides = [f"mesa={pkgver}-r{pkgrel}"]
+replaces = [f"mesa<{pkgver.rsplit('_')[0]}"]
+pkgdesc = "Mesa 3D Graphics Library"
+maintainer = "q66 <q66@chimera-linux.org>"
+license = "MIT"
+url = "https://www.mesa3d.org"
+_commit = "f9efedb1a1acbaa70c603d5ef57a83180a8f5782"
+pkgdesc += " (git {_commit[:7]})"
+_paste = "1.0.14"
+_proc_macro2 = "1.0.86"
+_quote = "1.0.33"
+_syn = "2.0.68"
+_unicode_ident = "1.0.12"
+source = [
+    f"https://gitlab.freedesktop.org/mesa/mesa/-/archive/{_commit}.tar.gz",
+    f"!https://crates.io/api/v1/crates/paste/{_paste}/download>paste-{_paste}.tar.gz",
+    f"!https://crates.io/api/v1/crates/proc-macro2/{_proc_macro2}/download>proc-macro2-{_proc_macro2}.tar.gz",
+    f"!https://crates.io/api/v1/crates/quote/{_quote}/download>quote-{_quote}.tar.gz",
+    f"!https://crates.io/api/v1/crates/syn/{_syn}/download>syn-{_syn}.tar.gz",
+    f"!https://crates.io/api/v1/crates/unicode-ident/{_unicode_ident}/download>unicode-ident-{_unicode_ident}.tar.gz",
+]
+sha256 = [
+    "c8e5839a8a4f0708f6b702f88060e055513fd394a9ec70db3a930b8b28ac3ba5",
+    "de3145af08024dea9fa9914f381a17b8fc6034dfb00f3a84013f7ff43f29ed4c",
+    "5e719e8df665df0d1c8fbfd238015744736151d4445ec0836b8e628aae103b77",
+    "5267fca4496028628a95160fc423a33e8b2e6af8a5302579e322e4b520293cae",
+    "901fa70d88b9d6c98022e23b4136f9f3e54e4662c3bc1bd1d84a42a9a0f0c1e9",
+    "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b",
+]
+# lots of issues in swrast and so on
+hardening = ["!int"]
+# cba to deal with cross patching nonsense
+options = ["!cross", "linkundefver"]
+
+_have_llvm = False
+
+# llvmpipe only properly supports a few archs
+match self.profile().arch:
+    case "x86_64" | "aarch64" | "ppc64le":
+        _have_llvm = True
+    case _:
+        configure_args += ["-Ddraw-use-llvm=false"]
+
+_gallium_drivers = ["swrast"]
+_vulkan_drivers = []
+
+if _have_llvm:
+    _vulkan_drivers += ["swrast"]
+
+# these are good assumptions on all targets we support for now
+_have_nvidia = True
+_have_amd = True
+# intel_clc fails on big
+_have_intel = self.profile().endian != "big"
+_have_hwdec = True
+_have_virgl = True
+
+# these change with platforms
+_have_intel_igpu = False
+_have_vmware = False
+_have_nine = False
+_have_arm = False
+_have_opencl = False
+_have_vulkan = False
+_have_zink = False
+
+match self.profile().arch:
+    case "x86_64":
+        _have_intel = True
+        _have_intel_igpu = True
+        _have_vmware = True
+        _have_nine = True
+    case "aarch64":
+        _have_arm = True
+    case "ppc64le":
+        configure_args += ["-Dpower8=true"]
+    case "ppc64":
+        configure_args += ["-Dpower8=false"]
+
+_have_opencl = _have_amd or _have_intel
+_have_vulkan = _have_amd or _have_intel or _have_arm
+_have_zink = _have_vulkan
+
+if _have_amd:
+    _gallium_drivers += ["r300", "r600", "radeonsi"]
+    if _have_vulkan:
+        _vulkan_drivers += ["amd"]
+
+if _have_intel:
+    _gallium_drivers += ["iris"]
+    if _have_vulkan:
+        _vulkan_drivers += ["intel"]
+
+if _have_intel_igpu:
+    _gallium_drivers += ["crocus", "i915"]
+    if _have_vulkan:
+        _vulkan_drivers += ["intel_hasvk"]
+
+if _have_nvidia:
+    _gallium_drivers += ["nouveau"]
+    _vulkan_drivers += ["nouveau"]
+    if _have_arm:
+        _gallium_drivers += ["tegra"]
+
+if _have_arm:
+    _gallium_drivers += [
+        "kmsro",
+        "v3d",
+        "vc4",
+        "freedreno",
+        "etnaviv",
+        "lima",
+        "panfrost",
+    ]
+    if _have_vulkan:
+        _vulkan_drivers += ["broadcom", "freedreno", "panfrost"]
+
+if _have_virgl:
+    _gallium_drivers += ["virgl"]
+    _vulkan_drivers += ["virtio"]
+
+if _have_nine:
+    configure_args += ["-Dgallium-nine=true"]
+
+if _have_vmware:
+    _gallium_drivers += ["svga"]
+    configure_args += ["-Dgallium-xa=enabled"]
+else:
+    configure_args += ["-Dgallium-xa=disabled"]
+
+if _have_opencl:
+    makedepends += [
+        "libclc",
+        "spirv-llvm-translator-devel",
+        "spirv-tools-devel",
+    ]
+    configure_args += [
+        "-Dgallium-opencl=icd",
+        "-Dgallium-rusticl=true",
+    ]
+
+# nvk/nouveau or rusticl need rust
+if _have_opencl or _have_nvidia:
+    hostmakedepends += ["rust-bindgen", "rust"]
+    makedepends += ["rust"]
+
+if _have_hwdec:
+    configure_args += ["-Dgallium-vdpau=disabled", "-Dgallium-va=enabled"]
+else:
+    configure_args += ["-Dgallium-vdpau=disabled", "-Dgallium-va=disabled"]
+
+if _have_vulkan:
+    makedepends += ["vulkan-loader-devel"]
+    configure_args += [
+        "-Dvulkan-layers=device-select,overlay"
+        + (",intel-nullhw" if _have_intel else "")
+    ]
+
+if _have_zink:
+    _gallium_drivers += ["zink"]
+
+configure_args += ["-Dgallium-drivers=" + ",".join(_gallium_drivers)]
+configure_args += ["-Dvulkan-drivers=" + ",".join(_vulkan_drivers)]
+
+
+def post_extract(self):
+    self.cp(self.sources_path / f"paste-{_paste}.tar.gz", ".")
+    self.cp(self.sources_path / f"proc-macro2-{_proc_macro2}.tar.gz", ".")
+    self.cp(
+        self.sources_path / f"unicode-ident-{_unicode_ident}.tar.gz",
+        ".",
+    )
+    self.cp(self.sources_path / f"syn-{_syn}.tar.gz", ".")
+    self.cp(self.sources_path / f"quote-{_quote}.tar.gz", ".")
+
+
+def init_configure(self):
+    # meson requires finding source_filename in .wrap unextracted to apply
+    # patch_directory (which contains the meson.build definitions for rust
+    # crates) upon extracting the tarball itself. we fetch those above and leave
+    # them named the same as in the .wrap in here
+    self.env = {"MESON_PACKAGE_CACHE_DIR": str(self.chroot_cwd)}
+
+
+def post_install(self):
+    self.install_file(
+        self.files_path / "00-radeonsi-gnome-no-glthread.conf",
+        "usr/share/drirc.d",
+    )
+    self.install_license("docs/license.rst")
+
+
+@subpackage("libglapi-git")
+def _glapi(self):
+    self.provides = [f"libglapi={pkgver}-r{pkgrel}"]
+    self.replaces = [f"libglapi<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Free implementation of the GL API (shared library)"
+    self.depends += [f"{pkgname}={pkgver}-r{pkgrel}"]
+
+    return ["usr/lib/libglapi.so.*"]
+
+
+@subpackage("libgbm-git")
+def _gbm(self):
+    self.provides = [f"libgbm={pkgver}-r{pkgrel}"]
+    self.replaces = [f"libgbm<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Generic Buffer Management (shared library)"
+
+    return ["usr/lib/libgbm.so.*"]
+
+
+@subpackage("libgbm-git-devel")
+def _gbm_devel(self):
+    self.provides = [f"libgbm-devel={pkgver}-r{pkgrel}"]
+    self.replaces = [f"libgbm-devel<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Generic Buffer Management (development files)"
+
+    return [
+        "usr/include/gbm.h",
+        "usr/lib/libgbm.so",
+        "usr/lib/pkgconfig/gbm.pc",
+    ]
+
+
+@subpackage("libosmesa-git")
+def _osmesa(self):
+    self.provides = [f"libosmesa={pkgver}-r{pkgrel}"]
+    self.replaces = [f"libosmesa<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Mesa off-screen interface (shared library)"
+    self.depends += [f"{pkgname}={pkgver}-r{pkgrel}"]
+
+    return ["usr/lib/libOSMesa.so.*"]
+
+
+@subpackage("libgles1-git")
+def _gles1(self):
+    self.provides = [f"libgles1={pkgver}-r{pkgrel}"]
+    self.replaces = [f"libgles1<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Free implementation of OpenGL ES 1.x API (shared library)"
+    self.depends += [f"{pkgname}={pkgver}-r{pkgrel}"]
+
+    return ["usr/lib/libGLESv1_CM.so.*"]
+
+
+@subpackage("libgles2-git")
+def _gles2(self):
+    self.provides = [f"libgles2={pkgver}-r{pkgrel}"]
+    self.replaces = [f"libgles2<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Free implementation of OpenGL ES 2.x API (shared library)"
+    self.depends += [f"{pkgname}={pkgver}-r{pkgrel}"]
+
+    return ["usr/lib/libGLESv2.so.*"]
+
+
+@subpackage("libegl-git")
+def _egl(self):
+    self.provides = [f"libegl={pkgver}-r{pkgrel}"]
+    self.replaces = [f"libegl<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Free implementation of the EGL API (shared library)"
+    self.depends += [f"{pkgname}={pkgver}-r{pkgrel}"]
+
+    return ["usr/lib/libEGL.so.*"]
+
+
+@subpackage("libgl-git")
+def _libgl(self):
+    self.provides = [f"libgl={pkgver}-r{pkgrel}"]
+    self.replaces = [f"libgl<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Free implementation of the OpenGL API (shared library)"
+    self.depends += [f"{pkgname}={pkgver}-r{pkgrel}"]
+
+    return ["usr/lib/libGL.so.*"]
+
+
+@subpackage("libxatracker-git", _have_vmware)
+def _xatracker(self):
+    self.provides = [f"libxatracker={pkgver}-r{pkgrel}"]
+    self.replaces = [f"libxatracker<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "X acceleration library (shared library)"
+
+    return ["usr/lib/libxatracker*.so.*"]
+
+
+@subpackage("mesa-gallium-nine-git", _have_nine)
+def _gallium_nine(self):
+    self.provides = [f"mesa-gallium-nine={pkgver}-r{pkgrel}"]
+    self.replaces = [f"mesa-gallium-nine<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Mesa implementation of D3D9"
+
+    return ["usr/lib/d3d"]
+
+
+@subpackage("mesa-opencl-git", _have_opencl)
+def _opencl(self):
+    self.provides = [f"mesa-opencl={pkgver}-r{pkgrel}"]
+    self.replaces = [f"mesa-opencl<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Mesa implementation of OpenCL"
+    self.depends += ["libclc"]
+
+    return [
+        "etc/OpenCL",
+        "usr/lib/gallium-pipe",
+        "usr/lib/libMesaOpenCL.so.*",
+        "usr/lib/libRusticlOpenCL.so.*",
+    ]
+
+
+@subpackage("mesa-vaapi-git", _have_hwdec)
+def _vaapi(self):
+    self.provides = [f"mesa-vaapi={pkgver}-r{pkgrel}"]
+    self.replaces = [f"mesa-vaapi<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Mesa VA-API drivers"
+
+    return ["usr/lib/dri/*_drv_video.so"]
+
+
+@subpackage("mesa-dri-git")
+def _dri(self):
+    self.provides = [f"mesa-dri={pkgver}-r{pkgrel}"]
+    self.replaces = [f"mesa-dri<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Mesa DRI drivers"
+    self.install_if = [f"{pkgname}={pkgver}-r{pkgrel}"]
+
+    return ["usr/lib/dri"]
+
+
+@subpackage("mesa-vulkan-git", _have_vulkan)
+def _vulkan(self):
+    self.provides = [f"mesa-vulkan={pkgver}-r{pkgrel}"]
+    self.replaces = [f"mesa-vulkan<{pkgver.rsplit('_')[0]}"]
+    self.pkgdesc = "Mesa Vulkan drivers"
+    self.install_if = [f"mesa-dri={pkgver}-r{pkgrel}", "vulkan-loader"]
+
+    return [
+        "usr/bin/mesa-overlay-control.py",
+        "usr/lib/libvulkan_*.so",
+        "usr/lib/libVkLayer_*.so",
+        "usr/share/drirc.d/00-radv-defaults.conf",
+        "usr/share/vulkan/explicit_layer.d/VkLayer_*.json",
+        "usr/share/vulkan/implicit_layer.d/VkLayer_*.json",
+        "usr/share/vulkan/icd.d/*_icd*.json",
+    ]
+
+
+@subpackage("mesa-git-devel")
+def _devel(self):
+    self.provides = [f"mesa-devel={pkgver}-r{pkgrel}"]
+    self.replaces = [f"mesa-devel<{pkgver.rsplit('_')[0]}"]
+    self.depends += ["libgbm-devel"]
+
+    return self.default_devel()
