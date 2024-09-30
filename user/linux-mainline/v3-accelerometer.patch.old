@@ -1,0 +1,25 @@
+diff --git a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
+index 0c28ca349bcd..3d8e87a4cdb4 100644
+--- a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
++++ b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
+@@ -202,6 +202,12 @@ static const struct dmi_system_id dmi_sensor_mask_overrides[] = {
+ 		},
+ 		.driver_data = (void *)(ACEL_EN | MAGNO_EN),
+ 	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_PRODUCT_NAME, "V3"),
++		},
++		.driver_data = (void *)(ACEL_EN | ALS_EN),
++	},
+ 	{ }
+ };
+ 
+@@ -221,6 +227,7 @@ int amd_mp2_get_sensor_num(struct amd_mp2_dev *privdata, u8 *sensor_id)
+ 	} else {
+ 		activestatus = privdata->mp2_acs >> 4;
+ 	}
++	pr_err("AMDSFH: active sensors: %d\n", activestatus);
+ 
+ 	if (ACEL_EN  & activestatus)
+ 		sensor_id[num_of_sensors++] = accel_idx;
