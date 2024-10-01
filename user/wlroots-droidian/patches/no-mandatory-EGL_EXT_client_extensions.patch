@@ -1,0 +1,23 @@
+Keep rest of the code happy in case there's no EGL_EXT_client_extensions
+support as appears to be the case on Adreno 540 and ARM Mali-G71 GPUs
+under libhybris + EGL_PLATFORM=hwcomposer.
+
+--- a/render/egl.c
++++ b/render/egl.c
+@@ -231,12 +231,12 @@ static void init_dmabuf_formats(struct wlr_egl *egl) {
+ static struct wlr_egl *egl_create(bool is_android) {
+ 	const char *client_exts_str = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+ 	if (client_exts_str == NULL) {
+-		if (eglGetError() == EGL_BAD_DISPLAY) {
+-			wlr_log(WLR_ERROR, "EGL_EXT_client_extensions not supported");
+-		} else {
++		if (eglGetError() != EGL_BAD_DISPLAY) {
+ 			wlr_log(WLR_ERROR, "Failed to query EGL client extensions");
++			return NULL;
+ 		}
+-		return NULL;
++		wlr_log(WLR_INFO, "HYBRIS: Ignoring missing support for EGL_EXT_client_extensions");
++		client_exts_str = "";
+ 	}
+ 
+ 	wlr_log(WLR_INFO, "Supported EGL client extensions: %s", client_exts_str);
