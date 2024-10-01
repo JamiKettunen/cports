@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 
-if [ "$(getprop ro.build.version.sdk)" -ge 29 ]; then
+ANDROID_SDK_VERSION=$(sed -n 's/ro.build.version.sdk=//p' /system/build.prop)
+if [ "$ANDROID_SDK_VERSION" -ge 29 ]; then
 	# A10+ won't boot without this, tmpfs mounted in /var/lib/lxc/android/pre-start.sh
 	# and /usr/lib/lxc-android/lxc-android-notify later populates it
 	[ -L /apex ] || ln -sr /android/apex /apex
