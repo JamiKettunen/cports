@@ -23,9 +23,9 @@ makedepends = [
     "pango-devel",
     "wayland-protocols",
     "wf-config-devel",
-    "wlroots-droidian-devel",
+    "wlroots0.17-droidian-devel",
 ]
-depends = ["wlroots-droidian"]
+depends = ["wlroots0.17-droidian"]
 provides = [self.with_pkgver("wayfire")]
 replaces = ["wayfire"]
 replaces_priority = 1000
