@@ -25,6 +25,7 @@ makedepends = [
     "wf-config-devel",
     "wlroots-droidian-devel",
 ]
+depends = ["wlroots-droidian"]
 provides = [self.with_pkgver("wayfire")]
 replaces = ["wayfire"]
 replaces_priority = 1000
