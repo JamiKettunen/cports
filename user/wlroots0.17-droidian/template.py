@@ -1,4 +1,4 @@
-pkgname = "wlroots-droidian"
+pkgname = "wlroots0.17-droidian"
 pkgver = "0.17.4_git20240830"
 pkgrel = 0
 _branch = "feature/next/upgrade-0-17-4"
@@ -75,7 +75,7 @@ def post_install(self):
     self.install_license("LICENSE")
 
 
-@subpackage("wlroots-droidian-devel")
+@subpackage("wlroots0.17-droidian-devel")
 def _(self):
     self.provides = [self.with_pkgver("wlroots0.17-devel")]
     self.replaces = ["wlroots0.17-devel"]
