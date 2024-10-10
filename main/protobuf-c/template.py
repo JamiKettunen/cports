@@ -5,6 +5,7 @@ build_style = "gnu_configure"
 configure_args = [
     "--enable-protoc",
 ]
+configure_env = {"PROTOC": "/usr/bin/protoc"}
 hostmakedepends = ["automake", "slibtool", "pkgconf", "protoc"]
 makedepends = ["boost-devel", "protobuf-devel"]
 pkgdesc = "Protobuf implementation in C"
