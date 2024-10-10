@@ -2,6 +2,7 @@ pkgname = "libevent"
 pkgver = "2.1.12"
 pkgrel = 0
 build_style = "gnu_configure"
+make_dir = "."
 hostmakedepends = ["pkgconf"]
 makedepends = ["openssl-devel"]
 pkgdesc = "Abstract asynchronous event notification library"
