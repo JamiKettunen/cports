@@ -40,6 +40,9 @@ def install(self):
     self.install_file(
         self.files_path / "logcat.wrapper", "usr/libexec", mode=0o755
     )
+    self.install_file(
+        self.files_path / "android-boot-completed", "usr/libexec", mode=0o755
+    )
     self.install_service(self.files_path / "android-mounts")
     self.install_service(self.files_path / "lxc-android")
     self.install_service(self.files_path / "logcat")
