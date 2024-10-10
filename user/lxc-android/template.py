@@ -37,8 +37,12 @@ def install(self):
     self.install_file(
         self.files_path / "lxc-android.wrapper", "usr/libexec", mode=0o755
     )
+    self.install_file(
+        self.files_path / "logcat.wrapper", "usr/libexec", mode=0o755
+    )
     self.install_service(self.files_path / "android-mounts")
     self.install_service(self.files_path / "lxc-android")
+    self.install_service(self.files_path / "logcat")
     self.install_service(self.files_path / "android.target", enable=True)
 
     # avoid packaged files in /var + udev rule overrides
