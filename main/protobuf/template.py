@@ -20,7 +20,15 @@ hardening = ["!vis", "!cfi"]
 
 if self.profile().cross:
     hostmakedepends += ["protoc"]  # needs host protoc
-    broken = "generated protobuf-targets.cmake looks for protoc in target sysroot, cannot cross-build android-tools etc"
+    configure_args += [
+        #"-Dprotobuf_PROTOC_EXE=/usr/bin/protoc",
+        #"-DProtobuf_PROTOC_EXECUTABLE=/usr/bin/protoc",
+        #"-DPROTOC_EXE=/usr/bin/protoc",
+        # HACK: "/bin/sh: protobuf::protoc: not found" and none of the above change a thing
+        "-Dprotobuf_BUILD_TESTS=OFF",
+    ]
+    # FIXME: generated protobuf-targets.cmake looks for protoc in target sysroot?
+    # -> cannot cross-build android-tools etc?
 
 
 def post_install(self):
