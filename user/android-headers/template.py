@@ -2,7 +2,7 @@ pkgname = "android-headers"
 pkgver = "11.0_git20211130"
 pkgrel = 0
 # FIXME: drop later, mostly to keep myself from building for x86_64 host on accident
-archs = ["aarch64"]
+archs = ["aarch64", "armv7"]
 _branch = "halium-11.0"
 _commit = "2c6ac3dcc4f8db593dd69906b0ec22822abfed91"
 build_style = "makefile"
