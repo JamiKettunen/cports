@@ -6,15 +6,16 @@ hostmakedepends = [
     "gettext",
     "perl",
     "pkgconf",
-    "tk",
+    #"tk",
     "xmlto",
+    "libcurl-devel",
 ]
 makedepends = [
     "curl-devel",
     "libexpat-devel",
-    "libsecret-devel",
+    #"libsecret-devel",
     "pcre2-devel",
-    "tk-devel",
+    #"tk-devel",
 ]
 depends = [
     "ca-certificates",
@@ -29,7 +30,8 @@ license = "GPL-2.0-only"
 url = "https://git-scm.com"
 source = f"https://www.kernel.org/pub/software/scm/git/git-{pkgver}.tar.xz"
 sha256 = "f3d8f9bb23ae392374e91cd9d395970dabc5b9c5ee72f39884613cd84a6ed310"
-hardening = ["!vis", "!cfi"]
+# armv7 FIXME: int fails on "git clone"
+hardening = ["!int", "!vis", "!cfi"]
 
 
 def configure(self):
@@ -67,7 +69,7 @@ def build(self):
     self.do(*cmd, "-C", "contrib/contacts", "all", "git-contacts.1")
     self.do(*cmd, "-C", "contrib/diff-highlight", "all")
     self.do(*cmd, "-C", "contrib/subtree", "all", "man")
-    self.do(*cmd, "-C", "contrib/credential/libsecret", "all")
+    #self.do(*cmd, "-C", "contrib/credential/libsecret", "all")
 
 
 def check(self):
@@ -82,11 +84,11 @@ def install(self):
     self.do("make", "-C", "contrib/contacts", "install", "install-man", ddir)
     self.do("make", "-C", "contrib/subtree", "install", "install-man", ddir)
     # no install target
-    self.install_file(
-        "contrib/credential/libsecret/git-credential-libsecret",
-        "usr/lib/git-core",
-        mode=0o755,
-    )
+    #self.install_file(
+    #    "contrib/credential/libsecret/git-credential-libsecret",
+    #    "usr/lib/git-core",
+    #    mode=0o755,
+    #)
 
     # remove cvs for now
     self.uninstall("usr/bin/git-cvsserver")
@@ -124,7 +126,7 @@ def install(self):
     self.install_shell("/usr/bin/git-shell")
 
 
-@subpackage("gitk")
+@subpackage("gitk", False)
 def _(self):
     self.depends += [self.parent, "tk"]
     self.pkgdesc = "Git repository browser"
@@ -132,7 +134,7 @@ def _(self):
     return ["usr/bin/gitk", "usr/share/gitk", "usr/share/man/man1/gitk.1"]
 
 
-@subpackage("git-gui")
+@subpackage("git-gui", False)
 def _(self):
     self.depends += [self.parent, "tk"]
     self.subdesc = "GUI tool"
@@ -146,7 +148,7 @@ def _(self):
     ]
 
 
-@subpackage("git-credential-libsecret")
+@subpackage("git-credential-libsecret", False)
 def _(self):
     self.depends += [self.parent]
     self.install_if = [self.parent, "libsecret"]
@@ -166,7 +168,7 @@ def _(self):
     ]
 
 
-@subpackage("git-svn")
+@subpackage("git-svn", False)
 def _(self):
     self.subdesc = "Subversion support"
     self.depends += [self.parent, "subversion-perl", "perl-termreadkey"]
