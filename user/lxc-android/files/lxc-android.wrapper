@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+>/var/log/lxc-android.log
 
 ANDROID_SDK_VERSION=$(sed -n 's/ro.build.version.sdk=//p' /system/build.prop)
 if [ "$ANDROID_SDK_VERSION" -ge 29 ]; then

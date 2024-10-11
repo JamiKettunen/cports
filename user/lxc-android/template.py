@@ -1,7 +1,7 @@
 pkgname = "lxc-android"
-pkgver = "36_git20241008"
+pkgver = "36_git20241010"
 pkgrel = 0
-_commit = "81ec50f37102e23cd990b2c82b133e649cd6c3e1"
+_commit = "736110bde576806e3ff8566fc640ab3f1f0db48f"
 depends = [
     "lxc",
     "parse-android-dynparts",
@@ -14,7 +14,7 @@ maintainer = "Jami Kettunen <jami.kettunen@protonmail.com>"
 license = "custom:none"
 url = "https://github.com/droidian/lxc-android"
 source = f"https://github.com/JamiKettunen/lxc-android/archive/{_commit}.tar.gz"
-sha256 = "2298fd0454ac3cc35b1a4c13ff446645b579966fc41cc9d5ee4c10bd2c955729"
+sha256 = "46968dde5da9796c5b4bb4243a09e0f64ba9a202c94695eb7cb65881f7b2f409"
 
 
 def install(self):

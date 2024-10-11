@@ -1,4 +1,5 @@
 #!/bin/sh
+>/var/log/android-mounts.log
 
 # undo mess Halium initrd left behind (ubuntu.img), we want all cleanly under /android
 umount /var/lib/lxc/android/rootfs /android/system
