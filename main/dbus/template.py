@@ -15,6 +15,8 @@ configure_args = [
     "--with-dbus-user=dbus",
     "--with-system-socket=/run/dbus/system_bus_socket",
     "--with-system-pid-file=/run/dbus/pid",
+    "--enable-verbose-mode",
+    "--enable-asserts",
 ]
 configure_gen = []
 hostmakedepends = ["gperf", "pkgconf", "xmlto"]
