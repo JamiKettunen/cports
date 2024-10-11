@@ -13,7 +13,7 @@ configure_args = [
     "--with-mantype=doc",
     "--with-pam",
     "--with-libedit",
-    "--with-kerberos5",
+    #"--with-kerberos5", # armv7 fixme openldap libtool !cross
     "--with-pid-dir=/run",
     "--with-privsep-user=nobody",
     "--with-privsep-path=/var/chroot/ssh",
@@ -30,7 +30,7 @@ hostmakedepends = [
     "pkgconf",
 ]
 makedepends = [
-    "heimdal-devel",
+    #"heimdal-devel", # armv7 fixme openldap libtool !cross
     "libedit-devel",
     "libfido2-devel",
     "libldns-devel",
