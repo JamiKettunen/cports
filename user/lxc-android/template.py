@@ -2,6 +2,7 @@ pkgname = "lxc-android"
 pkgver = "36_git20241013"
 pkgrel = 0
 _commit = "fa2ec3a8cbeb0cfdadb799cecf971b42c0b22252"
+_branch = "chimera"
 depends = [
     "lxc",
     "parse-android-dynparts",
