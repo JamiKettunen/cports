@@ -28,9 +28,4 @@ options = ["!distlicense"]
 def post_install(self):
     self.uninstall("usr/lib/systemd")
 
-    self.install_file(
-        self.files_path / "android-service.wrapper", "usr/libexec", mode=0o755
-    )
     self.install_service(self.files_path / "android-service")
-    self.install_service(self.files_path / "android-hwcomposer", enable=True) # TODO: no auto-enable?
-    self.install_file(self.files_path / "android-hwcomposer.conf", "etc")
