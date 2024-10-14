@@ -1,31 +1,60 @@
+diff --git a/src/dinit.cc b/src/dinit.cc
+index d2d0510..26bade8 100644
 --- a/src/dinit.cc
 +++ b/src/dinit.cc
-@@ -195,6 +195,9 @@ namespace {
-     constexpr auto dinit_exec = literal(SBINDIR) + "/" + "dinit";
-     constexpr auto error_exec_sd = literal("Error executing ") + shutdown_exec + ": ";
-     constexpr auto error_exec_dinit = literal("Error executing ") + dinit_exec + ": ";
-+    // HYBRIS HACK: Panic command handler in case dinit fails to boot the system
-+    constexpr auto panic_exec = literal(SBINDIR) + "/" + "dinit-panic";
-+    constexpr auto error_exec_panic = literal("Error executing ") + panic_exec + ": ";
- }
+@@ -79,6 +79,7 @@ static dirload_service_set *services;
  
- // Options handled in dinit_main
-@@ -718,7 +721,17 @@ int dinit_main(int argc, char **argv)
+ static bool am_system_mgr = false;     // true if we are PID 1
+ static bool am_system_init = false; // true if we are the system init process
++static bool auto_recovery = false;  // automatically run recovery service on boot failure
+ 
+ static bool did_log_boot = false;
+ static bool control_socket_open = false;
+@@ -292,6 +293,9 @@ static int process_commandline_arg(char **argv, int argc, int &i, options &opts)
+             am_system_mgr = false;
+             opts.process_sys_args = false;
+         }
++        else if (strcmp(argv[i], "--auto-recovery") == 0 || strcmp(argv[i], "-r") == 0) {
++            auto_recovery = true;
++        }
+         else if (strcmp(argv[i], "--socket-path") == 0 || strcmp(argv[i], "-p") == 0) {
+             if (++i < argc && argv[i][0] != '\0') {
+                 control_socket_path = argv[i];
+@@ -391,6 +395,7 @@ static int process_commandline_arg(char **argv, int argc, int &i, options &opts)
+                     " --system-mgr, -m             run as system manager (perform shutdown etc)\n"
+                     " --user, -u                   run as a user service manager\n"
+                     " --container, -o              run in container mode (do not manage system)\n"
++                    " --auto-recovery, -r          auto-run recovery service on system manager boot failure\n"
+                     " --socket-path <path>, -p <path>\n"
+                     "                              path to control socket\n"
+                     " --ready-fd <fd>, -F <fd>\n"
+@@ -718,7 +723,19 @@ int dinit_main(int argc, char **argv)
              // Services all stopped but there was no shutdown issued. Inform user, wait for ack, and
              // re-start boot sequence.
              sync(); // Sync to minimise data loss if user elects to power off / hard reset
 -            confirm_restart_boot();
-+            // HYBRIS HACK: There's likely no working VT for user input in confirm_restart_boot()
-+            log_msg_end(" Will run dinit-panic or reboot.");
-+            flush_log();
-+            sync();
-+
-+            execl(panic_exec.c_str(), panic_exec.c_str(), nullptr);
-+            log(loglevel_t::ERROR, error_exec_panic, strerror(errno));
-+            flush_log();
-+            sync();
-+            shutdown_type = shutdown_type_t::REBOOT;
-+
++            if (auto_recovery) {
++                try {
++                    log_msg_end(" Will start recovery.");
++                    services->start_service("recovery");
++                }
++                catch (...) {
++                    std::cout << "Unable to start recovery service.\n";
++                    confirm_restart_boot();
++                }
++            } else {
++                log_msg_end(" Will prompt user.");
++                confirm_restart_boot();
++            }
              if (services->count_active_services() != 0) {
                  // Recovery service started
                  goto run_event_loop;
+@@ -781,7 +798,7 @@ int dinit_main(int argc, char **argv)
+ static void confirm_restart_boot() noexcept
+ {
+     // Bypass log; we want to make certain the message is seen:
+-    std::cout << "All services have stopped with no shutdown issued; boot failure?\n";
++    std::cout << "All services have stopped with no shutdown issued; z?\n";
+ 
+     // Drain input, set non-canonical input mode (receive characters as they are typed)
+     struct termios term_attr;

@@ -1,0 +1,391 @@
+From e7ad5b1b9927a78fc345c41e7ed7b1dc4938a164 Mon Sep 17 00:00:00 2001
+From: Davin McCall <davmac@davmac.org>
+Date: Sun, 13 Oct 2024 15:01:51 +1000
+Subject: [PATCH] Remove temp variable from settings_wrapper
+
+---
+ src/includes/load-service.h | 23 +++++++++--------------
+ 1 file changed, 9 insertions(+), 14 deletions(-)
+
+diff --git a/src/includes/load-service.h b/src/includes/load-service.h
+index 333e336c..e4a9753b 100644
+--- a/src/includes/load-service.h
++++ b/src/includes/load-service.h
+@@ -1235,11 +1235,12 @@ static void value_var_subst(const char *setting_name, std::string &line,
+ 
+ // Reads a dependency name while performing minimal argument expansion in it.
+ inline string read_dependency_value(const char *setting_name, file_pos_ref input_pos, string_iterator &i,
+-        string_iterator end, std::list<std::pair<unsigned,unsigned>> &offsets, const char *argval)
++        string_iterator end, const char *argval)
+ {
+     string rval;
+     read_setting_value(rval, setting_op_t::ASSIGN, input_pos, i, end, nullptr);
+-    offsets.clear();
++
++    std::list<std::pair<unsigned,unsigned>> offsets;
+     offsets.emplace_back(0, rval.size());
+     value_var_subst(setting_name, rval, offsets, resolve_env_var, nullptr, argval);
+     return rval;
+@@ -1269,7 +1270,6 @@ class service_settings_wrapper
+     list<dep_type> depends;
+     list<std::string> before_svcs;
+     list<std::string> after_svcs;
+-    list<pair<unsigned,unsigned>> str_offsets; // stores offsets for any substutions where we don't care about them
+     log_type_id log_type = log_type_id::NONE;
+     string logfile;
+     int logfile_perms = 0600;
+@@ -1410,7 +1410,7 @@ class service_settings_wrapper
+         {
+             auto do_resolve = [&](const char *setting_name, string &setting_value) {
+                 try {
+-                    str_offsets.clear();
++                    list<pair<unsigned,unsigned>> str_offsets;
+                     str_offsets.emplace_back(0, setting_value.size());
+                     value_var_subst(setting_name, setting_value, str_offsets, var_subst, &envmap, argval);
+                 }
+@@ -1552,24 +1552,21 @@ void process_service_line(settings_wrapper &settings, const char *name, const ch
+             break;
+         case setting_id_t::DEPENDS_ON:
+         {
+-            string dependency_name = read_dependency_value(setting.c_str(), input_pos,
+-                    i, end, settings.str_offsets, arg);
++            string dependency_name = read_dependency_value(setting.c_str(), input_pos, i, end, arg);
+             settings.depends.emplace_back(load_service(dependency_name.c_str()),
+                     dependency_type::REGULAR);
+             break;
+         }
+         case setting_id_t::DEPENDS_MS:
+         {
+-            string dependency_name = read_dependency_value(setting.c_str(), input_pos,
+-                    i, end, settings.str_offsets, arg);
++            string dependency_name = read_dependency_value(setting.c_str(), input_pos, i, end, arg);
+             settings.depends.emplace_back(load_service(dependency_name.c_str()),
+                     dependency_type::MILESTONE);
+             break;
+         }
+         case setting_id_t::WAITS_FOR:
+         {
+-            string dependency_name = read_dependency_value(setting.c_str(), input_pos,
+-                    i, end, settings.str_offsets, arg);
++            string dependency_name = read_dependency_value(setting.c_str(), input_pos, i, end, arg);
+             settings.depends.emplace_back(load_service(dependency_name.c_str()),
+                     dependency_type::WAITS_FOR);
+             break;
+@@ -1594,15 +1591,13 @@ void process_service_line(settings_wrapper &settings, const char *name, const ch
+         }
+         case setting_id_t::AFTER:
+         {
+-            string after_name = read_dependency_value(setting.c_str(), input_pos,
+-                    i, end, settings.str_offsets, arg);
++            string after_name = read_dependency_value(setting.c_str(), input_pos, i, end, arg);
+             settings.after_svcs.emplace_back(std::move(after_name));
+             break;
+         }
+         case setting_id_t::BEFORE:
+         {
+-            string before_name = read_dependency_value(setting.c_str(), input_pos,
+-                    i, end, settings.str_offsets, arg);
++            string before_name = read_dependency_value(setting.c_str(), input_pos, i, end, arg);
+             settings.before_svcs.emplace_back(std::move(before_name));
+             break;
+         }
+
+From 128606cdd54b27bb2cef38e595f66bb53dc1c926 Mon Sep 17 00:00:00 2001
+From: q66 <q66@chimera-linux.org>
+Date: Sun, 13 Oct 2024 22:52:28 +0200
+Subject: [PATCH 1/3] Perform minimal variable expansion on includes
+
+This is especially useful with @include-opt to conditionally
+use different fields depending on parameter value.
+---
+ doc/manpages/dinit-service.5.m4   |  2 ++
+ src/igr-tests/igr-runner.cc       |  3 ++-
+ src/igr-tests/svc-arg/checkarg.sh |  4 ++++
+ src/igr-tests/svc-arg/sd/checkarg |  3 +++
+ src/igr-tests/svc-arg/sd/env-foo  |  1 +
+ src/igr-tests/svc-arg/sd/inc-foo  |  1 +
+ src/includes/load-service.h       | 29 +++++++++++++++++++++++------
+ src/load-service.cc               |  2 +-
+ 8 files changed, 37 insertions(+), 8 deletions(-)
+ create mode 100644 src/igr-tests/svc-arg/sd/env-foo
+ create mode 100644 src/igr-tests/svc-arg/sd/inc-foo
+
+diff --git a/doc/manpages/dinit-service.5.m4 b/doc/manpages/dinit-service.5.m4
+index 6da89dfa..bc4fa745 100644
+--- a/doc/manpages/dinit-service.5.m4
++++ b/doc/manpages/dinit-service.5.m4
+@@ -784,6 +784,8 @@ The following commands are available:
+ \fB@include\fR \fIpath\fR
+ Include the contents of another file, specified via its full path.
+ If the specified file does not exist, an error is produced.
++The \fIpath\fR is subject to minimal variable substitution
++(see \fBVARIABLE SUBSTITUTION\fR).
+ .TP
+ \fB@include\-opt\fR \fIpath\fR
+ As for \fB@include\fR, but produces no error if the named file does not exist.
+diff --git a/src/igr-tests/igr-runner.cc b/src/igr-tests/igr-runner.cc
+index e9bb539e..7f20839f 100644
+--- a/src/igr-tests/igr-runner.cc
++++ b/src/igr-tests/igr-runner.cc
+@@ -995,5 +995,6 @@ void svc_arg_test()
+             "test-hello\n" +
+             "hello\n" +
+             "foo\n" +
+-            "foo\n");
++            "foo\n" +
++            "bar\n");
+ }
+diff --git a/src/igr-tests/svc-arg/checkarg.sh b/src/igr-tests/svc-arg/checkarg.sh
+index f6bff94b..684e4e76 100755
+--- a/src/igr-tests/svc-arg/checkarg.sh
++++ b/src/igr-tests/svc-arg/checkarg.sh
+@@ -1,3 +1,7 @@
+ #!/bin/sh
+ 
+ echo "$1" >> "$OUTPUT"
++
++if [ -n "$FOOVAR" ]; then
++    echo "$FOOVAR" >> "$OUTPUT"
++fi
+diff --git a/src/igr-tests/svc-arg/sd/checkarg b/src/igr-tests/svc-arg/sd/checkarg
+index d781ef9c..914e6bfb 100644
+--- a/src/igr-tests/svc-arg/sd/checkarg
++++ b/src/igr-tests/svc-arg/sd/checkarg
+@@ -2,3 +2,6 @@ type = process
+ waits-for = checkarg2@$1
+ command = ../checkarg.sh $1
+ restart = false
++# this normally only supports absolute paths,
++# but here we control it so just for the test...
++@include-opt sd/inc-$1
+diff --git a/src/igr-tests/svc-arg/sd/env-foo b/src/igr-tests/svc-arg/sd/env-foo
+new file mode 100644
+index 00000000..bbbf8ce3
+--- /dev/null
++++ b/src/igr-tests/svc-arg/sd/env-foo
+@@ -0,0 +1 @@
++FOOVAR=bar
+diff --git a/src/igr-tests/svc-arg/sd/inc-foo b/src/igr-tests/svc-arg/sd/inc-foo
+new file mode 100644
+index 00000000..94790515
+--- /dev/null
++++ b/src/igr-tests/svc-arg/sd/inc-foo
+@@ -0,0 +1 @@
++env-file = env-foo
+diff --git a/src/includes/load-service.h b/src/includes/load-service.h
+index e4a9753b..9e20addd 100644
+--- a/src/includes/load-service.h
++++ b/src/includes/load-service.h
+@@ -883,6 +883,9 @@ inline void parse_rlimit(const std::string &line, file_pos_ref input_pos,
+     }
+ }
+ 
++inline string read_include_path(string const &svcname, string const &meta_cmd, file_pos_ref input_pos,
++        string_iterator &i, string_iterator end, const char *argval);
++
+ // Process an opened service file, line by line.
+ //    name - the service name
+ //    service_input - the service file input stream (stack)
+@@ -899,7 +902,7 @@ inline void parse_rlimit(const std::string &line, file_pos_ref input_pos,
+ //
+ // May throw service load exceptions or I/O exceptions if enabled on stream.
+ template <typename T>
+-void process_service_file(string name, file_input_stack &service_input, T process_line_func)
++void process_service_file(string name, file_input_stack &service_input, T process_line_func, const char *argval = nullptr)
+ {
+     string line;
+ 
+@@ -957,12 +960,8 @@ void process_service_file(string name, file_input_stack &service_input, T proces
+                 bool is_include_opt = (meta_cmd == "include-opt");
+                 if (is_include_opt || meta_cmd == "include") {
+                     // @include-opt or @include
+-                    std::list<std::pair<unsigned,unsigned>> part_positions;
+                     file_pos_ref input_pos { service_input.current_file_name(), line_num };
+-                    std::string include_name = read_setting_value(input_pos, i, end, &part_positions);
+-                    if (part_positions.size() != 1) {
+-                        throw service_description_exc(name, "'@" + meta_cmd + "' requires a single argument", input_pos);
+-                    }
++                    std::string include_name = read_include_path(name, meta_cmd, input_pos, i, end, argval);
+ 
+                     std::ifstream file(include_name);
+                     file.exceptions(std::ios::badbit);
+@@ -1246,6 +1245,24 @@ inline string read_dependency_value(const char *setting_name, file_pos_ref input
+     return rval;
+ }
+ 
++// Reads an include path while performing minimal argument expansion in it.
++inline string read_include_path(string const &svcname, string const &meta_cmd, file_pos_ref input_pos,
++        string_iterator &i, string_iterator end, const char *argval)
++{
++    string rval;
++    std::list<std::pair<unsigned,unsigned>> parts;
++
++    read_setting_value(rval, setting_op_t::ASSIGN, input_pos, i, end, &parts);
++    if (parts.size() != 1) {
++        throw service_description_exc(svcname, "'@" + meta_cmd + "' requires a single argument", input_pos);
++    }
++
++    std::list<std::pair<unsigned,unsigned>> offsets;
++    offsets.emplace_back(0, rval.size());
++    value_var_subst(meta_cmd.c_str(), rval, offsets, resolve_env_var, nullptr, argval);
++    return rval;
++}
++
+ // A wrapper type for service parameters. It is parameterised by dependency type.
+ template <class dep_type>
+ class service_settings_wrapper
+diff --git a/src/load-service.cc b/src/load-service.cc
+index fd4f46b2..42429319 100644
+--- a/src/load-service.cc
++++ b/src/load-service.cc
+@@ -523,7 +523,7 @@ service_record * dirload_service_set::load_reload_service(const char *fullname,
+ 
+             process_service_line(settings, name.c_str(), argval, line, fpr, setting,
+                     op, i, end, load_service_n, process_dep_dir_n);
+-        });
++        }, argval);
+ 
+         auto report_err = [&](const char *msg){
+             throw service_load_exc(name, msg);
+
+From 67596ec0f41ab40a14d308ae6692419c0759093a Mon Sep 17 00:00:00 2001
+From: q66 <q66@chimera-linux.org>
+Date: Sun, 13 Oct 2024 23:05:03 +0200
+Subject: [PATCH 2/3] Relax parameter checks when using advanced substitution
+ syntax
+
+We want to be able to in some cases substitute a default value
+for an argument, e.g. "dhcpcd" without an argument should
+manage all ifaces, while with an argument it should manage
+the specific iface. For basic syntax without replacements,
+leave it as error when it's missing.
+---
+ src/includes/load-service.h | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/src/includes/load-service.h b/src/includes/load-service.h
+index 9e20addd..33e2d325 100644
+--- a/src/includes/load-service.h
++++ b/src/includes/load-service.h
+@@ -1092,9 +1092,9 @@ static void value_var_subst(const char *setting_name, std::string &line,
+                 if (name.empty()) {
+                     throw service_description_exc(setting_name, "invalid/missing variable name after '$'");
+                 }
+-                else if (is_arg && (name != "1" || !argval)) {
+-                    // only one arg is supported and it must be present
+-                    throw service_description_exc(setting_name, "missing value in argument substitution");
++                else if (is_arg && name != "1") {
++                    // only one arg is supported
++                    throw service_description_exc(setting_name, "only one service argument may be present");
+                 }
+                 char altmode = '\0';
+                 bool colon = false;
+@@ -1132,11 +1132,17 @@ static void value_var_subst(const char *setting_name, std::string &line,
+                     if (!resolved || (colon && !*resolved)) {
+                         resolved_vw = {line.c_str() + (altbeg - line.begin()), (size_t)(altend - altbeg)};
+                     }
+-                } else if (altmode == '+') {
++                }
++                else if (altmode == '+') {
+                     if (resolved && (!colon || *resolved)) {
+                         resolved_vw = {line.c_str() + (altbeg - line.begin()), (size_t)(altend - altbeg)};
+                     }
+                 }
++                else if (is_arg && !argval) {
++                    // $1 and ${1} is special in that it must be set or it is an error
++                    // however, we want the more complex syntaxes for conditional substitution
++                    throw service_description_exc(setting_name, "missing value in argument substitution");
++                }
+ 
+                 xpos = j - line.begin();
+                 int name_len = xpos - dindx;
+
+From 2122bce2b60da1b0f4e2944d229ce05c7e5e3d8d Mon Sep 17 00:00:00 2001
+From: q66 <q66@chimera-linux.org>
+Date: Sun, 13 Oct 2024 23:10:31 +0200
+Subject: [PATCH 3/3] Perform minimal variable substitution on env-file path
+
+---
+ doc/manpages/dinit-service.5.m4 |  2 +-
+ src/includes/load-service.h     | 16 ++++++++--------
+ 2 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/doc/manpages/dinit-service.5.m4 b/doc/manpages/dinit-service.5.m4
+index bc4fa745..b520e0b6 100644
+--- a/doc/manpages/dinit-service.5.m4
++++ b/doc/manpages/dinit-service.5.m4
+@@ -198,7 +198,7 @@ Specifies a file containing value assignments for environment variables, in the
+ format recognised by the \fBdinit\fR command's \fB\-\-env\-file\fR option (see \fBdinit\fR(8)).
+ The file is read when the service is loaded, therefore values from it can be used in variable
+ substitutions (see \fBVARIABLE SUBSTITUTION\fR).
+-Variable substitution is not performed on the \fBenv\-file\fR property value itself.
++Minimal variable substitution is performed on the \fBenv\-file\fR property value itself.
+ If the path is not absolute, it is resolved relative to the directory containing the service
+ description.
+ .TP
+diff --git a/src/includes/load-service.h b/src/includes/load-service.h
+index 33e2d325..d8b7ceb1 100644
+--- a/src/includes/load-service.h
++++ b/src/includes/load-service.h
+@@ -1238,8 +1238,8 @@ static void value_var_subst(const char *setting_name, std::string &line,
+     line = std::move(r_line);
+ }
+ 
+-// Reads a dependency name while performing minimal argument expansion in it.
+-inline string read_dependency_value(const char *setting_name, file_pos_ref input_pos, string_iterator &i,
++// Reads a value while performing minimal argument expansion in it.
++inline string read_value_with_arg(const char *setting_name, file_pos_ref input_pos, string_iterator &i,
+         string_iterator end, const char *argval)
+ {
+     string rval;
+@@ -1537,7 +1537,7 @@ void process_service_line(settings_wrapper &settings, const char *name, const ch
+             settings.working_dir = read_setting_value(input_pos, i, end, nullptr);
+             break;
+         case setting_id_t::ENV_FILE:
+-            settings.env_file = read_setting_value(input_pos, i, end, nullptr);
++            settings.env_file = read_value_with_arg(setting.c_str(), input_pos, i, end, arg);
+             break;
+         #if SUPPORT_CGROUPS
+         case setting_id_t::RUN_IN_CGROUP:
+@@ -1575,21 +1575,21 @@ void process_service_line(settings_wrapper &settings, const char *name, const ch
+             break;
+         case setting_id_t::DEPENDS_ON:
+         {
+-            string dependency_name = read_dependency_value(setting.c_str(), input_pos, i, end, arg);
++            string dependency_name = read_value_with_arg(setting.c_str(), input_pos, i, end, arg);
+             settings.depends.emplace_back(load_service(dependency_name.c_str()),
+                     dependency_type::REGULAR);
+             break;
+         }
+         case setting_id_t::DEPENDS_MS:
+         {
+-            string dependency_name = read_dependency_value(setting.c_str(), input_pos, i, end, arg);
++            string dependency_name = read_value_with_arg(setting.c_str(), input_pos, i, end, arg);
+             settings.depends.emplace_back(load_service(dependency_name.c_str()),
+                     dependency_type::MILESTONE);
+             break;
+         }
+         case setting_id_t::WAITS_FOR:
+         {
+-            string dependency_name = read_dependency_value(setting.c_str(), input_pos, i, end, arg);
++            string dependency_name = read_value_with_arg(setting.c_str(), input_pos, i, end, arg);
+             settings.depends.emplace_back(load_service(dependency_name.c_str()),
+                     dependency_type::WAITS_FOR);
+             break;
+@@ -1614,13 +1614,13 @@ void process_service_line(settings_wrapper &settings, const char *name, const ch
+         }
+         case setting_id_t::AFTER:
+         {
+-            string after_name = read_dependency_value(setting.c_str(), input_pos, i, end, arg);
++            string after_name = read_value_with_arg(setting.c_str(), input_pos, i, end, arg);
+             settings.after_svcs.emplace_back(std::move(after_name));
+             break;
+         }
+         case setting_id_t::BEFORE:
+         {
+-            string before_name = read_dependency_value(setting.c_str(), input_pos, i, end, arg);
++            string before_name = read_value_with_arg(setting.c_str(), input_pos, i, end, arg);
+             settings.before_svcs.emplace_back(std::move(before_name));
+             break;
+         }
+
