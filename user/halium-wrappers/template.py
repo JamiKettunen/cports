@@ -1,6 +1,8 @@
 pkgname = "halium-wrappers"
-pkgver = "17"
+pkgver = "17_git20241014"
 pkgrel = 0
+_commit = "7603f2e10b921a9b9301a164c52911f09fae13c0"
+_branch = "chimera"
 build_style = "makefile"
 make_install_args = ["SBINDIR=/usr/bin", "TRIPLET="]
 hostmakedepends = ["pkgconf"]
@@ -14,8 +16,8 @@ pkgdesc = "Convenience wrappers to Android utilities"
 maintainer = "Jami Kettunen <jami.kettunen@protonmail.com>"
 license = "BSD-3-Clause"
 url = "https://github.com/droidian/halium-wrappers"
-source = f"{url}/archive/refs/tags/droidian/next/{pkgver}.tar.gz"
-sha256 = "5f9e583dc14fe682f5c3baf594f2da6db152ea85e642c57cbda5a3388f3f8e10"
+source = f"https://github.com/JamiKettunen/halium-wrappers/archive/{_commit}.tar.gz"
+sha256 = "2c945e06b2929f8ec3d069d303d559568ab036cc3ae68b42f38c65245eaf4ab2"
 file_modes = {
     "usr/lib/libtls-padding.so": ("root", "root", 0o4644),
     "usr/lib/libgtk6216workaround.so": ("root", "root", 0o4644),

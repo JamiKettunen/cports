@@ -5,4 +5,4 @@ command = /usr/lib/halium-wrappers/android-service.sh $ANDROID_SERVICE start
 stop-command = /usr/lib/halium-wrappers/android-service.sh $ANDROID_SERVICE stop
 depends-on = android.target
 ready-notification = pipevar:ANDROID_SERVICE_READY_FD
-#@include-opt /etc/android-service/$1.dinit
+@include-opt /etc/android-service/$1.dinit
