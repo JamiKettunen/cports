@@ -1,6 +1,5 @@
 type = process
 env-file = /etc/android-service/$1.env
-#env-file = /etc/default/android-$1
 command = /usr/lib/halium-wrappers/android-service.sh $ANDROID_SERVICE start
 stop-command = /usr/lib/halium-wrappers/android-service.sh $ANDROID_SERVICE stop
 depends-on = android.target
