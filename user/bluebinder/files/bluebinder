@@ -1,0 +1,6 @@
+type = process
+command = /usr/lib/bluebinder.wrapper
+depends-on = android-service@bluetooth
+before = bluetoothd
+ready-notification = pipevar:BLUEBINDER_READY_FD
+logfile = /var/log/bluebinder.log

@@ -1,0 +1,21 @@
+--- a/Makefile
++++ b/Makefile
+@@ -3,6 +3,7 @@
+ CC ?= $(CROSS_COMPILE)gcc
+ PKG_CONFIG ?= pkg-config
+ USE_SYSTEMD ?= 1
++SBINDIR ?= /usr/sbin
+ 
+ DEPEND_LIBS = libgbinder glib-2.0
+ ifeq ($(USE_SYSTEMD),1)
+@@ -15,8 +16,8 @@ bluebinder: bluebinder.c
+ 	$(CC) $(CFLAGS) -Wall -flto $^ `$(PKG_CONFIG) --cflags --libs $(DEPEND_LIBS)` -DUSE_SYSTEMD=$(USE_SYSTEMD) -o $@
+ 
+ install:
+-	mkdir -p $(DESTDIR)/usr/sbin
+-	cp bluebinder $(DESTDIR)/usr/sbin
++	mkdir -p $(DESTDIR)$(SBINDIR)
++	cp bluebinder $(DESTDIR)$(SBINDIR)
+ 
+ clean:
+ 	rm bluebinder

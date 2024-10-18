@@ -1,0 +1,13 @@
+--- a/bluebinder_post.sh
++++ b/bluebinder_post.sh
+@@ -1,8 +1,8 @@
+ #!/bin/sh
+ 
+ # Check for port provided script to populate the bluetooth address
+-if [ -x /usr/bin/droid/droid-get-bt-address.sh ] ; then
+-    /usr/bin/droid/droid-get-bt-address.sh
++if [ -x /usr/lib/droid-get-bt-address.sh ] ; then
++    /usr/lib/droid-get-bt-address.sh
+ fi
+ 
+ # If the bluetooth address is provided by another script use that

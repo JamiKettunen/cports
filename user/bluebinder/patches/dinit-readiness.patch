@@ -1,0 +1,18 @@
+--- a/bluebinder.c
++++ b/bluebinder.c
+@@ -688,6 +688,15 @@ check_bt_state(
+         fprintf(stderr, "Successfully initialized vhci bluetooth\n");
+ #if USE_SYSTEMD
+         sd_notify(0, "READY=1");
++#else
++        const char *rvar = getenv("BLUEBINDER_READY_FD");
++        if (rvar) {
++            int fdn = atoi(rvar);
++            if (fdn && !fcntl(fdn, F_GETFD)) {
++                write(fdn, "READY=1\n", sizeof("READY=1"));
++                close(fdn);
++            }
++        }
+ #endif
+         return G_SOURCE_REMOVE;
+     }
