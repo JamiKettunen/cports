@@ -1,0 +1,6 @@
+#!/bin/sh
+>/var/log/bluebinder.log
+
+/usr/lib/bluebinder_post.sh || exit 1
+
+exec bluebinder
