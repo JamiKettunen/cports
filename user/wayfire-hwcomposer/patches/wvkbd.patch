@@ -1,0 +1,15 @@
+--- a/plugins/single_plugins/idle.cpp
++++ b/plugins/single_plugins/idle.cpp
+@@ -144,10 +144,10 @@ class wayfire_idle_plugin : public wf::per_output_plugin_instance_t
+         {
+             if (entry.second.source == wf::OUTPUT_IMAGE_SOURCE_SELF){
+                 entry.second.source = wf::OUTPUT_IMAGE_SOURCE_DPMS;
+-                wf::get_core().run("killall squeekboard");
++                wf::get_core().run("killall wvkbd-mobintl");
+             } else if (entry.second.source == wf::OUTPUT_IMAGE_SOURCE_DPMS){
+                 entry.second.source = wf::OUTPUT_IMAGE_SOURCE_SELF;
+-                wf::get_core().run("squeekboard");
++                wf::get_core().run("wvkbd-mobintl");
+             }
+         }
+         wf::get_core().output_layout->apply_configuration(config);

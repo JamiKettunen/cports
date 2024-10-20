@@ -25,7 +25,7 @@ makedepends = [
     "wf-config-devel",
     "wlroots0.17-hwcomposer-devel",
 ]
-depends = ["wlroots0.17-hwcomposer"]
+depends = ["wlroots0.17-hwcomposer", "wvkbd"]
 provides = [self.with_pkgver("wayfire")]
 replaces = ["wayfire"]
 replaces_priority = 1000
