@@ -10,7 +10,7 @@ for s in $(dmsetup ls); do
     case ${s} in system*|vendor*) dmsetup remove_all; break ;; esac
 done
 
-#mkdir -p /android
+mkdir -p /android
 /usr/lib/lxc-android/mount-android || exit 1
 
 # duplicate some Halium initrd work in case the service restarts
@@ -21,6 +21,6 @@ done
 if [ -d /userdata/android-data ] && ! grep -q " /android/data " /proc/mounts; then
     mount -o bind /userdata/android-data /android/data || exit 1
 fi
-if [ ! -e /userdata/cache ] || ! grep -q " /android/cache " /proc/mounts; then
+if [ -d /userdata/cache ] && ! grep -q " /android/cache " /proc/mounts; then
     mount -o bind /userdata/cache /android/cache || exit 1
 fi
