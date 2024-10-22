@@ -15,3 +15,7 @@ sha256 = "f7203ef796f61af986c70c05816236cbd0d31b7aa9631e5ab53020ab7804aa9e"
 hardening = ["!vis", "!cfi"]
 # broken check target?
 options = ["!check"]
+
+
+if self.profile().cross:
+    configure_args = [f"--with-pcre2-prefix={self.profile().sysroot}/usr"]
