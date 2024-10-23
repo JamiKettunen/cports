@@ -1,6 +1,6 @@
 pkgname = "halium-gsi-13.0-arm32"
-# FIXME: update to actually include VNDK parts!
-pkgver = "27"
+# NOTE: 27 didn't actually include VNDK parts!
+pkgver = "29"
 pkgrel = 0
 archs = ["armv7", "aarch64"]
 depends = ["lxc-android"]
@@ -14,9 +14,9 @@ source = [
     f"{url}/{pkgver}/artifact/used-repos.txt>repos-{pkgver}.txt",
 ]
 sha256 = [
-    "40748306cdd9fcfb964048e320da0997e709c7dfc62ece443bef9e651e6c1de9",
-    "7f731b89fe78fabf024abb78039e435c2c4d4e36894ef9675b0dfcd233554e9a",
-    "160ac9a23fb9f38a217c27bbb92dcbaa31484965b7fb79a8d924906603df1dc7",
+    "0186baf3706c820243bebd79199eda053ee2c98c3aa92da5d80a644f861a657f",
+    "613e96b6d56d39fbbbe0cdefb62107219cb8820b12dc006515f2d4e5b30738de",
+    "34857e11a5870500afbd209a770f421ca4e767cd7e016f13daa4b31350627dce",
 ]
 compression = "zstd:19"
 
