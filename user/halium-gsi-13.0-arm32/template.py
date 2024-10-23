@@ -1,4 +1,5 @@
 pkgname = "halium-gsi-13.0-arm32"
+# FIXME: update to actually include VNDK parts!
 pkgver = "27"
 pkgrel = 0
 archs = ["armv7", "aarch64"]
