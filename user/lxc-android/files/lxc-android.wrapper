@@ -13,6 +13,6 @@ if [ "$ANDROID_SDK_VERSION" -ge 29 ]; then
 fi
 
 # NOTE: non-blocking so notify script can provide proper ready-notification
-lxc-start -n android
+lxc-start -n android --logfile=/var/log/lxc-android.log
 
 /usr/lib/lxc-android/lxc-android-notify
