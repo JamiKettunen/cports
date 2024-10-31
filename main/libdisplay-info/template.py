@@ -5,8 +5,6 @@ build_style = "meson"
 hostmakedepends = [
     "meson",
     "pkgconf",
-]
-makedepends = [
     "hwdata-devel",
 ]
 pkgdesc = "EDID and DisplayID library"
