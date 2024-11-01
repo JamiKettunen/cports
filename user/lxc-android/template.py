@@ -1,7 +1,7 @@
 pkgname = "lxc-android"
-pkgver = "36_git20241013"
+pkgver = "36_git20241101"
 pkgrel = 0
-_commit = "fa2ec3a8cbeb0cfdadb799cecf971b42c0b22252"
+_commit = "632040a94c84e58086c984035bfab1e96d55ca90"
 _branch = "chimera"
 depends = [
     "lxc",
@@ -15,7 +15,7 @@ maintainer = "Jami Kettunen <jami.kettunen@protonmail.com>"
 license = "custom:none"
 url = "https://github.com/droidian/lxc-android"
 source = f"https://github.com/JamiKettunen/lxc-android/archive/{_commit}.tar.gz"
-sha256 = "ca30e06f988439c0d5609c651b0faedf9a5e9fda768005600eb6e301b9cba363"
+sha256 = "290775a6ae7cfe004e9a670de07cafb51260309d388343bbf5b694872fdd6b05"
 
 
 def install(self):
