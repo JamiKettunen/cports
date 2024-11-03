@@ -82,6 +82,13 @@ hardening = ["!int"]
 # TODO
 options = ["!cross"]
 
+
+match self.profile().arch:
+    case "aarch64" | "armv7":
+        # FIXME xcb_glx_plugin: qglxintegration.cpp can't find <QtGui/private/qglxconvenience_p.h>
+        # (not that we could use glx anyway so meh)
+        configure_args += ["-DQT_FEATURE_opengles2=ON", "-DQT_FEATURE_xcb_glx_plugin=OFF"]
+
 if self.profile().cross:
     hostmakedepends += ["qt6-qtbase"]
     configure_args += ["-DQT_FORCE_BUILD_TOOLS=ON"]
