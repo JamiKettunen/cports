@@ -4,7 +4,7 @@ pkgrel = 0
 build_style = "gnu_configure"
 # their autoconf is dumb
 configure_gen = []
-hostmakedepends = ["pkgconf"]
+hostmakedepends = ["pkgconf", "libgpg-error-devel"]
 makedepends = ["libgpg-error-devel"]
 pkgdesc = "IPC library used by some GnuPG related software"
 maintainer = "eater <=@eater.me>"
