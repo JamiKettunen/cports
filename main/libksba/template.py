@@ -3,7 +3,7 @@ pkgver = "1.6.7"
 pkgrel = 0
 build_style = "gnu_configure"
 configure_gen = []
-hostmakedepends = ["pkgconf"]
+hostmakedepends = ["pkgconf", "libgpg-error-devel"]
 makedepends = ["libgpg-error-devel"]
 pkgdesc = "CMS and X.509 access library"
 maintainer = "eater <=@eater.me>"
