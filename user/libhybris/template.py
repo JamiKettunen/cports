@@ -1,7 +1,7 @@
 pkgname = "libhybris"
-pkgver = "0.1.0_git20241010"
+pkgver = "0.1.0_git20241107"
 pkgrel = 0
-_commit = "3fd78ee9b7067cdd84d446fb8612b8eb217c3cb9"
+_commit = "9f61f26c44d9a3bf62efb67d4c32a7a0c89c21ca"
 _branch = "master"
 # https://developer.android.com/ndk/guides/abis#sa
 archs = ["aarch64", "x86_64", "armv7"]
@@ -31,7 +31,7 @@ maintainer = "Jami Kettunen <jami.kettunen@protonmail.com>"
 license = "Apache-2.0"
 url = "https://github.com/libhybris/libhybris"
 source = f"https://github.com/libhybris/libhybris/archive/{_commit}.tar.gz"
-sha256 = "90ab6ad1960202fed9871559f6612ba339724e40ebff820d9902e22c9fca6571"
+sha256 = "4d7f723ce02c2231463eb6165c96a3b99ac2093f43590676da1470c01f2879a8"
 tool_flags = {
     # FIXME: lfs64 removal transition (allows dropping musl-bsd-headers too?), mandatory in the near future
     # FIXME: non-pod-varargs https://paste.c-net.org/xdkwvbbvsczl
