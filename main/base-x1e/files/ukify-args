@@ -1,0 +1,6 @@
+--linux=@LINUX@
+--initrd=@INITRD@
+--cmdline=@CMDLINE@
+--os-release=@/etc/os-release
+--hwids=/usr/share/x1e-hwids
+@DTBAUTO_ARGS@
