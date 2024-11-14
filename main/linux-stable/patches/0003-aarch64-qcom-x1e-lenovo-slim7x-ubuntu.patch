@@ -1,0 +1,412 @@
+Added Lenovo Yoga Slim 7x downstream pieces from
+https://git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux/+git/oracular/log/?h=qcom-x1e
+@ bff8be5ef10a (Ubuntu-qcom-x1e-6.14.0-32.32)
+See also https://git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux/+git/oracular/tree/debian.qcom-x1e/changelog?h=qcom-x1e:
+- UBUNTU: SAUCE: Add Bluetooth support for the Lenovo Yoga Slim 7x (037e4c49652c)
+- UBUNTU: SAUCE: dt-bindings: platform: Add bindings for Lenovo Yoga Slim 7x EC
+- UBUNTU: SAUCE: platform: arm64: Add driver for Lenovo Yoga Slim 7x's EC
+- UBUNTU: SAUCE: arm64: dts: qcom: Add EC to Lenovo Yoga Slim 7x (b7015e03ac0c)
+- arm64: dts: qcom: x1e80100-slim7x: Drop incorrect qcom,ath12k-calibration-variant (406639229ed9)
+ Documentation/devicetree/bindings/platform/lenovo,yoga-slim7x-ec.yaml |  50 ++++++++
+ MAINTAINERS                                                           |   6 +
+ arch/arm64/boot/dts/qcom/x1e80100-lenovo-yoga-slim7x.dts              |  45 ++++++-
+ drivers/platform/arm64/Kconfig                                        |  12 ++
+ drivers/platform/arm64/Makefile                                       |   1 +
+ drivers/platform/arm64/lenovo-yoga-slim7x.c                           | 202 +++++++++++++++++++++++++++++++
+ 6 files changed, 314 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/platform/lenovo,yoga-slim7x-ec.yaml b/Documentation/devicetree/bindings/platform/lenovo,yoga-slim7x-ec.yaml
+new file mode 100644
+index 000000000000..32f8a0b5d667
+--- /dev/null
++++ b/Documentation/devicetree/bindings/platform/lenovo,yoga-slim7x-ec.yaml
+@@ -0,0 +1,50 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/platform/lenovo,yoga-slim7x-ec.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Lenovo Yoga Slim 7x Embedded Controller.
++
++maintainers:
++  - Maya Matuszczyk <maccraft123mc@gmail.com>
++
++description:
++  The Lenovo Yoga Slim 7x has an EC which handles some minor functions, like
++  power LED or some special keys on the keyboard. This bindings describes
++  how it is connected
++
++properties:
++  compatible:
++    const: lenovo,yoga-slim7x-ec
++
++  reg:
++    const: 0x76
++
++  interrupts:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - interrupts
++
++additionalProperties: false
++
++examples:
++  - |+
++    #include <dt-bindings/interrupt-controller/irq.h>
++    i2c5 {
++        clock-frequency = <400000>;
++
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        embedded-controller@76 {
++            compatible = "lenovo,yoga-slim7x-ec";
++            reg = <0x76>;
++
++            interrupts-extended = <&tlmm 66 IRQ_TYPE_LEVEL_HIGH>;
++        };
++    };
++...
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 00e94bec401e..a7d8af2768ca 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -13151,6 +13151,12 @@ S:	Maintained
+ W:	http://legousb.sourceforge.net/
+ F:	drivers/usb/misc/legousbtower.c
+ 
++LENOVO YOGA SLIM 7X EC DRIVER
++M:	Maya Matuszczyk <maccraft123mc@gmail.com>
++S:	Maintained
++F:	Documentation/devicetree/bindings/platform/lenovo,yoga-slim7x-ec.yaml
++F:	drivers/platform/arm64/lenovo-yoga-slim7x.c
++
+ LETSKETCH HID TABLET DRIVER
+ M:	Hans de Goede <hdegoede@redhat.com>
+ L:	linux-input@vger.kernel.org
+diff --git a/arch/arm64/boot/dts/qcom/x1e80100-lenovo-yoga-slim7x.dts b/arch/arm64/boot/dts/qcom/x1e80100-lenovo-yoga-slim7x.dts
+index 9d4ba9728355..80081d4c1b56 100644
+--- a/arch/arm64/boot/dts/qcom/x1e80100-lenovo-yoga-slim7x.dts
++++ b/arch/arm64/boot/dts/qcom/x1e80100-lenovo-yoga-slim7x.dts
+@@ -18,6 +18,7 @@ / {
+ 
+ 	aliases {
+ 		serial0 = &uart21;
++		serial1 = &uart14;
+ 	};
+ 
+ 	chosen {
+@@ -563,6 +564,22 @@ keyboard@3a {
+ 	};
+ };
+ 
++&i2c5 {
++	clock-frequency = <400000>;
++
++	status = "okay";
++
++	embedded-controller@76 {
++		compatible = "lenovo,yoga-slim7x-ec";
++		reg = <0x76>;
++
++		interrupts-extended = <&tlmm 66 IRQ_TYPE_EDGE_FALLING>;
++
++		pinctrl-0 = <&ec_int_n_default>;
++		pinctrl-names = "default";
++	};
++};
++
+ &i2c8 {
+ 	clock-frequency = <400000>;
+ 
+@@ -675,8 +692,6 @@ &pcie4_port0 {
+ 	wifi@0 {
+ 		compatible = "pci17cb,1107";
+ 		reg = <0x10000 0x0 0x0 0x0 0x0>;
+-
+-		qcom,ath12k-calibration-variant = "LES790";
+ 	};
+ };
+ 
+@@ -829,6 +844,20 @@ &tlmm {
+ 			       <44 4>, /* SPI (TPM) */
+ 			       <238 1>; /* UFS Reset */
+ 
++        bt_en_default: bt-en-sleep {
++		pins = "gpio116";
++		function = "gpio";
++		output-low;
++		bias-disable;
++		qcom,drive-strength = <16>;
++	};
++
++	ec_int_n_default: ec-int-n-state {
++		pins = "gpio66";
++		function = "gpio";
++		bias-disable;
++	};
++
+ 	edp_reg_en: edp-reg-en-state {
+ 		pins = "gpio70";
+ 		function = "gpio";
+@@ -940,6 +969,18 @@ reset-n-pins {
+ 
+ };
+ 
++&uart14 {
++	status = "okay";
++
++	bluetooth: bt_wcn7850 {
++		compatible = "qcom,wcn7850-bt";
++		pinctrl-names = "default";
++		pinctrl-0 = <&bt_en_default>;
++		enable-gpios = <&tlmm 116 GPIO_ACTIVE_HIGH>;
++		max-speed = <3200000>;
++	};
++};
++
+ &uart21 {
+ 	compatible = "qcom,geni-debug-uart";
+ 	status = "okay";
+diff --git a/drivers/platform/arm64/Kconfig b/drivers/platform/arm64/Kconfig
+index f88395ea3376..9ceae50f8b4e 100644
+--- a/drivers/platform/arm64/Kconfig
++++ b/drivers/platform/arm64/Kconfig
+@@ -49,4 +49,16 @@ config EC_LENOVO_YOGA_C630
+ 
+ 	  Say M or Y here to include this support.
+ 
++config EC_LENOVO_YOGA_SLIM7X
++	tristate "Lenovo Yoga Slim 7x Embedded Controller driver"
++	depends on ARCH_QCOM || COMPILE_TEST
++	depends on I2C
++	help
++	  Select this option to enable driver for the EC found in the Lenovo
++	  Yoga Slim 7x.
++
++	  This driver currently supports reporting input event for microphone
++	  mute button, and reporting device suspend to the EC so it can take
++	  appropriate actions.
++
+ endif # ARM64_PLATFORM_DEVICES
+diff --git a/drivers/platform/arm64/Makefile b/drivers/platform/arm64/Makefile
+index b2ae9114fdd8..70dfc1fb979d 100644
+--- a/drivers/platform/arm64/Makefile
++++ b/drivers/platform/arm64/Makefile
+@@ -7,3 +7,4 @@
+ 
+ obj-$(CONFIG_EC_ACER_ASPIRE1)	+= acer-aspire1-ec.o
+ obj-$(CONFIG_EC_LENOVO_YOGA_C630) += lenovo-yoga-c630.o
++obj-$(CONFIG_EC_LENOVO_YOGA_SLIM7X) += lenovo-yoga-slim7x.o
+diff --git a/drivers/platform/arm64/lenovo-yoga-slim7x.c b/drivers/platform/arm64/lenovo-yoga-slim7x.c
+new file mode 100644
+index 000000000000..8f6d523395bc
+--- /dev/null
++++ b/drivers/platform/arm64/lenovo-yoga-slim7x.c
+@@ -0,0 +1,202 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (c) 2024 Maya Matuszczyk <maya.matuszczyk@gmail.com>
++ */
++#include <linux/auxiliary_bus.h>
++#include <linux/cleanup.h>
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/i2c.h>
++#include <linux/irqreturn.h>
++#include <linux/lockdep.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/notifier.h>
++#include <linux/slab.h>
++#include <linux/input.h>
++//#include <linux/platform_data/lenovo-yoga-slim7x.h>
++
++// These are the registers that i know about available from SMBUS
++#define EC_IRQ_REASON_REG 0x05
++#define EC_SUSPEND_RESUME_REG 0x23
++#define EC_IRQ_ENABLE_REG 0x35
++#define EC_BACKLIGHT_STATUS_REG 0x83
++#define EC_MIC_MUTE_LED_REG 0x84
++#define EC_AC_STATUS_REG 0x90
++
++// Valid values for EC_SUSPEND_RESUME_REG
++#define EC_NOTIFY_SUSPEND_ENTER 0x01
++#define EC_NOTIFY_SUSPEND_EXIT 0x00
++#define EC_NOTIFY_SCREEN_OFF 0x03
++#define EC_NOTIFY_SCREEN_ON 0x04
++
++// These are the values in EC_IRQ_REASON_REG that i could find in DSDT
++#define EC_IRQ_MICMUTE_BUTTON 0x04
++#define EC_IRQ_FAN1_STATUS_CHANGE 0x30
++#define EC_IRQ_FAN2_STATUS_CHANGE 0x31
++#define EC_IRQ_FAN1_SPEED_CHANGE 0x32
++#define EC_IRQ_FAN2_SPEED_CHANGE 0x33
++#define EC_IRQ_COMPLETED_LUT_UPDATE 0x34
++#define EC_IRQ_COMPLETED_FAN_PROFILE_SWITCH 0x35
++#define EC_IRQ_THERMISTOR_1_TEMP_THRESHOLD_CROSS 0x36
++#define EC_IRQ_THERMISTOR_2_TEMP_THRESHOLD_CROSS 0x37
++#define EC_IRQ_THERMISTOR_3_TEMP_THRESHOLD_CROSS 0x38
++#define EC_IRQ_THERMISTOR_4_TEMP_THRESHOLD_CROSS 0x39
++#define EC_IRQ_THERMISTOR_5_TEMP_THRESHOLD_CROSS 0x3a
++#define EC_IRQ_THERMISTOR_6_TEMP_THRESHOLD_CROSS 0x3b
++#define EC_IRQ_THERMISTOR_7_TEMP_THRESHOLD_CROSS 0x3c
++#define EC_IRQ_RECOVERED_FROM_RESET 0x3d
++#define EC_IRQ_LENOVO_SUPPORT_KEY 0x90
++#define EC_IRQ_FN_Q 0x91
++#define EC_IRQ_FN_M 0x92
++#define EC_IRQ_FN_SPACE 0x93
++#define EC_IRQ_FN_R 0x94
++#define EC_IRQ_FNLOCK_ON 0x95
++#define EC_IRQ_FNLOCK_OFF 0x96
++#define EC_IRQ_FN_N 0x97
++#define EC_IRQ_AI 0x9a
++#define EC_IRQ_NPU 0x9b
++
++struct yoga_slim7x_ec {
++	struct i2c_client *client;
++	struct input_dev *idev;
++	struct mutex lock;
++};
++
++static irqreturn_t yoga_slim7x_ec_irq(int irq, void *data)
++{
++	struct yoga_slim7x_ec *ec = data;
++	struct device *dev = &ec->client->dev;
++	int val;
++
++	guard(mutex)(&ec->lock);
++
++	val = i2c_smbus_read_byte_data(ec->client, EC_IRQ_REASON_REG);
++	if (val < 0) {
++		dev_err(dev, "Failed to get EC IRQ reason: %d\n", val);
++		return IRQ_HANDLED;
++	}
++
++	switch (val) {
++	case EC_IRQ_MICMUTE_BUTTON:
++		input_report_key(ec->idev, KEY_MICMUTE, 1);
++		input_sync(ec->idev);
++		input_report_key(ec->idev, KEY_MICMUTE, 0);
++		input_sync(ec->idev);
++		break;
++	default:
++		dev_info(dev, "Unhandled EC IRQ reason: %d\n", val);
++	}
++
++	return IRQ_HANDLED;
++}
++
++static int yoga_slim7x_ec_probe(struct i2c_client *client)
++{
++	struct device *dev = &client->dev;
++	struct yoga_slim7x_ec *ec;
++	int ret;
++
++	ec = devm_kzalloc(dev, sizeof(*ec), GFP_KERNEL);
++	if (!ec)
++		return -ENOMEM;
++
++	mutex_init(&ec->lock);
++	ec->client = client;
++
++	ec->idev = devm_input_allocate_device(dev);
++	if (!ec->idev)
++		return -ENOMEM;
++	ec->idev->name = "yoga-slim7x-ec";
++	ec->idev->phys = "yoga-slim7x-ec/input0";
++	input_set_capability(ec->idev, EV_KEY, KEY_MICMUTE);
++
++	ret = input_register_device(ec->idev);
++	if (ret < 0)
++		return dev_err_probe(dev, ret, "Failed to register input device\n");
++
++	ret = devm_request_threaded_irq(dev, client->irq,
++					NULL, yoga_slim7x_ec_irq,
++					IRQF_ONESHOT, "yoga_slim7x_ec", ec);
++	if (ret < 0)
++		return dev_err_probe(dev, ret, "Unable to request irq\n");
++
++	ret = i2c_smbus_write_byte_data(client, EC_IRQ_ENABLE_REG, 0x01);
++	if (ret < 0)
++		return dev_err_probe(dev, ret, "Failed to enable interrupts\n");
++
++	return 0;
++}
++
++static void yoga_slim7x_ec_remove(struct i2c_client *client)
++{
++	struct device *dev = &client->dev;
++	int ret;
++
++	ret = i2c_smbus_write_byte_data(client, EC_IRQ_ENABLE_REG, 0x00);
++	if (ret < 0)
++		dev_err(dev, "Failed to disable interrupts: %d\n", ret);
++}
++
++static int yoga_slim7x_ec_suspend(struct device *dev)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	int ret;
++
++	ret = i2c_smbus_write_byte_data(client, EC_SUSPEND_RESUME_REG, EC_NOTIFY_SCREEN_OFF);
++	if (ret)
++		return ret;
++
++	ret = i2c_smbus_write_byte_data(client, EC_SUSPEND_RESUME_REG, EC_NOTIFY_SUSPEND_ENTER);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static int yoga_slim7x_ec_resume(struct device *dev)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	int ret;
++
++	ret = i2c_smbus_write_byte_data(client, EC_SUSPEND_RESUME_REG, EC_NOTIFY_SUSPEND_EXIT);
++	if (ret)
++		return ret;
++
++	ret = i2c_smbus_write_byte_data(client, EC_SUSPEND_RESUME_REG, EC_NOTIFY_SCREEN_ON);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static const struct of_device_id yoga_slim7x_ec_of_match[] = {
++	{ .compatible = "lenovo,yoga-slim7x-ec" },
++	{}
++};
++MODULE_DEVICE_TABLE(of, yoga_slim7x_ec_of_match);
++
++static const struct i2c_device_id yoga_slim7x_ec_i2c_id_table[] = {
++	{ "yoga-slim7x-ec", },
++	{}
++};
++MODULE_DEVICE_TABLE(i2c, yoga_slim7x_ec_i2c_id_table);
++
++static DEFINE_SIMPLE_DEV_PM_OPS(yoga_slim7x_ec_pm_ops,
++		yoga_slim7x_ec_suspend,
++		yoga_slim7x_ec_resume);
++
++static struct i2c_driver yoga_slim7x_ec_i2c_driver = {
++	.driver = {
++		.name = "yoga-slim7x-ec",
++		.of_match_table = yoga_slim7x_ec_of_match,
++		.pm = &yoga_slim7x_ec_pm_ops
++	},
++	.probe = yoga_slim7x_ec_probe,
++	.remove = yoga_slim7x_ec_remove,
++	.id_table = yoga_slim7x_ec_i2c_id_table,
++};
++module_i2c_driver(yoga_slim7x_ec_i2c_driver);
++
++MODULE_DESCRIPTION("Lenovo Yoga Slim 7x Embedded Controller");
++MODULE_LICENSE("GPL");

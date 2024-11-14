@@ -1,0 +1,28 @@
+Added Lenovo ThinkPad T14s Gen 6 downstream pieces from
+https://git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux/+git/oracular/log/?h=qcom-x1e
+@ bff8be5ef10a (Ubuntu-qcom-x1e-6.14.0-32.32)
+See also https://git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux/+git/oracular/tree/debian.qcom-x1e/changelog?h=qcom-x1e:
+- UBUNTU: SAUCE: arm64: dts: qcom: x1e80100-t14s: Enable HBR3 on external DPs (a7925ebec818)
+ arch/arm64/boot/dts/qcom/x1e78100-lenovo-thinkpad-t14s.dtsi | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/x1e78100-lenovo-thinkpad-t14s.dtsi b/arch/arm64/boot/dts/qcom/x1e78100-lenovo-thinkpad-t14s.dtsi
+index afea82616bc4..f368c2f65162 100644
+--- a/arch/arm64/boot/dts/qcom/x1e78100-lenovo-thinkpad-t14s.dtsi
++++ b/arch/arm64/boot/dts/qcom/x1e78100-lenovo-thinkpad-t14s.dtsi
+@@ -1066,6 +1066,7 @@ &mdss_dp0 {
+ 
+ &mdss_dp0_out {
+ 	data-lanes = <0 1>;
++	link-frequencies = /bits/ 64 <1620000000 2700000000 5400000000 8100000000>;
+ };
+ 
+ &mdss_dp1 {
+@@ -1074,6 +1075,7 @@ &mdss_dp1 {
+ 
+ &mdss_dp1_out {
+ 	data-lanes = <0 1>;
++	link-frequencies = /bits/ 64 <1620000000 2700000000 5400000000 8100000000>;
+ };
+ 
+ &mdss_dp3 {
