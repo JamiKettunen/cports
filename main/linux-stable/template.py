@@ -2,7 +2,7 @@
 pkgname = "linux-stable"
 pkgver = "6.12.1"
 pkgrel = 0
-archs = ["aarch64", "ppc64le", "ppc64", "riscv64", "x86_64"]
+archs = ["aarch64"]
 make_dir = "build"
 hostmakedepends = ["base-kernel-devel"]
 depends = ["base-kernel"]
