@@ -4,12 +4,6 @@ pkgver = "6.14.3"
 pkgrel = 0
 archs = [
     "aarch64",
-    "loongarch64",
-    "ppc64le",
-    "ppc64",
-    "ppc",
-    "riscv64",
-    "x86_64",
 ]
 build_style = "linux-kernel"
 configure_args = ["FLAVOR=generic", f"RELEASE={pkgrel}"]
@@ -38,9 +32,6 @@ options = [
 
 if self.current_target == "custom:generate-configs":
     hostmakedepends += ["base-cross", "ncurses-devel"]
-
-if self.profile().cross:
-    broken = "linux-devel does not come out right"
 
 
 @subpackage("linux-stable-devel")
