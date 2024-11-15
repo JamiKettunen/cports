@@ -1,0 +1,71 @@
+From bff5a8ddaf961d45ef275236744c5f273187f0a6 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Wed, 13 Nov 2024 00:44:00 +0200
+Subject: [PATCH 3/5] Adapt all QML to use JS functions with formal parameters
+
+Fixes runtime warnings such as:
+  qt.qml.context: qrc:/org/asteroid/controls/qml/BorderGestureArea.qml:160:5 Parameter "mouse" is not declared. Injection of parameters into signal handlers is deprecated. Use JavaScript functions with formal parameters instead.
+
+As an alternative the following also would work:
+  function onPressed(mouse) { ... }
+---
+ src/controls/qml/BorderGestureArea.qml | 8 ++++----
+ src/controls/qml/TextBase.qml          | 2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/controls/qml/BorderGestureArea.qml b/src/controls/qml/BorderGestureArea.qml
+index ab39990..ffece06 100644
+--- a/src/controls/qml/BorderGestureArea.qml
++++ b/src/controls/qml/BorderGestureArea.qml
+@@ -61,7 +61,7 @@ import org.asteroid.utils 1.0
+             acceptsRight: true
+             acceptsLeft: true
+             acceptsDown: true
+-            onGestureFinished: {
++            onGestureFinished: (gesture) => {
+                 if (gesture == "right") {
+                     square.color = "red"
+                 }
+@@ -95,7 +95,7 @@ import org.asteroid.utils 1.0
+         anchors.fill: parent
+         acceptsUp: true
+         acceptsDown: true
+-        onGestureFinished: {
++        onGestureFinished: (gesture) => {
+             if (gesture == "up") {
+                 square.color = "green"
+             }
+@@ -157,7 +157,7 @@ MouseArea {
+     property int _mouseStart
+     property variant _gestures: ["down", "left", "up", "right"]
+ 
+-    onPressed: {
++    onPressed: (mouse) => {
+         if (mouse.x < boundary && acceptsRight) {
+             gesture = "right"
+             max = width - mouse.x
+@@ -184,7 +184,7 @@ MouseArea {
+         gestureStarted(gesture)
+     }
+ 
+-    onPositionChanged: {
++    onPositionChanged: (mouse) => {
+         var p = horizontal ? mouse.x : mouse.y
+         value = Math.max(Math.min(p - _mouseStart, max), -max)
+     }
+diff --git a/src/controls/qml/TextBase.qml b/src/controls/qml/TextBase.qml
+index b435af0..4e4aa8f 100644
+--- a/src/controls/qml/TextBase.qml
++++ b/src/controls/qml/TextBase.qml
+@@ -45,7 +45,7 @@ FocusScope {
+ 
+     signal enterKeyClicked
+ 
+-    Keys.onReleased: {
++    Keys.onReleased: (event) => {
+         if (event.key === Qt.Key_Return)
+             enterKeyClicked()
+     }
+-- 
+2.47.0
+

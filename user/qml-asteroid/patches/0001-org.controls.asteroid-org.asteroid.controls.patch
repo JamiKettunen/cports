@@ -1,0 +1,208 @@
+From 602ad7c3a2b073a304737fcb1894b2df3f0560d0 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Wed, 13 Nov 2024 02:15:48 +0200
+Subject: [PATCH 1/5] org.controls.asteroid -> org.asteroid.controls
+
+This is a typo in all the existing docs.
+---
+ src/controls/qml/CircularSpinner.qml     | 2 +-
+ src/controls/qml/Dims.qml                | 2 +-
+ src/controls/qml/IconButton.qml          | 2 +-
+ src/controls/qml/IntSelector.qml         | 2 +-
+ src/controls/qml/Label.qml               | 2 +-
+ src/controls/qml/LabeledActionButton.qml | 2 +-
+ src/controls/qml/LabeledSwitch.qml       | 2 +-
+ src/controls/qml/LayerStack.qml          | 2 +-
+ src/controls/qml/Marquee.qml             | 2 +-
+ src/controls/qml/PageDot.qml             | 2 +-
+ src/controls/qml/PageHeader.qml          | 2 +-
+ src/controls/qml/Spinner.qml             | 2 +-
+ src/controls/qml/StatusPage.qml          | 2 +-
+ src/controls/qml/Switch.qml              | 2 +-
+ 14 files changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/src/controls/qml/CircularSpinner.qml b/src/controls/qml/CircularSpinner.qml
+index 59fece4..b47548e 100644
+--- a/src/controls/qml/CircularSpinner.qml
++++ b/src/controls/qml/CircularSpinner.qml
+@@ -31,7 +31,7 @@ import org.asteroid.controls 1.0
+ 
+     \qml
+     import QtQuick 2.9
+-    import org.controls.asteroid 1.0
++    import org.asteroid.controls 1.0
+ 
+     CircularSpinner {
+         id: rating
+diff --git a/src/controls/qml/Dims.qml b/src/controls/qml/Dims.qml
+index c4a79a6..1dc545f 100644
+--- a/src/controls/qml/Dims.qml
++++ b/src/controls/qml/Dims.qml
+@@ -41,7 +41,7 @@ pragma Singleton
+ 
+     \qml
+     import QtQuick 2.0
+-    import org.controls.asteroid 1.0
++    import org.asteroid.controls 1.0
+ 
+     Rectangle {
+         width: Dims.w(80) // 80 % of screen width
+diff --git a/src/controls/qml/IconButton.qml b/src/controls/qml/IconButton.qml
+index 75be41a..46eef27 100644
+--- a/src/controls/qml/IconButton.qml
++++ b/src/controls/qml/IconButton.qml
+@@ -21,7 +21,7 @@ import org.asteroid.controls 1.0
+ 
+ /*!
+     \qmltype IconButton
+-    \inqmlmodule org.controls.asteroid 1.0
++    \inqmlmodule org.asteroid.controls 1.0
+ 
+     \brief Provides a virtual button with settable icon.
+ 
+diff --git a/src/controls/qml/IntSelector.qml b/src/controls/qml/IntSelector.qml
+index 16bb1cb..72ae390 100644
+--- a/src/controls/qml/IntSelector.qml
++++ b/src/controls/qml/IntSelector.qml
+@@ -40,7 +40,7 @@ import org.asteroid.controls 1.0
+ 
+     \qml
+     import QtQuick 2.0
+-    import org.controls.asteroid 1.0
++    import org.asteroid.controls 1.0
+ 
+     Item {
+         IntSelector {
+diff --git a/src/controls/qml/Label.qml b/src/controls/qml/Label.qml
+index 77ce82a..ddfe7c8 100644
+--- a/src/controls/qml/Label.qml
++++ b/src/controls/qml/Label.qml
+@@ -20,7 +20,7 @@ import org.asteroid.controls 1.0
+ 
+ /*!
+    \qmltype Label
+-   \inqmlmodule org.controls.asteroid 1.0
++   \inqmlmodule org.asteroid.controls 1.0
+ 
+    \brief Provides a way to get a text label sized for AsteroidOS.
+ 
+diff --git a/src/controls/qml/LabeledActionButton.qml b/src/controls/qml/LabeledActionButton.qml
+index 06c11ba..910ea38 100644
+--- a/src/controls/qml/LabeledActionButton.qml
++++ b/src/controls/qml/LabeledActionButton.qml
+@@ -35,7 +35,7 @@ import org.asteroid.controls 1.0
+ 
+     \qml
+     import QtQuick 2.0
+-    import org.controls.asteroid 1.0
++    import org.asteroid.controls 1.0
+ 
+     Item {
+         LabeledActionButton {
+diff --git a/src/controls/qml/LabeledSwitch.qml b/src/controls/qml/LabeledSwitch.qml
+index eee6453..9b5d15d 100644
+--- a/src/controls/qml/LabeledSwitch.qml
++++ b/src/controls/qml/LabeledSwitch.qml
+@@ -23,7 +23,7 @@ import org.asteroid.controls 1.0
+ 
+ /*!
+     \qmltype LabeledSwitch
+-    \inqmlmodule org.controls.asteroid 1.0
++    \inqmlmodule org.asteroid.controls 1.0
+ 
+     \brief This combines \l Label and \l Switch in a convenient package.
+ 
+diff --git a/src/controls/qml/LayerStack.qml b/src/controls/qml/LayerStack.qml
+index 8ca6234..382cb41 100644
+--- a/src/controls/qml/LayerStack.qml
++++ b/src/controls/qml/LayerStack.qml
+@@ -39,7 +39,7 @@ import QtQuick 2.9
+ 
+     \qml
+     import QtQuick 2.0
+-    import org.controls.asteroid 1.0
++    import org.asteroid.controls 1.0
+ 
+     Item {
+         Component {
+diff --git a/src/controls/qml/Marquee.qml b/src/controls/qml/Marquee.qml
+index b48d054..e032a94 100644
+--- a/src/controls/qml/Marquee.qml
++++ b/src/controls/qml/Marquee.qml
+@@ -33,7 +33,7 @@ import org.asteroid.controls 1.0
+ 
+     \qml
+     import QtQuick 2.0
+-    import org.controls.asteroid 1.0
++    import org.asteroid.controls 1.0
+ 
+     Item {
+         Marquee {
+diff --git a/src/controls/qml/PageDot.qml b/src/controls/qml/PageDot.qml
+index e295699..92b2947 100644
+--- a/src/controls/qml/PageDot.qml
++++ b/src/controls/qml/PageDot.qml
+@@ -36,7 +36,7 @@ import QtQuick 2.9
+ 
+     \qml
+     import QtQuick 2.0
+-    import org.controls.asteroid 1.0
++    import org.asteroid.controls 1.0
+ 
+     Item {
+         IntSelector {
+diff --git a/src/controls/qml/PageHeader.qml b/src/controls/qml/PageHeader.qml
+index 23d9129..d1d6d11 100644
+--- a/src/controls/qml/PageHeader.qml
++++ b/src/controls/qml/PageHeader.qml
+@@ -22,7 +22,7 @@ import org.asteroid.utils 1.0
+ 
+ /*!
+     \qmltype PageHeader
+-    \inqmlmodule org.controls.asteroid 1.0
++    \inqmlmodule org.asteroid.controls 1.0
+ 
+     \brief Provides a title on a page.
+ 
+diff --git a/src/controls/qml/Spinner.qml b/src/controls/qml/Spinner.qml
+index c748d7a..91e30c9 100644
+--- a/src/controls/qml/Spinner.qml
++++ b/src/controls/qml/Spinner.qml
+@@ -30,7 +30,7 @@ import org.asteroid.controls 1.0
+ 
+     \qml
+     import QtQuick 2.0
+-    import org.controls.asteroid 1.0
++    import org.asteroid.controls 1.0
+ 
+     Spinner {
+         id: rating
+diff --git a/src/controls/qml/StatusPage.qml b/src/controls/qml/StatusPage.qml
+index 322b548..ca65826 100644
+--- a/src/controls/qml/StatusPage.qml
++++ b/src/controls/qml/StatusPage.qml
+@@ -35,7 +35,7 @@ import org.asteroid.controls 1.0
+ 
+     \qml
+     import QtQuick 2.0
+-    import org.controls.asteroid 1.0
++    import org.asteroid.controls 1.0
+ 
+     StatusPage {
+         text: "On fire"
+diff --git a/src/controls/qml/Switch.qml b/src/controls/qml/Switch.qml
+index 029fdf0..a28ebfe 100644
+--- a/src/controls/qml/Switch.qml
++++ b/src/controls/qml/Switch.qml
+@@ -21,7 +21,7 @@ import org.asteroid.controls 1.0
+ 
+ /*!
+     \qmltype Switch
+-    \inqmlmodule org.controls.asteroid 1.0
++    \inqmlmodule org.asteroid.controls 1.0
+ 
+     \brief Specializes \l IconButton to provide an on/off toggle.
+ 
+-- 
+2.47.0
+

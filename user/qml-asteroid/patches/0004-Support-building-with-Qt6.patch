@@ -1,0 +1,146 @@
+From f4008aae33fe18c351a05ce9f0ec70b4d901711d Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Wed, 13 Nov 2024 00:25:48 +0200
+Subject: [PATCH 4/5] Support building with Qt6
+
+---
+ CMakeLists.txt               |  6 +++---
+ src/controls/CMakeLists.txt  |  6 +++---
+ src/controls/src/icon.cpp    | 12 ++++++++++++
+ src/controls/src/icon.h      |  4 ++++
+ src/utils/CMakeLists.txt     |  6 +++---
+ src/utils/src/deviceinfo.cpp |  8 ++++++++
+ 6 files changed, 33 insertions(+), 9 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7071736..fbcc943 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -19,10 +19,10 @@ include(AsteroidCMakeSettings)
+ 
+ set(ASTEROID_MODULES_INSTALL_DIR ${CMAKE_INSTALL_DATADIR}/asteroidapp/cmake)
+ 
+-find_package(Qt5 ${QT_MIN_VERSION} COMPONENTS DBus Qml Quick Svg REQUIRED)
++find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION} COMPONENTS DBus Qml Quick Svg REQUIRED)
+ if (WITH_ASTEROIDAPP)
+-    find_package(Mlite5 MODULE REQUIRED)
+-    find_package(Mapplauncherd_qt5 MODULE REQUIRED)
++    find_package(Mlite${QT_MAJOR_VERSION} MODULE REQUIRED)
++    find_package(Mapplauncherd_qt${QT_MAJOR_VERSION} MODULE REQUIRED)
+ endif()
+ 
+ ecm_find_qmlmodule(QtQuick.VirtualKeyboard 2.1)
+diff --git a/src/controls/CMakeLists.txt b/src/controls/CMakeLists.txt
+index 650146e..c41c178 100644
+--- a/src/controls/CMakeLists.txt
++++ b/src/controls/CMakeLists.txt
+@@ -87,9 +87,9 @@ add_custom_command(
+ )
+ 
+ target_link_libraries(asteroidcontrolsplugin
+-	Qt5::Qml
+-	Qt5::Quick
+-	Qt5::Svg)
++	Qt::Qml
++	Qt::Quick
++	Qt::Svg)
+ 
+ install(TARGETS asteroidcontrolsplugin
+ 	DESTINATION ${INSTALL_QML_IMPORT_DIR}/org/asteroid/controls)
+diff --git a/src/controls/src/icon.cpp b/src/controls/src/icon.cpp
+index e26d2ec..bbd2207 100644
+--- a/src/controls/src/icon.cpp
++++ b/src/controls/src/icon.cpp
+@@ -32,6 +32,9 @@
+ #include <QPainter>
+ #include <QIcon>
+ #include <QSvgRenderer>
++#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
++#include <QFile>
++#endif
+ 
+ #define ICONS_DIRECTORY "/usr/share/icons/asteroid/"
+ 
+@@ -79,9 +82,18 @@ void Icon::paint(QPainter *painter)
+     painter->drawPixmap(0, 0, width(), height(), m_pixmap);
+ }
+ 
++
++#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+ void Icon::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
++#else
++void Icon::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry)
++#endif
+ {
++#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+     QQuickPaintedItem::geometryChanged(newGeometry, oldGeometry);
++#else
++    QQuickPaintedItem::geometryChange(newGeometry, oldGeometry);
++#endif
+     if(newGeometry.size() == oldGeometry.size() || newGeometry.width() == 0 || newGeometry.height() == 0)
+         return;
+     updateBasePixmap();
+diff --git a/src/controls/src/icon.h b/src/controls/src/icon.h
+index a3f9e0a..df79172 100644
+--- a/src/controls/src/icon.h
++++ b/src/controls/src/icon.h
+@@ -52,7 +52,11 @@ public:
+ 
+     void paint(QPainter *painter) override;
+ 
++#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
++#else
++    void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
++#endif
+ 
+ signals:
+     void nameChanged();
+diff --git a/src/utils/CMakeLists.txt b/src/utils/CMakeLists.txt
+index 5ca2119..12ce753 100644
+--- a/src/utils/CMakeLists.txt
++++ b/src/utils/CMakeLists.txt
+@@ -12,9 +12,9 @@ set(HEADERS
+ add_library(asteroidutilsplugin ${SRC} ${HEADERS})
+ 
+ target_link_libraries(asteroidutilsplugin
+-	Qt5::DBus
+-	Qt5::Qml
+-	Qt5::Quick)
++	Qt::DBus
++	Qt::Qml
++	Qt::Quick)
+ 
+ install(TARGETS asteroidutilsplugin
+ 	DESTINATION ${INSTALL_QML_IMPORT_DIR}/org/asteroid/utils)
+diff --git a/src/utils/src/deviceinfo.cpp b/src/utils/src/deviceinfo.cpp
+index ccaf766..037f3d8 100644
+--- a/src/utils/src/deviceinfo.cpp
++++ b/src/utils/src/deviceinfo.cpp
+@@ -35,7 +35,11 @@ DeviceInfo::DeviceInfo()
+     QFile host(HOST_FILE);
+     if (host.open(QIODevice::ReadOnly | QIODevice::Text)) {
+         QTextStream in(&host);
++#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+         in.setCodec("UTF-8");
++#else
++	in.setEncoding(QStringConverter::Utf8);
++#endif
+         m_hostname = in.readLine();
+         host.close();
+     }
+@@ -43,7 +47,11 @@ DeviceInfo::DeviceInfo()
+     QFile release(OS_RELEASE_FILE);
+     if (release.open(QIODevice::ReadOnly | QIODevice::Text)) {
+         QTextStream in(&release);
++#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+         in.setCodec("UTF-8");
++#else
++	in.setEncoding(QStringConverter::Utf8);
++#endif
+         QString line = in.readLine();
+         for (bool searching{true}; searching && !in.atEnd(); line = in.readLine()) {
+             if (line.startsWith("BUILD_ID")) {
+-- 
+2.47.0
+
