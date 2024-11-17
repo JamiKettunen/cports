@@ -1,0 +1,56 @@
+diff --git a/src/basic/parse-util.c b/src/basic/parse-util.c
+index faa5344921..0fc9d12c89 100644
+--- a/src/basic/parse-util.c
++++ b/src/basic/parse-util.c
+@@ -2,7 +2,6 @@
+ 
+ #include <errno.h>
+ #include <inttypes.h>
+-#include <linux/ipv6.h>
+ #include <net/if.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -20,6 +19,8 @@
+ #include "string-util.h"
+ #include "strv.h"
+ 
++#include <linux/ipv6.h>
++
+ int parse_boolean(const char *v) {
+         if (!v)
+                 return -EINVAL;
+diff --git a/src/shared/conf-parser.c b/src/shared/conf-parser.c
+index eaa8a5f11c..03379e7474 100644
+--- a/src/shared/conf-parser.c
++++ b/src/shared/conf-parser.c
+@@ -2,7 +2,6 @@
+ 
+ #include <errno.h>
+ #include <limits.h>
+-#include <linux/ipv6.h>
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -47,6 +46,8 @@
+ #include "time-util.h"
+ #include "utf8.h"
+ 
++#include <linux/ipv6.h>
++
+ DEFINE_PRIVATE_HASH_OPS_WITH_VALUE_DESTRUCTOR(config_file_hash_ops_fclose,
+                                               char, path_hash_func, path_compare,
+                                               FILE, safe_fclose);
+diff --git a/src/fundamental/sha256-fundamental.c b/src/fundamental/sha256-fundamental.c
+index 03381835d6..59ba531ff3 100644
+--- a/src/fundamental/sha256-fundamental.c
++++ b/src/fundamental/sha256-fundamental.c
+@@ -21,8 +21,8 @@
+    License along with the GNU C Library; if not, see
+    <https://www.gnu.org/licenses/>.  */
+ 
+-#include "macro-fundamental.h"
+ #include "memory-util-fundamental.h"
++#include "macro-fundamental.h"
+ #include "sha256-fundamental.h"
+ #include "unaligned-fundamental.h"
+ 
