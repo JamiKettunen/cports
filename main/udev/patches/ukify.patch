@@ -1,8 +1,8 @@
 diff --git a/man/ukify.xml b/man/ukify.xml
-index 216b368..31ef737 100644
+index fc68d83772..6fe90e5ccf 100644
 --- a/man/ukify.xml
 +++ b/man/ukify.xml
-@@ -167,8 +167,8 @@
+@@ -171,8 +171,8 @@
  
      <para>If no config file is provided via the option <option>--config=<replaceable>PATH</replaceable></option>,
      <command>ukify</command> will try to look for a default configuration file in the following paths in this
@@ -13,11 +13,11 @@ index 216b368..31ef737 100644
      and then load the first one found. <command>ukify</command> will proceed normally if no configuration file
      is specified and no default one is found.</para>
  
-diff --git a/src/boot/meson.build b/src/boot/meson.build
-index 55b9bd6..f38740c 100644
---- a/src/boot/meson.build
-+++ b/src/boot/meson.build
-@@ -59,6 +59,7 @@ executables += [
+diff --git a/src/measure/meson.build b/src/measure/meson.build
+index 13a890170c..28a19b5a6c 100644
+--- a/src/measure/meson.build
++++ b/src/measure/meson.build
+@@ -8,6 +8,7 @@ executables += [
                          'HAVE_OPENSSL',
                          'HAVE_TPM2',
                  ],
@@ -26,24 +26,24 @@ index 55b9bd6..f38740c 100644
                  'dependencies' : libopenssl,
          },
 diff --git a/src/ukify/ukify.py b/src/ukify/ukify.py
-index 75e4286..616947e 100755
+index f23ea61e1e..1904f8e236 100755
 --- a/src/ukify/ukify.py
 +++ b/src/ukify/ukify.py
-@@ -68,7 +68,7 @@ EFI_ARCHES: list[str] = sum(EFI_ARCH_MAP.values(), [])
- 
+@@ -78,7 +78,7 @@ EFI_ARCHES: list[str] = sum(EFI_ARCH_MAP.values(), [])
  # Default configuration directories and file name.
- # When the user does not specify one, the directories are searched in this order and the first file found is used.
+ # When the user does not specify one, the directories are searched in this order and the first file found is
+ # used.
 -DEFAULT_CONFIG_DIRS = ['/etc/systemd', '/run/systemd', '/usr/local/lib/systemd', '/usr/lib/systemd']
 +DEFAULT_CONFIG_DIRS = ['/etc/ukify', '/run/ukify', '/usr/local/lib/ukify', '/usr/lib/ukify']
  DEFAULT_CONFIG_FILE = 'ukify.conf'
  
- class Style:
-@@ -494,7 +494,7 @@ def key_path_groups(opts):
  
- def call_systemd_measure(uki, linux, opts):
-     measure_tool = find_tool('systemd-measure',
--                             '/usr/lib/systemd/systemd-measure',
-+                             '/usr/lib/systemd-measure',
-                              opts=opts)
+@@ -717,7 +717,7 @@ def pe_section_size(section: pefile.SectionStructure) -> int:
+ def call_systemd_measure(uki: UKI, opts: UkifyConfig, profile_start: int = 0) -> None:
+     measure_tool = find_tool(
+         'systemd-measure',
+-        '/usr/lib/systemd/systemd-measure',
++        '/usr/lib/systemd-measure',
+         opts=opts,
+     )
  
-     banks = opts.pcr_banks or ()
