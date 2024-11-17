@@ -22,22 +22,22 @@ Signed-off-by: Scott Murray <scott.murray@konsulko.com>
  create mode 100644 src/basic/parse-printf-format.h
 
 diff --git a/meson.build b/meson.build
-index 52723bef09..e20bf3af8a 100644
+index d392610625..98436d7fb9 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -753,6 +753,7 @@ foreach header : ['crypt.h',
+@@ -773,6 +773,7 @@ foreach header : ['crypt.h',
+                   'linux/ioprio.h',
                    'linux/memfd.h',
                    'linux/time_types.h',
-                   'linux/vm_sockets.h',
 +                  'printf.h',
                    'sys/auxv.h',
                    'sys/sdt.h',
                    'threads.h',
 diff --git a/src/basic/meson.build b/src/basic/meson.build
-index 9a214575a5..b49b6ade56 100644
+index e02f787c75..9435df895d 100644
 --- a/src/basic/meson.build
 +++ b/src/basic/meson.build
-@@ -189,6 +189,11 @@ endforeach
+@@ -188,6 +188,11 @@ endforeach
  
  basic_sources += generated_gperf_headers
  

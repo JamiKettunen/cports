@@ -1,5 +1,5 @@
 pkgname = "udev"
-pkgver = "256.9"
+pkgver = "257_rc3"
 pkgrel = 0
 build_style = "meson"
 configure_args = [
@@ -122,9 +122,9 @@ maintainer = "q66 <q66@chimera-linux.org>"
 license = "LGPL-2.1-or-later"
 url = "https://github.com/systemd/systemd"
 source = (
-    f"https://github.com/systemd/systemd/archive/refs/tags/v{pkgver}.tar.gz"
+    f"https://github.com/systemd/systemd/archive/refs/tags/v{pkgver.replace('_','-')}.tar.gz"
 )
-sha256 = "9f2bda967a30ec4602e7ea93d565eb43670ca1dffbb808c72758d5f0213508c8"
+sha256 = "bb0837988c3fb9b60d8ad38be791663a30cdb606242665f1157e1d884e2d892a"
 # the tests that can run are mostly useless
 options = ["!splitudev", "!check"]
 
