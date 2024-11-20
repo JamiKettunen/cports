@@ -15,11 +15,17 @@ SD_BOOT_ESP_PATH=$("$BOOTCTL_CMD" -p)
 SD_BOOT_BOOT_PATH=$("$BOOTCTL_CMD" -x)
 SD_BOOT_ENTRY_TOKEN=
 SD_BOOT_COUNT_TRIES=
+# FIXME: move all ukify stuff out of systemd-boot since it's bootloader-independent...
+# -> this was just a convenient script to plumb everything into as a quick hack for integration testing
+SD_BOOT_UKIFY_ARGS=
+SD_BOOT_UKIFY_DTBS=
 
 [ -z "$SD_BOOT_OS_TITLE" ] && SD_BOOT_OS_TITLE="Chimera Linux"
-[ -r /etc/kernel/entry-token ] && SD_BOOT_ENTRY_TOKEN=$(cat /etc/kernel/entry-token)
+[ -r /etc/kernel/entry-token ] && read -r SD_BOOT_ENTRY_TOKEN < /etc/kernel/entry-token
 [ -z "$SD_BOOT_ENTRY_TOKEN" ] && SD_BOOT_ENTRY_TOKEN="chimera"
-[ -r /etc/kernel/tries ] && SD_BOOT_COUNT_TRIES=$(cat /etc/kernel/tries)
+[ -r /etc/kernel/tries ] && read -r SD_BOOT_COUNT_TRIES < /etc/kernel/tries
+[ -r /etc/kernel/ukify-args ] && SD_BOOT_UKIFY_ARGS="$(cat /etc/kernel/ukify-args)"
+[ -r /etc/kernel/ukify-dtbs ] && read -r SD_BOOT_UKIFY_DTBS < /etc/kernel/ukify-dtbs
 
 # source global config if present
 [ -r $SD_BOOT_CFG ] && . $SD_BOOT_CFG
@@ -136,11 +142,35 @@ write_entry() {
         CONF_NAME="${SD_BOOT_ENTRY_TOKEN}-${1}.conf"
     fi
     write_cfg "$CONF_NAME" "title ${SD_BOOT_OS_TITLE}"
-    write_cfg "$CONF_NAME" "linux /${3}"
-    if [ -f "/boot/initrd.img-${2}" ]; then
-        write_cfg "$CONF_NAME" "initrd /initrd.img-${2}"
+    if [ -z "$SD_BOOT_UKIFY_ARGS" ]; then
+        write_cfg "$CONF_NAME" "linux /${3}"
+        if [ -f "/boot/initrd.img-${2}" ]; then
+            write_cfg "$CONF_NAME" "initrd /initrd.img-${2}"
+        fi
+        write_cfg "$CONF_NAME" "options ${4}"
+    else
+        SD_BOOT_UKIFY_ARGS="$(echo "$SD_BOOT_UKIFY_ARGS" | sed -e "s/@LINUX@/\/boot\/${3}/" -e "s/@CMDLINE@/${4}/")"
+        if [ -f "/boot/initrd.img-${2}" ]; then
+            SD_BOOT_UKIFY_ARGS="$(echo "$SD_BOOT_UKIFY_ARGS" | sed "s/@INITRD@/\/boot\/initrd.img-${2}/")"
+        fi
+        if [ -d "/boot/dtbs/dtbs-${2}" ] && echo "$SD_BOOT_UKIFY_ARGS" | grep -q '^@DTBAUTO_ARGS@$'; then
+            DTBS=$(find "/boot/dtbs/dtbs-${2}"/ -path "*/$SD_BOOT_UKIFY_DTBS.dtb")
+            if [ -z "$DTBS" ]; then
+                echo "No DTBs for ${2} found with path pattern '*/$SD_BOOT_UKIFY_DTBS.dtb'." >&2
+                exit 7
+            fi
+            for DTB in $DTBS; do
+                SD_BOOT_UKIFY_ARGS="$SD_BOOT_UKIFY_ARGS
+--devicetree-auto=$DTB"
+            done
+            SD_BOOT_UKIFY_ARGS="$(echo "$SD_BOOT_UKIFY_ARGS" | sed "/@DTBAUTO_ARGS@/d")"
+        fi
+        if ! echo "$SD_BOOT_UKIFY_ARGS" | tr '\n' '\0' | xargs -0 ukify build --uname "${2}" --output="$SD_BOOT_ESP_PATH/uki-${1}.efi"; then
+            echo "Generation of uki-${1}.efi failed." >&2
+            exit 8
+        fi
+        write_cfg "$CONF_NAME" "efi /uki-${1}.efi"
     fi
-    write_cfg "$CONF_NAME" "options ${4}"
 }
 
 for KVER in $(linux-version list | linux-version sort --reverse); do
