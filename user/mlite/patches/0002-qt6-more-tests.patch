@@ -1,0 +1,45 @@
+Patch-Source: https://github.com/sailfishos/mlite/pull/4#discussion_r1855163751
+--- a/tests/ut_mdesktopentry.cpp
++++ b/tests/ut_mdesktopentry.cpp
+@@ -290,12 +290,18 @@ void UtMDesktopEntry::values()
+     } else if (key == "Hidden") {
+         QCOMPARE(entry.hidden() ? QString("true") : QString("false"), expected);
+     } else if (key == "OnlyShowIn") {
++        QCOMPARE(entry.onlyShowIn(), expected.split(QRegularExpression("\\s*;\\s*"),
+ #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+-        QCOMPARE(entry.onlyShowIn(), expected.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts));
++                                                    QString::SkipEmptyParts));
++#else
++                                                    Qt::SkipEmptyParts));
+ #endif
+     } else if (key == "NotShowIn") {
++        QCOMPARE(entry.notShowIn(), expected.split(QRegularExpression("\\s*;\\s*"),
+ #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+-        QCOMPARE(entry.notShowIn(), expected.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts));
++                                                    QString::SkipEmptyParts));
++#else
++                                                    Qt::SkipEmptyParts));
+ #endif
+     } else if (key == "TryExec") {
+         QCOMPARE(entry.tryExec(), expected);
+@@ -306,12 +312,18 @@ void UtMDesktopEntry::values()
+     } else if (key == "Terminal") {
+         QCOMPARE(entry.terminal() ? QString("true") : QString("false"), expected);
+     } else if (key == "MimeType") {
++        QCOMPARE(entry.mimeType(), expected.split(QRegularExpression("\\s*;\\s*"),
+ #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+-        QCOMPARE(entry.mimeType(), expected.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts));
++                                                    QString::SkipEmptyParts));
++#else
++                                                    Qt::SkipEmptyParts));
+ #endif
+     } else if (key == "Categories") {
++        QCOMPARE(entry.categories(), expected.split(QRegularExpression("\\s*;\\s*"),
+ #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+-        QCOMPARE(entry.categories(), expected.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts));
++                                                    QString::SkipEmptyParts));
++#else
++                                                    Qt::SkipEmptyParts));
+ #endif
+     } else if (key == "StartupNotify") {
+         QCOMPARE(entry.startupNotify() ? QString("true") : QString("false"), expected);
