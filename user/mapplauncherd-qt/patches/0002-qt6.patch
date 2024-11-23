@@ -1,0 +1,210 @@
+commit 4278912b6441bff16f52e6d4e37c42e5fdecdaaa
+Author: Jami Kettunen <jami.kettunen@protonmail.com>
+Date:   Sat Nov 23 20:26:59 2024 +0200
+
+    [WIP] Qt6 compat
+
+diff --git a/data/booster-qt6-signal.service b/data/booster-qt6-signal.service
+new file mode 100644
+index 0000000..266d9df
+--- /dev/null
++++ b/data/booster-qt6-signal.service
+@@ -0,0 +1,10 @@
++[Unit]
++Description=Signal booster-qt6 that boot is over
++Requires=booster-qt6.service
++After=booster-qt6.service post-user-session.target
++
++[Service]
++Type=oneshot
++RemainAfterExit=yes
++ExecStart=-/usr/bin/systemctl --user kill --signal=SIGUSR1 --kill-who=main booster-qt6.service
++
+diff --git a/data/booster-qt6.service b/data/booster-qt6.service
+new file mode 100644
+index 0000000..48d897a
+--- /dev/null
++++ b/data/booster-qt6.service
+@@ -0,0 +1,15 @@
++[Unit]
++Description=Application launch booster for Qt5
++After=dbus.socket
++Requires=dbus.socket
++Wants=booster-qt6-signal.service
++
++[Service]
++Type=notify
++ExecStart=/usr/libexec/mapplauncherd/booster-qt6 --systemd --boot-mode
++Restart=always
++RestartSec=1
++OOMScoreAdjust=-250
++
++[Install]
++WantedBy=user-session.target
+diff --git a/data/booster-qt6@.service b/data/booster-qt6@.service
+new file mode 100644
+index 0000000..4a99aac
+--- /dev/null
++++ b/data/booster-qt6@.service
+@@ -0,0 +1,12 @@
++[Unit]
++Description=Application launch booster for Qt6 (sandboxed)
++
++Requires=dbus.socket booster-silica-session.path lipstick.service
++After=dbus.service booster-silica-session.path lipstick.service
++
++[Service]
++Type=simple
++ExecStart=/usr/bin/invoker --type=silica-session -- /usr/bin/sailjail --profile=%i -- /usr/libexec/mapplauncherd/booster-qt6 --application=%i
++Restart=always
++RestartSec=1
++OOMScoreAdjust=-250
+diff --git a/data/data.pro b/data/data.pro
+index 9f781bb..d3d8da9 100644
+--- a/data/data.pro
++++ b/data/data.pro
+@@ -3,14 +3,14 @@ TEMPLATE = aux
+ mkspecs.files = mkspecs/features/qt-boostable.prf mkspecs/features/qdeclarative-boostable.prf
+ mkspecs.path = $$[QT_INSTALL_DATA]/mkspecs/features
+ 
+-pkgconfig.files = pkgconfig/qt5-boostable.pc pkgconfig/qdeclarative5-boostable.pc
+-services.files = booster-qt5.service booster-qt5-signal.service
+-services.files += booster-qt5@.service
++pkgconfig.files = pkgconfig/qt$$QT_MAJOR_VERSION-boostable.pc pkgconfig/qdeclarative6-boostable.pc
++#services.files = booster-qt$$QT_MAJOR_VERSION.service booster-qt$$QT_MAJOR_VERSION-signal.service
++#services.files += booster-qt$$QT_MAJOR_VERSION@.service
+ 
+ pkgconfig.path = $$[QT_INSTALL_LIBS]/pkgconfig
+-services.path = /usr/lib/systemd/user/
++#services.path = /usr/lib/systemd/user/
+ 
+ # Apply version to the pkgconfig files before installing
+ pkgconfig.commands = 'sed -i "" "s/Version:.*/Version: $$VERSION/" pkgconfig/*.pc'
+ 
+-INSTALLS += mkspecs pkgconfig services
++INSTALLS += mkspecs pkgconfig # services
+diff --git a/data/mkspecs/features/qt-boostable.prf b/data/mkspecs/features/qt-boostable.prf
+index 0a72668..ed44a86 100644
+--- a/data/mkspecs/features/qt-boostable.prf
++++ b/data/mkspecs/features/qt-boostable.prf
+@@ -3,4 +3,4 @@
+ 
+ CONFIG += link_pkgconfig
+ 
+-PKGCONFIG += qt5-boostable
++PKGCONFIG += qt$$QT_MAJOR_VERSION-boostable
+diff --git a/data/pkgconfig/qdeclarative5-boostable.pc b/data/pkgconfig/qdeclarative5-boostable.pc
+index 20b97f8..94a9355 100644
+--- a/data/pkgconfig/qdeclarative5-boostable.pc
++++ b/data/pkgconfig/qdeclarative5-boostable.pc
+@@ -2,5 +2,5 @@ Name: qdeclarative5-boostable
+ Description: make application boostable by applauncherd
+ Version: 0.2.0
+ Libs: -pie -rdynamic -lmdeclarativecache5
+-Cflags: -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -I/usr/include/mdeclarativecache5
++Cflags: -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -I/usr/include/mdeclarativecache
+ 
+diff --git a/data/pkgconfig/qdeclarative6-boostable.pc b/data/pkgconfig/qdeclarative6-boostable.pc
+new file mode 100644
+index 0000000..caca94c
+--- /dev/null
++++ b/data/pkgconfig/qdeclarative6-boostable.pc
+@@ -0,0 +1,6 @@
++Name: qdeclarative6-boostable
++Description: make application boostable by applauncherd
++Version: 0.2.0
++Libs: -pie -rdynamic -lmdeclarativecache6
++Cflags: -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -I/usr/include/mdeclarativecache
++
+diff --git a/data/pkgconfig/qt6-boostable.pc b/data/pkgconfig/qt6-boostable.pc
+new file mode 100644
+index 0000000..b5bbd16
+--- /dev/null
++++ b/data/pkgconfig/qt6-boostable.pc
+@@ -0,0 +1,5 @@
++Name: qt6-boostable
++Description: make application boostable by applauncherd
++Version: 0.2.0
++Libs: -pie -rdynamic 
++Cflags: -fPIC -fvisibility=hidden -fvisibility-inlines-hidden
+diff --git a/mapplauncherd-qt.pro b/mapplauncherd-qt.pro
+index 24da644..31f59ef 100644
+--- a/mapplauncherd-qt.pro
++++ b/mapplauncherd-qt.pro
+@@ -3,5 +3,5 @@ TEMPLATE = subdirs
+ SUBDIRS = qtbooster \
+     data
+ 
+-SUBDIRS += mdeclarativecache5
++SUBDIRS += mdeclarativecache
+ 
+diff --git a/mdeclarativecache5/MDeclarativeCache b/mdeclarativecache/MDeclarativeCache
+similarity index 100%
+rename from mdeclarativecache5/MDeclarativeCache
+rename to mdeclarativecache/MDeclarativeCache
+diff --git a/mdeclarativecache5/mdeclarativecache.cpp b/mdeclarativecache/mdeclarativecache.cpp
+similarity index 100%
+rename from mdeclarativecache5/mdeclarativecache.cpp
+rename to mdeclarativecache/mdeclarativecache.cpp
+diff --git a/mdeclarativecache5/mdeclarativecache.h b/mdeclarativecache/mdeclarativecache.h
+similarity index 100%
+rename from mdeclarativecache5/mdeclarativecache.h
+rename to mdeclarativecache/mdeclarativecache.h
+diff --git a/mdeclarativecache5/mdeclarativecache5.pro b/mdeclarativecache/mdeclarativecache.pro
+similarity index 73%
+rename from mdeclarativecache5/mdeclarativecache5.pro
+rename to mdeclarativecache/mdeclarativecache.pro
+index 7288705..5f99b91 100644
+--- a/mdeclarativecache5/mdeclarativecache5.pro
++++ b/mdeclarativecache/mdeclarativecache.pro
+@@ -1,12 +1,12 @@
+ TEMPLATE = lib
+-TARGET = mdeclarativecache5
++TARGET = mdeclarativecache$$QT_MAJOR_VERSION
+ VERSION = 0.0.0
+ QT += quick core-private 
+ 
+ target.path = $$[QT_INSTALL_LIBS]
+ 
+ headers.files = MDeclarativeCache mdeclarativecache.h
+-headers.path = $$[QT_INSTALL_PREFIX]/include/mdeclarativecache5/
++headers.path = $$[QT_INSTALL_PREFIX]/include/mdeclarativecache/
+ 
+ INSTALLS += target headers
+ 
+diff --git a/mdeclarativecache5/mdeclarativecache_p.h b/mdeclarativecache/mdeclarativecache_p.h
+similarity index 100%
+rename from mdeclarativecache5/mdeclarativecache_p.h
+rename to mdeclarativecache/mdeclarativecache_p.h
+diff --git a/mdeclarativecache5/testabilityinterface.h b/mdeclarativecache/testabilityinterface.h
+similarity index 100%
+rename from mdeclarativecache5/testabilityinterface.h
+rename to mdeclarativecache/testabilityinterface.h
+diff --git a/qtbooster/qtbooster.cpp b/qtbooster/qtbooster.cpp
+index d52abb3..1321227 100644
+--- a/qtbooster/qtbooster.cpp
++++ b/qtbooster/qtbooster.cpp
+@@ -21,7 +21,11 @@
+ #include "daemon.h"
+ #include <QtGlobal>
+ 
++#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+ const string QtBooster::m_boosterType = "qt5";
++#else
++const string QtBooster::m_boosterType = "qt6";
++#endif
+ 
+ const string & QtBooster::boosterType() const
+ {
+diff --git a/qtbooster/qtbooster.pro b/qtbooster/qtbooster.pro
+index b77d747..6234d02 100644
+--- a/qtbooster/qtbooster.pro
++++ b/qtbooster/qtbooster.pro
+@@ -1,6 +1,6 @@
+ TEMPLATE = app
+ 
+-TARGET = booster-qt5
++TARGET = booster-qt$$QT_MAJOR_VERSION
+ 
+ target.path = /usr/libexec/mapplauncherd/
+ INSTALLS += target

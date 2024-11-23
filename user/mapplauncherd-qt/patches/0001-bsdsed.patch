@@ -1,0 +1,18 @@
+commit 744498cf374fe5ec163f2ef97c58f339f88df8bd
+Author: Jami Kettunen <jami.kettunen@protonmail.com>
+Date:   Sat Nov 23 20:27:11 2024 +0200
+
+    [CHIMERA] use bsdsed-compatible argument syntax
+
+diff --git a/data/data.pro b/data/data.pro
+index b6fe5a2..9f781bb 100644
+--- a/data/data.pro
++++ b/data/data.pro
+@@ -11,6 +11,6 @@ pkgconfig.path = $$[QT_INSTALL_LIBS]/pkgconfig
+ services.path = /usr/lib/systemd/user/
+ 
+ # Apply version to the pkgconfig files before installing
+-pkgconfig.commands = 'sed -i "s/Version:.*/Version: $$VERSION/" pkgconfig/*.pc'
++pkgconfig.commands = 'sed -i "" "s/Version:.*/Version: $$VERSION/" pkgconfig/*.pc'
+ 
+ INSTALLS += mkspecs pkgconfig services
