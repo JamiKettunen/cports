@@ -1,0 +1,69 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 8b7761c..16e9ed8 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -2,13 +2,20 @@ if(NOT WITH_MAPPLAUNCHERD)
+ qt_add_executable(asteroid-calculator)
+ endif()
+ 
++set(QML_SINGLETONS
++	Display.qml
++	main.qml
++)
++# FIXME: breaks runtime.. how does it work with org.asteroid.controls? maybe one of the .qml files here break it..
++set_source_files_properties(main.qml
++	PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
++
+ qt_add_qml_module(asteroid-calculator
+ 	URI asteroidapp
+ 	QML_FILES
+-		Display.qml
++		${QML_SINGLETONS}
+ 		CalcButton.qml
+ 		calculator.js
+-		main.qml
+ 	SOURCES
+ 		main.cpp
+ 	NO_PLUGIN
+@@ -19,7 +26,8 @@ if(WITH_MAPPLAUNCHERD)
+ set_target_properties(asteroid-calculator PROPERTIES PREFIX "")
+ endif()
+ 
+-target_link_libraries(asteroid-calculator PUBLIC
++# TODO: PRIVATE vs PUBLIC?
++target_link_libraries(asteroid-calculator PRIVATE
+ 	AsteroidApp)
+ 
+ # TODO: drop debug once AOT produces less warnings etc
+diff --git a/src/Display.qml b/src/Display.qml
+index 0c2928c..bd56a2d 100644
+--- a/src/Display.qml
++++ b/src/Display.qml
+@@ -16,6 +16,7 @@
+  * You should have received a copy of the GNU General Public License
+  * along with this program. If not, see <http://www.gnu.org/licenses/>.
+  */
++//pragma Singleton
+ 
+ import QtQuick 2.9
+ import org.asteroid.controls 1.0
+diff --git a/src/main.qml b/src/main.qml
+index ef6c44f..cec892b 100644
+--- a/src/main.qml
++++ b/src/main.qml
+@@ -16,6 +16,7 @@
+  * You should have received a copy of the GNU General Public License
+  * along with this program. If not, see <http://www.gnu.org/licenses/>.
+  */
++pragma Singleton
+ 
+ import QtQuick 2.9
+ import org.asteroid.controls 1.0
+@@ -32,6 +33,7 @@ Application {
+     property string displayPrevious: ""
+     property string displayOperation: ""
+ 
++    // TODO: annotate return type as void?
+     function doOp(operation: string) {
+         CalcEngine.doOperation(operation)
+         displayOperation = CalcEngine.currentOperation

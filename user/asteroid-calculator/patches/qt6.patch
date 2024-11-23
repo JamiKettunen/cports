@@ -1,0 +1,136 @@
+commit f0c3efa608782ed0c4725c8059abff7f1e14fda2
+Author: Jami Kettunen <jami.kettunen@protonmail.com>
+Date:   Mon Nov 25 03:45:42 2024 +0200
+
+    Port to Qt6, make mapplauncherd optional
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3316837..f32a2ee 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,9 +1,11 @@
+-cmake_minimum_required(VERSION 3.6.0)
++cmake_minimum_required(VERSION 3.8.0)
+ 
+ project(asteroid-calculator
+ 	VERSION 0.0.1
+ 	DESCRIPTION "Default calculator app for AsteroidOS")
+ 
++option(WITH_MAPPLAUNCHERD "Build with Mapplauncherd booster support (assumes qml-asteroid was too)" ON)
++
+ find_package(AsteroidApp REQUIRED)
+ 
+ set(CMAKE_MODULE_PATH ${ASTEROID_MODULE_PATH})
+@@ -15,12 +17,14 @@ include(AsteroidTranslations)
+ 
+ add_subdirectory(src)
+ 
++if (WITH_MAPPLAUNCHERD)
+ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/asteroid-calculator.in
+ 	${CMAKE_BINARY_DIR}/asteroid-calculator
+ 	@ONLY)
+ 
+ install(PROGRAMS ${CMAKE_BINARY_DIR}/asteroid-calculator
+ 	DESTINATION ${CMAKE_INSTALL_BINDIR})
++endif()
+ 
+ build_translations(i18n)
+ generate_desktop(${CMAKE_SOURCE_DIR} asteroid-calculator)
+diff --git a/asteroid-calculator.in b/asteroid-calculator.in
+index 8cb93f8..d769322 100644
+--- a/asteroid-calculator.in
++++ b/asteroid-calculator.in
+@@ -1,3 +1,3 @@
+ #!/bin/sh
+ 
+-exec invoker --single-instance --type=qt5 @CMAKE_INSTALL_FULL_LIBDIR@/asteroid-calculator.so
++exec invoker --single-instance --type=qt6 @CMAKE_INSTALL_FULL_LIBDIR@/asteroid-calculator.so
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index cb23ff5..8b7761c 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -1,8 +1,29 @@
+-add_library(asteroid-calculator main.cpp resources.qrc)
++if(NOT WITH_MAPPLAUNCHERD)
++qt_add_executable(asteroid-calculator)
++endif()
++
++qt_add_qml_module(asteroid-calculator
++	URI asteroidapp
++	QML_FILES
++		Display.qml
++		CalcButton.qml
++		calculator.js
++		main.qml
++	SOURCES
++		main.cpp
++	NO_PLUGIN
++	#ENABLE_TYPE_COMPILER
++)
++
++if(WITH_MAPPLAUNCHERD)
+ set_target_properties(asteroid-calculator PROPERTIES PREFIX "")
++endif()
+ 
+ target_link_libraries(asteroid-calculator PUBLIC
+ 	AsteroidApp)
+ 
++# TODO: drop debug once AOT produces less warnings etc
++set_target_properties(asteroid-calculator PROPERTIES QT_QMLCACHEGEN_ARGUMENTS "--verbose")
++
+ install(TARGETS asteroid-calculator
+-	DESTINATION ${CMAKE_INSTALL_LIBDIR})
++	DESTINATION $<IF:$<BOOL:${WITH_MAPPLAUNCHERD}>,${CMAKE_INSTALL_LIBDIR},${CMAKE_INSTALL_BINDIR}>)
+diff --git a/src/Display.qml b/src/Display.qml
+index 1379aa4..0c2928c 100644
+--- a/src/Display.qml
++++ b/src/Display.qml
+@@ -43,16 +43,15 @@ Label {
+     onTextChanged: refitText()
+ 
+     // calculate the existing precision of the passed num
+-    function trailing(num) {
+-        var nn = num.toString();
+-        var dp = nn.indexOf(".");
+-        return dp == -1 ? 0 : nn.length - dp - 1
++    function trailing(num: string): int {
++        var dp = num.indexOf(".");
++        return dp == -1 ? 0 : num.length - dp - 1
+     }
+     // format number according to existing precision and current locale
+-    function localeformat(num) {
++    function localeformat(num: string): string {
+         return Number(num).toLocaleString(Qt.locale(), 'f', trailing(num))
+     }
+-    function refitText() {
++    function refitText(): void {
+         if (DeviceInfo.hasRoundScreen) {
+             switch (displayTextLength.length) {
+                 case 0:
+diff --git a/src/main.qml b/src/main.qml
+index 014f69c..ef6c44f 100644
+--- a/src/main.qml
++++ b/src/main.qml
+@@ -32,7 +32,7 @@ Application {
+     property string displayPrevious: ""
+     property string displayOperation: ""
+ 
+-    function doOp(operation) {
++    function doOp(operation: string) {
+         CalcEngine.doOperation(operation)
+         displayOperation = CalcEngine.currentOperation
+         displayText = CalcEngine.currentText
+diff --git a/src/resources.qrc b/src/resources.qrc
+deleted file mode 100644
+index b94f2a1..0000000
+--- a/src/resources.qrc
++++ /dev/null
+@@ -1,8 +0,0 @@
+-<RCC>
+-    <qresource prefix="/">
+-        <file>CalcButton.qml</file>
+-        <file>Display.qml</file>
+-        <file>main.qml</file>
+-        <file>calculator.js</file>
+-    </qresource>
+-</RCC>
