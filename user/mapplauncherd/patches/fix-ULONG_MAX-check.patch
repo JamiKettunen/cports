@@ -1,0 +1,13 @@
+diff --git a/src/invoker/invoker.c b/src/invoker/invoker.c
+index 9a22ab9..f2f2d45 100644
+--- a/src/invoker/invoker.c
++++ b/src/invoker/invoker.c
+@@ -636,7 +636,7 @@ static unsigned int get_delay(char *delay_arg, char *param_name,
+         delay = strtoul(delay_arg, NULL, 10);
+ 
+         // Check for various possible errors
+-        if ((errno == ERANGE && delay == ULONG_MAX)
++        if ((errno == ERANGE && delay == UINT_MAX)
+             || delay < min_value
+             || delay > max_value)
+         {

@@ -1,0 +1,183 @@
+commit 7a0cabe4cd70a3e1de59cff8a4a4ac6aa3841181
+Author: Chupligin Sergey <neochapay@gmail.com>
+Date:   Tue Jul 6 18:24:36 2021 +0300
+
+    Make SAILJAIL optional
+
+    From: https://github.com/neochapay/mapplauncherd/tree/master
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1ad0702..77fc1b7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -13,6 +13,7 @@ include(GNUInstallDirs)
+ include(ECMGeneratePkgConfigFile)
+ 
+ option(INSTALL_SYSTEMD_UNITS "Install systemd unit files" ON)
++option(USE_SAILJAIL "Use sailjail sandboxing" ON)
+ 
+ #
+ # NOTE: For verbose build use VERBOSE=1
+diff --git a/src/invoker/CMakeLists.txt b/src/invoker/CMakeLists.txt
+index 8ef4ade..013f532 100644
+--- a/src/invoker/CMakeLists.txt
++++ b/src/invoker/CMakeLists.txt
+@@ -6,7 +6,11 @@ pkg_check_modules(DBUS dbus-1 REQUIRED)
+ pkg_check_modules(GLIB glib-2.0 REQUIRED)
+ 
+ # Set sources
+-set(SRC invokelib.c invoker.c ${COMMON}/report.c search.c ${COMMON}/sailjail.c)
++if(USE_SAILJAIL)
++    set(SAILJAILSRC ${COMMON}/sailjail.c)
++endif()
++
++set(SRC invokelib.c invoker.c ${COMMON}/report.c search.c ${SAILJAILSRC})
+ 
+ # Set include dirs
+ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${DBUS_INCLUDE_DIRS} ${GLIB_INCLUDE_DIRS} ${COMMON})
+diff --git a/src/invoker/invoker.c b/src/invoker/invoker.c
+index f2f2d45..1b04ecc 100644
+--- a/src/invoker/invoker.c
++++ b/src/invoker/invoker.c
+@@ -49,7 +49,10 @@
+ #include "protocol.h"
+ #include "invokelib.h"
+ #include "search.h"
++
++#ifdef USE_SAILJAIL
+ #include "sailjail.h"
++#endif
+ 
+ #define BOOSTER_SESSION "silica-session"
+ #define BOOSTER_GENERIC "generic"
+@@ -672,6 +675,7 @@ static void notify_app_launch(const char *desktop_file)
+     }
+ }
+ 
++#ifdef USE_SAILJAIL
+ static bool ask_for_sandboxing(const char *app)
+ {
+     char *path = strdup(app);
+@@ -679,6 +683,7 @@ static bool ask_for_sandboxing(const char *app)
+     free(path);
+     return ret_val;
+ }
++#endif
+ 
+ static int wait_for_launched_process_to_exit(int socket_fd)
+ {
+@@ -1127,6 +1132,7 @@ int main(int argc, char *argv[])
+         exit(EXIT_FAILURE);
+     }
+ 
++#ifdef USE_SAILJAIL
+     // If sailjail is already used or app specific booster is used, skip checking for sandboxing
+     if (!strcmp(args.prog_name, SAILJAIL_PATH) || strcmp(args.app_name, UNDEFINED_APPLICATION)) {
+         args.sandboxing_id = NULL;
+@@ -1161,6 +1167,9 @@ int main(int argc, char *argv[])
+         free(args.prog_name);
+         args.prog_name = strdup(SAILJAIL_PATH);
+     }
++#else
++    args.sandboxing_id = NULL;
++#endif
+ 
+     // Send commands to the launcher daemon
+     info("Invoking execution: '%s'\n", args.prog_name);
+diff --git a/src/launcherlib/appdata.cpp b/src/launcherlib/appdata.cpp
+index a7535c7..0d665c7 100644
+--- a/src/launcherlib/appdata.cpp
++++ b/src/launcherlib/appdata.cpp
+@@ -19,7 +19,9 @@
+ 
+ #include "appdata.h"
+ #include "protocol.h"
++#ifdef USE_SAILJAIL
+ #include "sailjail.h"
++#endif
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <sys/types.h>
+@@ -100,7 +102,7 @@ void AppData::setArgv(const char ** newArgv)
+         m_argv[m_argc] = nullptr;
+     }
+ }
+-
++#ifdef USE_SAILJAIL
+ void AppData::prependArgv(const char * arg)
+ {
+     char **oldArgv = m_argv;
+@@ -110,6 +112,7 @@ void AppData::prependArgv(const char * arg)
+         m_argv[i] = oldArgv[i-1];
+     free(oldArgv);
+ }
++#endif
+ 
+ const char ** AppData::argv() const
+ {
+@@ -253,10 +256,12 @@ void AppData::checkPrivileges()
+      * It is skipped to avoid unintended consequenses when launching
+      * other apps via sailjail.
+      */
++#ifdef USE_SAILJAIL
+     if (m_fileName == SAILJAIL_PATH) {
+         m_privileges.clear();
+         return;
+     }
++#endif
+ 
+     static const char *BOOSTER_APP_PRIVILEGES_LIST = "/usr/share/mapplauncherd/privileges";
+     static const char *BOOSTER_APP_PRIVILEGES_DIR = "/usr/share/mapplauncherd/privileges.d";
+diff --git a/src/launcherlib/booster.cpp b/src/launcherlib/booster.cpp
+index beedb60..84dcbde 100644
+--- a/src/launcherlib/booster.cpp
++++ b/src/launcherlib/booster.cpp
+@@ -55,12 +55,14 @@
+ 
+ #include "coverage.h"
+ 
++#ifdef USE_SAILJAIL
+ #include "sailjail.h"
+ 
+ static std::string basename(const std::string &str)
+ {
+     return str.substr(str.find_last_of("/") + 1);
+ }
++#endif
+ 
+ Booster::Booster() :
+     m_appData(new AppData),
+@@ -288,7 +290,7 @@ int Booster::run(SocketManager * socketManager)
+             if (access(m_appData->fileName().c_str(), X_OK) != 0) {
+                 throw std::runtime_error("Booster: Binary doesn't have execute permissions\n");
+             }
+-
++#ifdef USE_SAILJAIL
+             if (boostedApplication() != "default") {
+                 if (!sailjail_verify_launch(boostedApplication().c_str(), m_appData->argv()))
+                     throw std::runtime_error("Booster: Binary doesn't have launch permissions\n");
+@@ -299,7 +301,7 @@ int Booster::run(SocketManager * socketManager)
+                 m_appData->prependArgv(SAILJAIL_PATH);
+                 m_appData->setFileName(SAILJAIL_PATH);
+             }
+-
++#endif
+             return launchProcess();
+         } catch (const std::runtime_error &e) {
+             Logger::logError("Booster: Failed to invoke: %s\n", e.what());
+@@ -712,6 +714,7 @@ void Booster::resetOomAdj()
+ 
+ std::string Booster::getFinalName(const std::string &name)
+ {
++#ifdef USE_SAILJAIL
+     if (name == SAILJAIL_PATH) {
+         // This doesn't implement sailjail's parsing logic but instead
+         // has some assumptions about the arguments:
+@@ -738,6 +741,7 @@ std::string Booster::getFinalName(const std::string &name)
+             }
+         }
+     }
++#endif
+     return name;
+ }
+ 

@@ -1,0 +1,28 @@
+--- a/src/launcherlib/daemon.h
++++ b/src/launcherlib/daemon.h
+@@ -29,9 +29,9 @@
+ using std::string;
+ 
+ #include <sys/types.h>
+-#include <tr1/memory>
++#include <memory>
+ 
+-using std::tr1::shared_ptr;
++using std::shared_ptr;
+ 
+ #include <vector>
+ 
+--- a/src/launcherlib/singleinstance.h
++++ b/src/launcherlib/singleinstance.h
+@@ -21,9 +21,9 @@
+ #define SINGLEINSTANCE_H
+ 
+ #include "launcherlib.h"
+-#include <tr1/memory>
++#include <memory>
+ 
+-using std::tr1::shared_ptr;
++using std::shared_ptr;
+ 
+ // Function pointer type for lock()
+ typedef bool (*lock_func_t)(const char *);

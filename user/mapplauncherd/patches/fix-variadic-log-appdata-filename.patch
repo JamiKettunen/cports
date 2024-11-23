@@ -1,0 +1,13 @@
+diff --git a/src/launcherlib/booster.cpp b/src/launcherlib/booster.cpp
+index e9ea568..beedb60 100644
+--- a/src/launcherlib/booster.cpp
++++ b/src/launcherlib/booster.cpp
+@@ -294,7 +294,7 @@ int Booster::run(SocketManager * socketManager)
+                     throw std::runtime_error("Booster: Binary doesn't have launch permissions\n");
+             } else if (m_appData->fileName() != SAILJAIL_PATH &&
+                     sailjail_sandbox(basename(m_appData->fileName()).c_str())) {
+-                Logger::logDebug("Sandboxing '%s'", m_appData->fileName());
++                Logger::logDebug("Sandboxing '%s'", m_appData->fileName().c_str());
+                 // Prepend sailjail to arguments
+                 m_appData->prependArgv(SAILJAIL_PATH);
+                 m_appData->setFileName(SAILJAIL_PATH);
