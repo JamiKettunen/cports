@@ -1,58 +1,50 @@
-From 43bb32e12856326711c35ed27ea598756b11ac6a Mon Sep 17 00:00:00 2001
+From 54f923a0dc07f9c55d67f434b1ec5fbc012fb533 Mon Sep 17 00:00:00 2001
 From: Jami Kettunen <jami.kettunen@protonmail.com>
 Date: Wed, 13 Nov 2024 02:07:10 +0200
-Subject: [PATCH 2/5] Generate asteroidcontrolsplugin qrc via cmake
+Subject: [PATCH 05/15] [REVISIT] Generate asteroidcontrolsplugin qrc via CMake
 
+Re-use the already existing listing of controls used for documentation
+generation as well.
+
+Potentially merge qt_qml_add_module() migration into this as well
 ---
- src/controls/CMakeLists.txt | 33 ++++++++++++++++++++++++++++++++-
+ src/controls/CMakeLists.txt | 14 +++++++++++---
  src/controls/resources.qrc  | 29 -----------------------------
- 2 files changed, 32 insertions(+), 30 deletions(-)
+ 2 files changed, 11 insertions(+), 32 deletions(-)
  delete mode 100644 src/controls/resources.qrc
 
 diff --git a/src/controls/CMakeLists.txt b/src/controls/CMakeLists.txt
-index d008466..650146e 100644
+index d008466..2512bd9 100644
 --- a/src/controls/CMakeLists.txt
 +++ b/src/controls/CMakeLists.txt
-@@ -11,7 +11,38 @@ set(HEADERS
+@@ -11,9 +11,7 @@ set(HEADERS
  	src/flatmeshnode.h
  	src/icon.h)
  
 -add_library(asteroidcontrolsplugin ${SRC} ${HEADERS} resources.qrc)
+-
+-set(controls 
++set(controls
+         Application
+         BorderGestureArea
+         CircularSpinner
+@@ -40,6 +38,16 @@ set(controls
+         TextBase
+         TextField
+ )
++foreach(control ${controls})
++    list(APPEND controls-qml "qml/${control}.qml")
++endforeach()
++
 +add_library(asteroidcontrolsplugin ${SRC} ${HEADERS})
 +
 +qt_add_resources(asteroidcontrolsplugin "asteroidcontrolsplugin_qrc"
-+    PREFIX
-+        "/org/asteroid/controls/"
-+    FILES
-+        "qml/Application.qml"
-+        "qml/BorderGestureArea.qml"
-+        "qml/CircularSpinner.qml"
-+        "qml/Dims.qml"
-+        "qml/ListItem.qml"
-+        "qml/HandWritingKeyboard.qml"
-+        "qml/HighlightBar.qml"
-+        "qml/IconButton.qml"
-+        "qml/Indicator.qml"
-+        "qml/Label.qml"
-+        "qml/LayerStack.qml"
-+        "qml/Marquee.qml"
-+        "qml/LabeledSwitch.qml"
-+        "qml/LabeledActionButton.qml"
-+        "qml/PageDot.qml"
-+        "qml/PageHeader.qml"
-+        "qml/IntSelector.qml"
-+        "qml/SegmentedArc.qml"
-+        "qml/SpinnerDelegate.qml"
-+        "qml/Spinner.qml"
-+        "qml/StatusPage.qml"
-+        "qml/Switch.qml"
-+        "qml/TextArea.qml"
-+        "qml/TextBase.qml"
-+        "qml/TextField.qml"
-+)
- 
- set(controls 
-         Application
++    PREFIX "/org/asteroid/controls/"
++    FILES "${controls-qml}")
++
+ set(controls-docs "$<LIST:TRANSFORM,$<LIST:TRANSFORM,$<LOWER_CASE:${controls}>,PREPEND,qml->,APPEND,.html>")
+ set(doc-dir "${CMAKE_BINARY_DIR}/doc/html")
+ set(full-controls-docs "$<LIST:TRANSFORM,${controls-docs},PREPEND,${doc-dir}>")
 diff --git a/src/controls/resources.qrc b/src/controls/resources.qrc
 deleted file mode 100644
 index 7c19457..0000000

@@ -1,7 +1,8 @@
-From bff5a8ddaf961d45ef275236744c5f273187f0a6 Mon Sep 17 00:00:00 2001
+From 60e2303f652174848fe27c898b883a254608c3ed Mon Sep 17 00:00:00 2001
 From: Jami Kettunen <jami.kettunen@protonmail.com>
 Date: Wed, 13 Nov 2024 00:44:00 +0200
-Subject: [PATCH 3/5] Adapt all QML to use JS functions with formal parameters
+Subject: [PATCH 08/15] Adapt all QML to use JS functions with formal
+ parameters
 
 Fixes runtime warnings such as:
   qt.qml.context: qrc:/org/asteroid/controls/qml/BorderGestureArea.qml:160:5 Parameter "mouse" is not declared. Injection of parameters into signal handlers is deprecated. Use JavaScript functions with formal parameters instead.

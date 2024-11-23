@@ -1,0 +1,25 @@
+From 2da3ccb5091e0d540cf3e738d05e9b6c04aa3f3f Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Sun, 24 Nov 2024 20:10:10 +0200
+Subject: [PATCH 03/15] cmake: Let's not pretend 3.6.0 is a minimum supported
+ version
+
+src/controls/CMakeLists.txt already makes use of the following:
+https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html#list-transformations
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7071736..e053e04 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 3.6.0)
++cmake_minimum_required(VERSION 3.27.0)
+ 
+ project(qml-asteroid
+ 	VERSION 2.0.0
+-- 
+2.47.0
+

@@ -1,0 +1,34 @@
+From 037fc404b3821afb96596de2e335dbbbadec873f Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Mon, 25 Nov 2024 09:55:31 +0200
+Subject: [PATCH 04/15] Warn on missing translations
+
+To fix the following observed build warning:
+src/app/asteroidapp.cpp:80:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+   80 |             translator->load(QLocale(), appName(), ".", "/usr/share/translations", ".qm");
+      |             ^~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Perhaps worth noting is that on musl libc systems by default LANG=C is
+set in env unless otherwise defined which will always print the warning.
+---
+ src/app/asteroidapp.cpp | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/app/asteroidapp.cpp b/src/app/asteroidapp.cpp
+index 73e0d0a..13ae7e8 100644
+--- a/src/app/asteroidapp.cpp
++++ b/src/app/asteroidapp.cpp
+@@ -67,7 +67,9 @@ namespace AsteroidApp {
+             app->setApplicationName(appName());
+ 
+             QTranslator *translator = new QTranslator();
+-            translator->load(QLocale(), appName(), ".", "/usr/share/translations", ".qm");
++            if (!translator->load(QLocale(), appName(), ".", "/usr/share/translations", ".qm")) {
++                qDebug() << "Failed to load" << QLocale().name() << "translations for" << appName();
++            }
+             app->installTranslator(translator);
+         } else {
+             qWarning("AsteroidApp::application() called multiple times");
+-- 
+2.47.0
+

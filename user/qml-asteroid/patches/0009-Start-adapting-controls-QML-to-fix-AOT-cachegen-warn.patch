@@ -1,0 +1,59 @@
+From 757715fe137f2f84410c3ed800df57b399fe2e0b Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Mon, 25 Nov 2024 11:28:49 +0200
+Subject: [PATCH 09/15] Start adapting controls QML to fix AOT cachegen
+ warnings
+
+Add QML type annotations, remove unused imports etc all reported by
+/usr/lib/qt6/libexec/qmlcachegen --verbose
+---
+ src/controls/qml/Dims.qml         | 6 +++---
+ src/controls/qml/HighlightBar.qml | 1 -
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/src/controls/qml/Dims.qml b/src/controls/qml/Dims.qml
+index 1dc545f..05ceb09 100644
+--- a/src/controls/qml/Dims.qml
++++ b/src/controls/qml/Dims.qml
+@@ -61,7 +61,7 @@ QtObject {
+         \qmlmethod real w(real number)
+         \brief Returns a dimension that is \a number percent of the screen width.
+     */
+-    function w(number) {
++    function w(number: real): real {
+         return (number/100)*Screen.desktopAvailableWidth
+     }
+ 
+@@ -69,7 +69,7 @@ QtObject {
+         \qmlmethod real h(real number)
+         \brief Returns a dimension that is \a number percent of the screen height.
+     */
+-    function h(number) {
++    function h(number: real): real {
+         return (number/100)*(Screen.desktopAvailableHeight+DeviceInfo.flatTireHeight)
+     }
+ 
+@@ -77,7 +77,7 @@ QtObject {
+         \qmlmethod real l(real number)
+         \brief Returns a dimension that is \a number percent of the screen width or height; whichever is smaller.
+     */
+-    function l(number) {
++    function l(number: real): real {
+         if(Screen.desktopAvailableWidth > (Screen.desktopAvailableHeight+DeviceInfo.flatTireHeight))
+             return h(number)
+         else
+diff --git a/src/controls/qml/HighlightBar.qml b/src/controls/qml/HighlightBar.qml
+index 1065a05..30a2c60 100644
+--- a/src/controls/qml/HighlightBar.qml
++++ b/src/controls/qml/HighlightBar.qml
+@@ -19,7 +19,6 @@
+  */
+ 
+ import QtQuick 2.9
+-import org.asteroid.controls 1.0
+ 
+ /*!
+     \qmltype HighlightBar
+-- 
+2.47.0
+

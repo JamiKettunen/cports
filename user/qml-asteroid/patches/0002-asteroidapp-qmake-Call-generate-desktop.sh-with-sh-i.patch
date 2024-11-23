@@ -1,0 +1,27 @@
+From d6a0410362bfba626fc407e9eddbaede6c232b10 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Mon, 25 Nov 2024 11:33:24 +0200
+Subject: [PATCH 02/15] asteroidapp: qmake: Call generate-desktop.sh with sh
+ instead of bash
+
+It's a POSIX sh script as indicated by its shebang.
+---
+ src/app/asteroidapp.prf | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/app/asteroidapp.prf b/src/app/asteroidapp.prf
+index 9a9316a..debbd4e 100644
+--- a/src/app/asteroidapp.prf
++++ b/src/app/asteroidapp.prf
+@@ -34,7 +34,7 @@ QT += quick qml
+ 
+ target.path = /usr/bin
+ 
+-desktop.commands = bash $$_PRO_FILE_PWD_/i18n/generate-desktop.sh $$_PRO_FILE_PWD_ $${TARGET}.desktop
++desktop.commands = sh $$_PRO_FILE_PWD_/i18n/generate-desktop.sh $$_PRO_FILE_PWD_ $${TARGET}.desktop
+ desktop.files = $$OUT_PWD/$${TARGET}.desktop
+ desktop.path = /usr/share/applications
+ desktop.CONFIG = no_check_exist
+-- 
+2.47.0
+

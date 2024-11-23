@@ -1,0 +1,122 @@
+From 079d8ffcc302bc8a45aa1157d9d34a2d3da98192 Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Mon, 25 Nov 2024 17:16:51 +0200
+Subject: [PATCH 12/15] [RESIVIT] Use CMake qt_qml_add_module() for
+ org.asteroid.controls
+
+This one (for now at least) retains the manually written plugin instead
+of generating one since it also changes the default font instead of just
+calling qmlRegisterType for each C++ QML component:
+
+  QGuiApplication::setFont(QFont("Noto Sans"));
+
+If another way to accomplish the same task globally for anything using
+org.asteroid.controls is found the same as one commit above for
+org.asteroid.utils can also be done here and controls_plugin.* can be
+done away with.
+---
+ src/controls/CMakeLists.txt | 36 ++++++++++++++++++++++++++----------
+ src/controls/qmldir         | 29 -----------------------------
+ 2 files changed, 26 insertions(+), 39 deletions(-)
+ delete mode 100644 src/controls/qmldir
+
+diff --git a/src/controls/CMakeLists.txt b/src/controls/CMakeLists.txt
+index e46a7c8..36c2a05 100644
+--- a/src/controls/CMakeLists.txt
++++ b/src/controls/CMakeLists.txt
+@@ -42,11 +42,24 @@ foreach(control ${controls})
+     list(APPEND controls-qml "qml/${control}.qml")
+ endforeach()
+ 
+-add_library(asteroidcontrolsplugin ${SRC} ${HEADERS})
++set_source_files_properties(qml/Dims.qml
++	PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+ 
+-qt_add_resources(asteroidcontrolsplugin "asteroidcontrolsplugin_qrc"
+-    PREFIX "/org/asteroid/controls/"
+-    FILES "${controls-qml}")
++qt_add_qml_module(asteroidcontrolsplugin
++	URI org.asteroid.controls
++	VERSION 1.0
++	PLUGIN_TARGET asteroidcontrolsplugin
++	NO_GENERATE_PLUGIN_SOURCE
++	#NO_PLUGIN_OPTIONAL
++	QML_FILES
++		${controls-qml}
++	#ENABLE_TYPE_COMPILER
++	SOURCES
++		${SRC} ${HEADERS}
++)
++
++# TODO: drop debug once AOT produces less warnings etc
++set_target_properties(asteroidcontrolsplugin PROPERTIES QT_QMLCACHEGEN_ARGUMENTS "--verbose")
+ 
+ qt6_add_shaders(asteroidcontrolsplugin "asteroidcontrolsplugin_shaders"
+     PREFIX "/org/asteroid/controls/"
+@@ -55,6 +68,14 @@ qt6_add_shaders(asteroidcontrolsplugin "asteroidcontrolsplugin_shaders"
+     PRECOMPILE
+     OPTIMIZED)
+ 
++target_link_libraries(asteroidcontrolsplugin
++	PUBLIC
++		#Qt::Qml
++		Qt::Quick # src/{application_p,flatmesh{,node},icon}.*
++	PRIVATE
++		Qt::Svg # src/icon.cpp
++)
++
+ set(controls-docs "$<LIST:TRANSFORM,$<LIST:TRANSFORM,$<LOWER_CASE:${controls}>,PREPEND,qml->,APPEND,.html>")
+ set(doc-dir "${CMAKE_BINARY_DIR}/doc/html")
+ set(full-controls-docs "$<LIST:TRANSFORM,${controls-docs},PREPEND,${doc-dir}>")
+@@ -70,12 +91,7 @@ add_custom_command(
+     COMMENT "Generating HTML format Reference documentation..." VERBATIM
+ )
+ 
+-target_link_libraries(asteroidcontrolsplugin
+-	Qt::Qml
+-	Qt::Quick
+-	Qt::Svg)
+-
+ install(TARGETS asteroidcontrolsplugin
+ 	DESTINATION ${INSTALL_QML_IMPORT_DIR}/org/asteroid/controls)
+-install(FILES qmldir
++install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qmldir
+ 	DESTINATION ${INSTALL_QML_IMPORT_DIR}/org/asteroid/controls)
+diff --git a/src/controls/qmldir b/src/controls/qmldir
+deleted file mode 100644
+index 88dfe74..0000000
+--- a/src/controls/qmldir
++++ /dev/null
+@@ -1,29 +0,0 @@
+-module org.asteroid.controls
+-
+-plugin asteroidcontrolsplugin
+-
+-Application 1.0 qrc:///org/asteroid/controls/qml/Application.qml
+-BorderGestureArea 1.0 qrc:///org/asteroid/controls/qml/BorderGestureArea.qml
+-CircularSpinner 1.0 qrc:///org/asteroid/controls/qml/CircularSpinner.qml
+-singleton Dims 1.0 qrc:///org/asteroid/controls/qml/Dims.qml
+-HandWritingKeyboard 1.0 qrc:///org/asteroid/controls/qml/HandWritingKeyboard.qml
+-HighlightBar 1.0 qrc:///org/asteroid/controls/qml/HighlightBar.qml
+-IconButton 1.0 qrc:///org/asteroid/controls/qml/IconButton.qml
+-Indicator 1.0 qrc:///org/asteroid/controls/qml/Indicator.qml
+-IntSelector 1.0 qrc:///org/asteroid/controls/qml/IntSelector.qml
+-Label 1.0 qrc:///org/asteroid/controls/qml/Label.qml
+-LabeledActionButton 1.0 qrc:///org/asteroid/controls/qml/LabeledActionButton.qml
+-LabeledSwitch 1.0 qrc:///org/asteroid/controls/qml/LabeledSwitch.qml
+-LayerStack 1.0 qrc:///org/asteroid/controls/qml/LayerStack.qml
+-ListItem 1.0 qrc:///org/asteroid/controls/qml/ListItem.qml
+-Marquee 1.0 qrc:///org/asteroid/controls/qml/Marquee.qml
+-PageDot 1.0 qrc:///org/asteroid/controls/qml/PageDot.qml
+-PageHeader 1.0 qrc:///org/asteroid/controls/qml/PageHeader.qml
+-SegmentedArc 1.0 qrc:///org/asteroid/controls/qml/SegmentedArc.qml
+-Spinner 1.0 qrc:///org/asteroid/controls/qml/Spinner.qml
+-SpinnerDelegate 1.0 qrc:///org/asteroid/controls/qml/SpinnerDelegate.qml
+-StatusPage 1.0 qrc:///org/asteroid/controls/qml/StatusPage.qml
+-Switch 1.0 qrc:///org/asteroid/controls/qml/Switch.qml
+-TextArea 1.0 qrc:///org/asteroid/controls/qml/TextArea.qml
+-TextBase 1.0 qrc:///org/asteroid/controls/qml/TextBase.qml
+-TextField 1.0 qrc:///org/asteroid/controls/qml/TextField.qml
+-- 
+2.47.0
+

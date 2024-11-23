@@ -1,52 +1,34 @@
-From 38956a5dd8af5e7362c379131b1787e21b543d05 Mon Sep 17 00:00:00 2001
+From 80fed6b17a6f75665112acde7fc83e5064f0a775 Mon Sep 17 00:00:00 2001
 From: Jami Kettunen <jami.kettunen@protonmail.com>
 Date: Wed, 13 Nov 2024 02:08:45 +0200
-Subject: [PATCH 5/5] Port {Circular,}Spinner fragmentShader to Qt6 (qsb)
+Subject: [PATCH 07/15] Port {Circular,}Spinner fragmentShader to Qt6 (qsb)
 
 ---
- CMakeLists.txt                       |  2 +-
- src/controls/CMakeLists.txt          | 14 ++++++++++++++
+ src/controls/CMakeLists.txt          |  7 +++++++
  src/controls/qml/CircularSpinner.qml | 15 +--------------
  src/controls/qml/Spinner.frag        | 14 ++++++++++++++
  src/controls/qml/Spinner.qml         | 15 +--------------
- 5 files changed, 31 insertions(+), 29 deletions(-)
+ 4 files changed, 23 insertions(+), 28 deletions(-)
  create mode 100644 src/controls/qml/Spinner.frag
 
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index fbcc943..dc9f0d7 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -1,4 +1,4 @@
--cmake_minimum_required(VERSION 3.6.0)
-+cmake_minimum_required(VERSION 3.7.0)
- 
- project(qml-asteroid
- 	VERSION 2.0.0
 diff --git a/src/controls/CMakeLists.txt b/src/controls/CMakeLists.txt
-index c41c178..7858c82 100644
+index 67e025b..e46a7c8 100644
 --- a/src/controls/CMakeLists.txt
 +++ b/src/controls/CMakeLists.txt
-@@ -44,6 +44,20 @@ qt_add_resources(asteroidcontrolsplugin "asteroidcontrolsplugin_qrc"
-         "qml/TextField.qml"
- )
+@@ -48,6 +48,13 @@ qt_add_resources(asteroidcontrolsplugin "asteroidcontrolsplugin_qrc"
+     PREFIX "/org/asteroid/controls/"
+     FILES "${controls-qml}")
  
-+if (QT_MAJOR_VERSION GREATER_EQUAL 6)
-+    find_package(Qt6 COMPONENTS ShaderTools)
-+    qt6_add_shaders(asteroidcontrolsplugin "asteroidcontrolsplugin_shaders"
-+        #GLSL "300es,330" # FIXME: drop?
-+        BATCHABLE
-+        PRECOMPILE
-+        OPTIMIZED
-+        PREFIX
-+            "/org/asteroid/controls/"
-+        FILES
-+            "qml/Spinner.frag"
-+    )
-+endif()
++qt6_add_shaders(asteroidcontrolsplugin "asteroidcontrolsplugin_shaders"
++    PREFIX "/org/asteroid/controls/"
++    FILES "qml/Spinner.frag"
++    BATCHABLE
++    PRECOMPILE
++    OPTIMIZED)
 +
- set(controls 
-         Application
-         BorderGestureArea
+ set(controls-docs "$<LIST:TRANSFORM,$<LIST:TRANSFORM,$<LOWER_CASE:${controls}>,PREPEND,qml->,APPEND,.html>")
+ set(doc-dir "${CMAKE_BINARY_DIR}/doc/html")
+ set(full-controls-docs "$<LIST:TRANSFORM,${controls-docs},PREPEND,${doc-dir}>")
 diff --git a/src/controls/qml/CircularSpinner.qml b/src/controls/qml/CircularSpinner.qml
 index b47548e..6a8df90 100644
 --- a/src/controls/qml/CircularSpinner.qml

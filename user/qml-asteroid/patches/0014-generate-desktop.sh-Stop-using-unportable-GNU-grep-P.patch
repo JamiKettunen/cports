@@ -1,0 +1,46 @@
+From 37e4561b6380052301470b9758588874ed11ac1b Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Sun, 24 Nov 2024 00:29:59 +0200
+Subject: [PATCH 14/15] generate-desktop.sh: Stop using unportable GNU grep -P
+
+This doesn't work on Chimera Linux which uses the FreeBSD grep(1); adds
+a new build-time dependency on xmllint which I'm not sure how to feel
+about yet.
+---
+ generate-desktop.sh | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/generate-desktop.sh b/generate-desktop.sh
+index 91f550d..559cce5 100755
+--- a/generate-desktop.sh
++++ b/generate-desktop.sh
+@@ -47,7 +47,7 @@ if [ ! -f "${SRC_DIR}/i18n/${APPLICATION_NAME}.desktop.h" ]; then
+     exit 2
+ fi
+ 
+-DEFAULT_NAME=$(grep -oP '//% "\K[^"]+(?=")' "${SRC_DIR}/i18n/${APPLICATION_NAME}.desktop.h")
++DEFAULT_NAME=$(sed -n 's/\/\/% //p' "${SRC_DIR}/i18n/${APPLICATION_NAME}.desktop.h" | cut -d'"' -f2)
+ if [ -z "$DEFAULT_NAME" ]; then
+   echo "Default name can not be found in ${SRC_DIR}/i18n/${APPLICATION_NAME}.desktop.h"
+   exit 3
+@@ -59,7 +59,7 @@ echo "Name=$DEFAULT_NAME" >> "$OUTPUT_FILE"
+ for FILE in "${SRC_DIR}"/i18n/*.ts; do
+   echo "Processing $FILE..."
+ 
+-  PROCESSED_LANG=$(grep -oP 'language="\K[^"]+(?=")' "$FILE")
++  PROCESSED_LANG=$(xmllint --xpath 'string(//TS/@language)' "$FILE")
+   if [ -z "$PROCESSED_LANG" ]; then
+     echo "> Couldn't find a corresponding language id, aborting"
+     continue
+@@ -78,7 +78,7 @@ for FILE in "${SRC_DIR}"/i18n/*.ts; do
+     continue
+   fi
+ 
+-  TRANSLATED_NAME=$(echo "$TRANSLATION_LINE" | grep -oP '>\K[^<]*(?=</translation>)')
++  TRANSLATED_NAME=$(echo "$TRANSLATION_LINE" | xmllint --xpath 'string(//translation)' -) # TODO: 2>/dev/null ?
+   if [ -z "$TRANSLATED_NAME" ]; then
+     echo "> Translation is empty, aborting"
+     continue
+-- 
+2.47.0
+

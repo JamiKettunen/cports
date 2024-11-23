@@ -1,0 +1,230 @@
+From 5d0469fa39a3f6b03a3a650c584aadc437ce656a Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Mon, 25 Nov 2024 17:10:31 +0200
+Subject: [PATCH 11/15] Generate everything org.asteroid.utils related via
+ CMake
+
+---
+ src/utils/CMakeLists.txt        | 27 +++++++++++++++++--------
+ src/utils/qmldir                |  3 ---
+ src/utils/src/bluetoothstatus.h |  2 ++
+ src/utils/src/deviceinfo.h      |  7 +++----
+ src/utils/src/fileinfo.h        |  8 ++++----
+ src/utils/src/utils_plugin.cpp  | 36 ---------------------------------
+ src/utils/src/utils_plugin.h    | 34 -------------------------------
+ 7 files changed, 28 insertions(+), 89 deletions(-)
+ delete mode 100644 src/utils/qmldir
+ delete mode 100644 src/utils/src/utils_plugin.cpp
+ delete mode 100644 src/utils/src/utils_plugin.h
+
+diff --git a/src/utils/CMakeLists.txt b/src/utils/CMakeLists.txt
+index 12ce753..01532f4 100644
+--- a/src/utils/CMakeLists.txt
++++ b/src/utils/CMakeLists.txt
+@@ -1,22 +1,33 @@
+ set(SRC
+-	src/utils_plugin.cpp
+ 	src/deviceinfo.cpp
+ 	src/fileinfo.cpp
+ 	src/bluetoothstatus.cpp)
+ set(HEADERS
+-	src/utils_plugin.h
+ 	src/deviceinfo.h
+ 	src/fileinfo.h
+ 	src/bluetoothstatus.h)
+ 
+-add_library(asteroidutilsplugin ${SRC} ${HEADERS})
++# TODO: ensure FileInfo 1.0 (singleton) & BluetoothStatus 1.0 (normal) QML classes work
++qt_add_qml_module(asteroidutilsplugin
++	URI org.asteroid.utils
++	VERSION 1.0
++	PLUGIN_TARGET asteroidutilsplugin
++	#NO_PLUGIN_OPTIONAL
++	SOURCES
++		${SRC} ${HEADERS}
++)
++
++target_include_directories(asteroidutilsplugin PRIVATE src)
+ 
+ target_link_libraries(asteroidutilsplugin
+-	Qt::DBus
+-	Qt::Qml
+-	Qt::Quick)
++	#PUBLIC
++	#	Qt::Qml
++	#	Qt::Quick
++	PRIVATE
++		Qt::DBus # bluetoothstatus
++)
+ 
+ install(TARGETS asteroidutilsplugin
+ 	DESTINATION ${INSTALL_QML_IMPORT_DIR}/org/asteroid/utils)
+-install(FILES qmldir
+-	DESTINATION ${INSTALL_QML_IMPORT_DIR}/org/asteroid/utils)
++install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qmldir
++    DESTINATION ${INSTALL_QML_IMPORT_DIR}/org/asteroid/utils)
+diff --git a/src/utils/qmldir b/src/utils/qmldir
+deleted file mode 100644
+index 6a0ed83..0000000
+--- a/src/utils/qmldir
++++ /dev/null
+@@ -1,3 +0,0 @@
+-module org.asteroid.utils
+-
+-plugin asteroidutilsplugin
+diff --git a/src/utils/src/bluetoothstatus.h b/src/utils/src/bluetoothstatus.h
+index 6924bf4..eadf25b 100644
+--- a/src/utils/src/bluetoothstatus.h
++++ b/src/utils/src/bluetoothstatus.h
+@@ -23,6 +23,7 @@
+ #include <QDBusObjectPath>
+ #include <QDBusConnection>
+ #include <QDBusServiceWatcher>
++#include <QtQml>
+ 
+ typedef QMap<QString, QMap<QString, QVariant>> InterfaceList;
+ Q_DECLARE_METATYPE(InterfaceList)
+@@ -30,6 +31,7 @@ Q_DECLARE_METATYPE(InterfaceList)
+ class BluetoothStatus : public QObject
+ {
+     Q_OBJECT
++    QML_ELEMENT
+     Q_PROPERTY(bool powered READ getPowered WRITE setPowered NOTIFY poweredChanged)
+     Q_PROPERTY(bool connected READ getConnected NOTIFY connectedChanged)
+ 
+diff --git a/src/utils/src/deviceinfo.h b/src/utils/src/deviceinfo.h
+index e4b1a50..44c9d6f 100644
+--- a/src/utils/src/deviceinfo.h
++++ b/src/utils/src/deviceinfo.h
+@@ -26,6 +26,8 @@
+ class DeviceInfo : public QObject
+ {
+     Q_OBJECT
++    QML_SINGLETON
++    QML_ELEMENT
+     Q_DISABLE_COPY(DeviceInfo)
+     Q_PROPERTY(bool hasRoundScreen READ hasRoundScreen CONSTANT)
+     Q_PROPERTY(double borderGestureWidth READ borderGestureWidth CONSTANT)
+@@ -38,11 +40,8 @@ class DeviceInfo : public QObject
+     Q_PROPERTY(QString buildID READ buildID CONSTANT)
+     DeviceInfo();
+ public:
+-    static QObject *qmlInstance(QQmlEngine *engine, QJSEngine *scriptEngine)
++    static DeviceInfo *create(QQmlEngine *, QJSEngine *)
+     {
+-        Q_UNUSED(engine);
+-        Q_UNUSED(scriptEngine);
+-
+         return new DeviceInfo;
+     }
+     bool hasRoundScreen();
+diff --git a/src/utils/src/fileinfo.h b/src/utils/src/fileinfo.h
+index 3aba610..a966e37 100644
+--- a/src/utils/src/fileinfo.h
++++ b/src/utils/src/fileinfo.h
+@@ -25,16 +25,16 @@
+ class FileInfo : public QObject
+ {
+     Q_OBJECT
++    QML_SINGLETON
++    QML_ELEMENT
+     Q_DISABLE_COPY(FileInfo)
+     FileInfo() {}
+ public:
+-    static QObject *qmlInstance(QQmlEngine *engine, QJSEngine *scriptEngine)
++    static FileInfo *create(QQmlEngine *, QJSEngine *)
+     {
+-        Q_UNUSED(engine);
+-        Q_UNUSED(scriptEngine);
+-
+         return new FileInfo;
+     }
++    // TODO: FileInfo(QObject *parent = 0); instead?
+     Q_INVOKABLE bool exists(const QString fileName);
+ };
+ 
+diff --git a/src/utils/src/utils_plugin.cpp b/src/utils/src/utils_plugin.cpp
+deleted file mode 100644
+index 754fee6..0000000
+--- a/src/utils/src/utils_plugin.cpp
++++ /dev/null
+@@ -1,36 +0,0 @@
+-/*
+- * Copyright (C) 2016 - Florent Revest <revestflo@gmail.com>
+- *
+- * This program is free software: you can redistribute it and/or modify
+- * it under the terms of the GNU Lesser General Public License as
+- * published by the Free Software Foundation, either version 2.1 of the
+- * License, or (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+- */
+-
+-#include "utils_plugin.h"
+-#include <QtQml>
+-#include "bluetoothstatus.h"
+-#include "deviceinfo.h"
+-#include "fileinfo.h"
+-
+-UtilsPlugin::UtilsPlugin(QObject *parent) : QQmlExtensionPlugin(parent)
+-{
+-}
+-
+-void UtilsPlugin::registerTypes(const char *uri)
+-{
+-    Q_ASSERT(uri == QLatin1String("org.asteroid.utils"));
+-
+-    qmlRegisterSingletonType<DeviceInfo>(uri, 1,0, "DeviceInfo", &DeviceInfo::qmlInstance);
+-    qmlRegisterSingletonType<FileInfo>(uri, 1, 0, "FileInfo", &FileInfo::qmlInstance);
+-    qmlRegisterType<BluetoothStatus>(uri, 1, 0, "BluetoothStatus");
+-}
+-
+diff --git a/src/utils/src/utils_plugin.h b/src/utils/src/utils_plugin.h
+deleted file mode 100644
+index e1f79ff..0000000
+--- a/src/utils/src/utils_plugin.h
++++ /dev/null
+@@ -1,34 +0,0 @@
+-/*
+- * Copyright (C) 2016 - Florent Revest <revestflo@gmail.com>
+- *
+- * This program is free software: you can redistribute it and/or modify
+- * it under the terms of the GNU Lesser General Public License as
+- * published by the Free Software Foundation, either version 2.1 of the
+- * License, or (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+- */
+-
+-#ifndef UTILSPLUGIN_H
+-#define UTILSPLUGIN_H
+-
+-#include <QQmlExtensionPlugin>
+-
+-class UtilsPlugin : public QQmlExtensionPlugin
+-{
+-    Q_OBJECT
+-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface")
+-
+-public:
+-    explicit UtilsPlugin(QObject *parent = 0);
+-    void registerTypes(const char *uri);
+-};
+-
+-#endif // UTILSPLUGIN_H
+-
+-- 
+2.47.0
+

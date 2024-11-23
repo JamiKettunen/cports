@@ -1,0 +1,281 @@
+From 840ebac12008a192afa5504892d1661e2dcaf38a Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Sun, 24 Nov 2024 00:29:46 +0200
+Subject: [PATCH 13/15] Port AsteroidApp to Qt6
+
+---
+ cmake/AsteroidTranslations.cmake   |  4 +--
+ cmake/FindMapplauncherd_qt5.cmake  | 40 ------------------------------
+ cmake/FindMapplauncherd_qt6.cmake  | 40 ++++++++++++++++++++++++++++++
+ cmake/FindMlite5.cmake             | 40 ------------------------------
+ cmake/FindMlite6.cmake             | 40 ++++++++++++++++++++++++++++++
+ src/app/AsteroidAppConfig.cmake.in |  3 +--
+ src/app/CMakeLists.txt             | 10 ++++----
+ src/app/asteroidapp.cpp            |  2 +-
+ 8 files changed, 89 insertions(+), 90 deletions(-)
+ delete mode 100644 cmake/FindMapplauncherd_qt5.cmake
+ create mode 100644 cmake/FindMapplauncherd_qt6.cmake
+ delete mode 100644 cmake/FindMlite5.cmake
+ create mode 100644 cmake/FindMlite6.cmake
+
+diff --git a/cmake/AsteroidTranslations.cmake b/cmake/AsteroidTranslations.cmake
+index 7ea83f8..26404e6 100644
+--- a/cmake/AsteroidTranslations.cmake
++++ b/cmake/AsteroidTranslations.cmake
+@@ -4,11 +4,11 @@ function(BUILD_TRANSLATIONS directory)
+ 		return()
+ 	endif()
+ 
+-	find_package(Qt5LinguistTools REQUIRED)
++	find_package(Qt6LinguistTools REQUIRED)
+ 
+ 	file(GLOB LANGUAGE_FILES_TS ${directory}/*.ts)
+ 	#set_source_files_properties(${LANGUAGE_FILES_TS} PROPERTIES OUTPUT_LOCATION "i18n")
+-	qt5_add_translation(LANGUAGE_FILES_QM ${LANGUAGE_FILES_TS} OPTIONS "-idbased")
++	qt_add_translation(LANGUAGE_FILES_QM ${LANGUAGE_FILES_TS} OPTIONS "-idbased")
+ 	add_custom_target(build-translations ALL
+ 		COMMENT "Building translations in ${director}..."
+ 		DEPENDS ${LANGUAGE_FILES_QM})
+diff --git a/cmake/FindMapplauncherd_qt5.cmake b/cmake/FindMapplauncherd_qt5.cmake
+deleted file mode 100644
+index 5919cef..0000000
+--- a/cmake/FindMapplauncherd_qt5.cmake
++++ /dev/null
+@@ -1,40 +0,0 @@
+-# Try to find qdeclarative5-boostable
+-# Once done this will define
+-# MAPPLAUNCHERD_QT5_FOUND - System has qdeclarative
+-# MAPPLAUNCHERD_QT5_INCLUDE_DIRS - The qdeclarative include directories
+-# MAPPLAUNCHERD_QT5_LIBRARIES - The libraries needed to use qdeclarative
+-# MAPPLAUNCHERD_QT5_DEFINITIONS - Compiler switches required for using qdeclarative
+-
+-find_package(PkgConfig REQUIRED)
+-pkg_check_modules(PC_Mapplauncherd_qt5 QUIET qdeclarative5-boostable)
+-set(Mapplauncherd_qt5_DEFINITIONS ${PC_Mapplauncherd_qt5_CFLAGS_OTHER})
+-
+-find_path(Mapplauncherd_qt5_INCLUDE_DIRS
+-	NAMES mdeclarativecache.h
+-	PATH_SUFFIXES mdeclarativecache5
+-	PATHS ${PC_Mapplauncherd_qt5_INCLUDEDIR} ${PC_Mapplauncherd_qt5_INCLUDE_DIRS})
+-
+-find_library(Mapplauncherd_qt5_LIBRARIES
+-	NAMES mdeclarativecache5
+-	PATHS ${PC_Mapplauncherd_qt5_LIBDIR} ${PC_Mapplauncherd_qt5_LIBRARY_DIRS})
+-
+-set(Mapplauncherd_qt5_VERSION ${PC_Mapplauncherd_qt5_VERSION})
+-
+-include(FindPackageHandleStandardArgs)
+-find_package_handle_standard_args(Mapplauncherd_qt5
+-	FOUND_VAR
+-		Mapplauncherd_qt5_FOUND
+-	REQUIRED_VARS
+-		Mapplauncherd_qt5_LIBRARIES
+-		Mapplauncherd_qt5_INCLUDE_DIRS
+-	VERSION_VAR
+-		Mapplauncherd_qt5_VERSION)
+-
+-mark_as_advanced(Mapplauncherd_qt5_INCLUDE_DIR Mapplauncherd_qt5_LIBRARY Mapplauncherd_qt5_VERSION)
+-
+-if(Mapplauncherd_qt5_FOUND AND NOT TARGET Mapplauncherd_qt5::Mapplauncherd_qt5)
+-	add_library(Mapplauncherd_qt5::Mapplauncherd_qt5 UNKNOWN IMPORTED)
+-	set_target_properties(Mapplauncherd_qt5::Mapplauncherd_qt5 PROPERTIES
+-		IMPORTED_LOCATION "${Mapplauncherd_qt5_LIBRARIES}"
+-		INTERFACE_INCLUDE_DIRECTORIES "${Mapplauncherd_qt5_INCLUDE_DIRS}")
+-endif()
+diff --git a/cmake/FindMapplauncherd_qt6.cmake b/cmake/FindMapplauncherd_qt6.cmake
+new file mode 100644
+index 0000000..d181245
+--- /dev/null
++++ b/cmake/FindMapplauncherd_qt6.cmake
+@@ -0,0 +1,40 @@
++# Try to find qdeclarative6-boostable
++# Once done this will define
++# MAPPLAUNCHERD_QT6_FOUND - System has qdeclarative
++# MAPPLAUNCHERD_QT6_INCLUDE_DIRS - The qdeclarative include directories
++# MAPPLAUNCHERD_QT6_LIBRARIES - The libraries needed to use qdeclarative
++# MAPPLAUNCHERD_QT6_DEFINITIONS - Compiler switches required for using qdeclarative
++
++find_package(PkgConfig REQUIRED)
++pkg_check_modules(PC_Mapplauncherd_qt6 QUIET qdeclarative6-boostable)
++set(Mapplauncherd_qt6_DEFINITIONS ${PC_Mapplauncherd_qt6_CFLAGS_OTHER})
++
++find_path(Mapplauncherd_qt6_INCLUDE_DIRS
++	NAMES mdeclarativecache.h
++	PATH_SUFFIXES mdeclarativecache6
++	PATHS ${PC_Mapplauncherd_qt6_INCLUDEDIR} ${PC_Mapplauncherd_qt6_INCLUDE_DIRS})
++
++find_library(Mapplauncherd_qt6_LIBRARIES
++	NAMES mdeclarativecache6
++	PATHS ${PC_Mapplauncherd_qt6_LIBDIR} ${PC_Mapplauncherd_qt6_LIBRARY_DIRS})
++
++set(Mapplauncherd_qt6_VERSION ${PC_Mapplauncherd_qt6_VERSION})
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(Mapplauncherd_qt6
++	FOUND_VAR
++		Mapplauncherd_qt6_FOUND
++	REQUIRED_VARS
++		Mapplauncherd_qt6_LIBRARIES
++		Mapplauncherd_qt6_INCLUDE_DIRS
++	VERSION_VAR
++		Mapplauncherd_qt6_VERSION)
++
++mark_as_advanced(Mapplauncherd_qt6_INCLUDE_DIR Mapplauncherd_qt6_LIBRARY Mapplauncherd_qt6_VERSION)
++
++if(Mapplauncherd_qt6_FOUND AND NOT TARGET Mapplauncherd_qt6::Mapplauncherd_qt6)
++	add_library(Mapplauncherd_qt6::Mapplauncherd_qt6 UNKNOWN IMPORTED)
++	set_target_properties(Mapplauncherd_qt6::Mapplauncherd_qt6 PROPERTIES
++		IMPORTED_LOCATION "${Mapplauncherd_qt6_LIBRARIES}"
++		INTERFACE_INCLUDE_DIRECTORIES "${Mapplauncherd_qt6_INCLUDE_DIRS}")
++endif()
+diff --git a/cmake/FindMlite5.cmake b/cmake/FindMlite5.cmake
+deleted file mode 100644
+index 3558bbd..0000000
+--- a/cmake/FindMlite5.cmake
++++ /dev/null
+@@ -1,40 +0,0 @@
+-# Try to find mlite5
+-# Once done this will define
+-# MLITE5_FOUND - System has mlite5
+-# MLITE5_INCLUDE_DIRS - The mlite5 include directories
+-# MLITE5_LIBRARIES - The libraries needed to use mlite5
+-# MLITE5_DEFINITIONS - Compiler switches required for using mlite5
+-
+-find_package(PkgConfig REQUIRED)
+-pkg_check_modules(PC_Mlite5 QUIET mlite5)
+-set(Mlite5_DEFINITIONS ${PC_Mlite5_CFLAGS_OTHER})
+-
+-find_path(Mlite5_INCLUDE_DIRS
+-	NAMES mlite-global.h
+-	PATH_SUFFIXES mlite5
+-	PATHS ${PC_Mlite5_INCLUDEDIR} ${PC_Mlite5_INCLUDE_DIRS})
+-
+-find_library(Mlite5_LIBRARIES
+-	NAMES mlite5
+-	PATHS ${PC_Mlite5_LIBDIR} ${PC_Mlite5_LIBRARY_DIRS})
+-
+-set(Mlite5_VERSION ${PC_Mlite5_VERSION})
+-
+-include(FindPackageHandleStandardArgs)
+-find_package_handle_standard_args(Mlite5
+-	FOUND_VAR
+-		Mlite5_FOUND
+-	REQUIRED_VARS
+-		Mlite5_LIBRARIES
+-		Mlite5_INCLUDE_DIRS
+-	VERSION_VAR
+-		Mlite5_VERSION)
+-
+-mark_as_advanced(Mlite5_INCLUDE_DIR Mlite5_LIBRARY Mlite5_VERSION)
+-
+-if(Mlite5_FOUND AND NOT TARGET Mlite5::Mlite5)
+-	add_library(Mlite5::Mlite5 UNKNOWN IMPORTED)
+-	set_target_properties(Mlite5::Mlite5 PROPERTIES
+-		IMPORTED_LOCATION "${Mlite5_LIBRARIES}"
+-		INTERFACE_INCLUDE_DIRECTORIES "${Mlite5_INCLUDE_DIRS}")
+-endif()
+diff --git a/cmake/FindMlite6.cmake b/cmake/FindMlite6.cmake
+new file mode 100644
+index 0000000..e9eec54
+--- /dev/null
++++ b/cmake/FindMlite6.cmake
+@@ -0,0 +1,40 @@
++# Try to find mlite6
++# Once done this will define
++# MLITE6_FOUND - System has mlite6
++# MLITE6_INCLUDE_DIRS - The mlite6 include directories
++# MLITE6_LIBRARIES - The libraries needed to use mlite6
++# MLITE6_DEFINITIONS - Compiler switches required for using mlite6
++
++find_package(PkgConfig REQUIRED)
++pkg_check_modules(PC_Mlite6 QUIET mlite6)
++set(Mlite6_DEFINITIONS ${PC_Mlite6_CFLAGS_OTHER})
++
++find_path(Mlite6_INCLUDE_DIRS
++	NAMES mlite-global.h
++	PATH_SUFFIXES mlite6
++	PATHS ${PC_Mlite6_INCLUDEDIR} ${PC_Mlite6_INCLUDE_DIRS})
++
++find_library(Mlite6_LIBRARIES
++	NAMES mlite6
++	PATHS ${PC_Mlite6_LIBDIR} ${PC_Mlite6_LIBRARY_DIRS})
++
++set(Mlite6_VERSION ${PC_Mlite6_VERSION})
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(Mlite6
++	FOUND_VAR
++		Mlite6_FOUND
++	REQUIRED_VARS
++		Mlite6_LIBRARIES
++		Mlite6_INCLUDE_DIRS
++	VERSION_VAR
++		Mlite6_VERSION)
++
++mark_as_advanced(Mlite6_INCLUDE_DIR Mlite6_LIBRARY Mlite6_VERSION)
++
++if(Mlite6_FOUND AND NOT TARGET Mlite6::Mlite6)
++	add_library(Mlite6::Mlite6 UNKNOWN IMPORTED)
++	set_target_properties(Mlite6::Mlite6 PROPERTIES
++		IMPORTED_LOCATION "${Mlite6_LIBRARIES}"
++		INTERFACE_INCLUDE_DIRECTORIES "${Mlite6_INCLUDE_DIRS}")
++endif()
+diff --git a/src/app/AsteroidAppConfig.cmake.in b/src/app/AsteroidAppConfig.cmake.in
+index 012559e..dd39dd1 100644
+--- a/src/app/AsteroidAppConfig.cmake.in
++++ b/src/app/AsteroidAppConfig.cmake.in
+@@ -1,8 +1,7 @@
+ @PACKAGE_INIT@
+ 
+ include(CMakeFindDependencyMacro)
+-find_dependency(Qt5Qml @QT_MIN_VERSION@)
+-find_dependency(Qt5Quick @QT_MIN_VERSION@)
++find_package(Qt6 @QT_MIN_VERSION@ COMPONENTS Qml Quick REQUIRED)
+ 
+ set(ASTEROID_MODULE_PATH "@PACKAGE_ASTEROID_MODULES_INSTALL_DIR@")
+ 
+diff --git a/src/app/CMakeLists.txt b/src/app/CMakeLists.txt
+index 333ffc5..3d7d37d 100644
+--- a/src/app/CMakeLists.txt
++++ b/src/app/CMakeLists.txt
+@@ -5,11 +5,11 @@ add_library(asteroidapp ${SRC} ${HEADERS})
+ 
+ target_link_libraries(asteroidapp
+ 	PUBLIC
+-		Qt5::Qml
+-		Qt5::Quick
++		Qt6::Qml
++		Qt6::Quick
+ 	PRIVATE
+-		Mlite5::Mlite5
+-		Mapplauncherd_qt5::Mapplauncherd_qt5)
++		Mlite6::Mlite6
++		Mapplauncherd_qt6::Mapplauncherd_qt6)
+ 
+ set_target_properties(asteroidapp PROPERTIES
+ 	EXPORT_NAME AsteroidApp
+@@ -36,7 +36,7 @@ install(FILES asteroidapp.prf
+ 
+ ecm_generate_pkgconfig_file(
+ 	BASE_NAME asteroidapp
+-	DEPS qdeclarative5-boostable
++	DEPS qdeclarative6-boostable
+ 	FILENAME_VAR asteroidapp
+ 	DESCRIPTION ${PROJECT_DESCRIPTION}
+ 	INSTALL)
+diff --git a/src/app/asteroidapp.cpp b/src/app/asteroidapp.cpp
+index 68f8db5..e4fa8b7 100644
+--- a/src/app/asteroidapp.cpp
++++ b/src/app/asteroidapp.cpp
+@@ -33,7 +33,7 @@
+ #include <QFileInfo>
+ #include <MDesktopEntry>
+ #include <QTranslator>
+-#include <mdeclarativecache5/MDeclarativeCache>
++#include <mdeclarativecache/MDeclarativeCache>
+ 
+ static QString applicationPath()
+ {
+-- 
+2.47.0
+

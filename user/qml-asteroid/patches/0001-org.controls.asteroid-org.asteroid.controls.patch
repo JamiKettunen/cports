@@ -1,7 +1,7 @@
 From 602ad7c3a2b073a304737fcb1894b2df3f0560d0 Mon Sep 17 00:00:00 2001
 From: Jami Kettunen <jami.kettunen@protonmail.com>
 Date: Wed, 13 Nov 2024 02:15:48 +0200
-Subject: [PATCH 1/5] org.controls.asteroid -> org.asteroid.controls
+Subject: [PATCH 01/15] org.controls.asteroid -> org.asteroid.controls
 
 This is a typo in all the existing docs.
 ---
