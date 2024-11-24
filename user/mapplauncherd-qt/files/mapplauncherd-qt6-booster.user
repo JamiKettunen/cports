@@ -1,0 +1,11 @@
+type = process
+# TODO: what about --boot-mode?
+# TODO: -n flag for ready notification?
+command = /usr/libexec/mapplauncherd/booster-qt6
+log-type = buffer
+#depends-on = dbus
+before = login.target
+# FIXME: implement in src!
+#ready-notification = pipevar:MAPPLAUNCHERD_BOOSTER_READY_FD
+# TODO: nothing depends on this atm
+#smooth-recovery = true

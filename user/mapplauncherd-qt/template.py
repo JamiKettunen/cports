@@ -39,8 +39,12 @@ def init_install(self):
     self.make_install_args += [f"INSTALL_ROOT={self.chroot_destdir}"]
 
 
-#def post_install(self):
-    # TODO: replicate data/booster-qt*.service
+def post_install(self):
+    # TODO: replicate data/booster-qt@.service
+    # NOTE: without booster-qt6 running any app linked against it SEGFAULTs on launch!
+    # -> TODO: post-install msg about reboot / dinitctl start mapplauncherd-booster-qt6
+    self.install_service(self.files_path / "mapplauncherd-qt6-booster.user", enable=True)
+
     # TODO: usr/libexec/mliteremoteaction -> usr/lib?
     # TODO: usr/bin/mlitenotificationtool -> -progs subpkg?
 
