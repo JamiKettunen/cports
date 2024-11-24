@@ -2228,6 +2228,8 @@ def _split_locale(pkg):
     # translations for qt crap (like lxqt and assorted apps)
     pkg.take("usr/share/*/i18n/*.qm", missing_ok=True)
     pkg.take("usr/share/*/translations/*.qm", missing_ok=True)
+    # same for AsteroidOS apps, e.g. usr/share/translations/asteroid-calculator.fi.qm
+    pkg.take("usr/share/translations/asteroid*.qm", missing_ok=True)
 
 
 autopkgs = [
