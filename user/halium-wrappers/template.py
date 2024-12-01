@@ -9,7 +9,7 @@ hostmakedepends = ["pkgconf"]
 makedepends = [
     "zlib-ng-compat-devel",
     "libhybris-devel",
-    #"mesa-devel",
+    "mesa-devel",
 ]
 depends = ["libhybris-progs"]
 pkgdesc = "Convenience wrappers to Android utilities"
@@ -21,7 +21,7 @@ sha256 = "00eeee8ea0d48b9e6d832cf2a22a4080b8bd5e0f973b900d97944dac8baff287"
 file_modes = {
     "usr/lib/libtls-padding.so": ("root", "root", 0o4644),
     "usr/lib/libgtk6216workaround.so": ("root", "root", 0o4644),
-    #"usr/lib/libglesshadercache.so": ("root", "root", 0o4644), # armv7 FIXME !cross mesa, also drop patches/no-mesa-graphical..patch
+    "usr/lib/libglesshadercache.so": ("root", "root", 0o4644),
 }
 # distlicense: no bsd license to be found in dirs
 options = ["!distlicense"]

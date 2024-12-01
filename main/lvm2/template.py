@@ -10,13 +10,7 @@ configure_args = [
     "--enable-cmdlib",
     "--enable-udev_sync",
     "--enable-udev_rules",
-    # armv7 FIXME:
-    #armv7-chimera-linux-musleabihf-ld: error: undefined symbol: cap_get_proc
-    #>>> referenced by src_basic_capability-util.c.o:(have_effective_cap) in archive /usr/armv7-chimera-linux-musleabihf/usr/lib/libudev.a
-    #>>> referenced by src_basic_capability-util.c.o:(capability_ambient_set_apply) in archive /usr/armv7-chimera-linux-musleabihf/usr/lib/libudev.a
-    #>>> referenced by src_basic_capability-util.c.o:(capability_gain_cap_setpcap) in archive /usr/armv7-chimera-linux-musleabihf/usr/lib/libudev.a
-    #>>> referenced 3 more times
-    #"--enable-static-link",
+    "--enable-static-link",
     "--disable-selinux",
     "--with-symvers=no",
     "--with-thin=internal",
@@ -99,7 +93,7 @@ def _(self):
         "usr/lib/libdevmapper.so",
         "usr/lib/libdevmapper-event.so",
         "usr/lib/libdevmapper-event-lvm2.so",
-        #"usr/lib/*.a",
+        "usr/lib/*.a",
     ]
 
 

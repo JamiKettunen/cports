@@ -33,12 +33,7 @@ def post_install(self):
     self.install_license("LICENSE.TXT")
 
 
-# armv7 CROSS FIXME:
-#-- LIBOMP: Use OMPT-support     -- FALSE
-#-- LIBOMP: Use OMPD-support     -- FALSE
-#-- LIBOMP: Use Adaptive locks   -- FALSE
-#-- check-openmp does nothing.
-@subpackage("libomp-devel-static", False)
+@subpackage("libomp-devel-static")
 def _(self):
     self.depends = []
     self.install_if = []
@@ -48,7 +43,7 @@ def _(self):
 
 @subpackage("libomp-devel")
 def _(self):
-    #self.depends = [self.with_pkgver("libomp-devel-static")]
+    self.depends = [self.with_pkgver("libomp-devel-static")]
 
     # keep libomptarget symlinks in main
     return [
