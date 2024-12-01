@@ -1,0 +1,35 @@
+--- a/debian/tests/run-parts.test
++++ b/debian/tests/run-parts.test
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/bin/sh
+ 
+ set -eu
+ 
+@@ -27,7 +27,7 @@ cat << END > "${AUTOPKGTEST_TMP}/Run-parts/executable1"
+ ls -la "${AUTOPKGTEST_TMP}/Run-parts/file"
+ END
+ chmod 755 "${AUTOPKGTEST_TMP}/Run-parts/executable1"
+-cp --archive "${AUTOPKGTEST_TMP}/Run-parts/executable1" "${AUTOPKGTEST_TMP}/Run-parts/executable2"
++cp -a "${AUTOPKGTEST_TMP}/Run-parts/executable1" "${AUTOPKGTEST_TMP}/Run-parts/executable2"
+ 
+ list=$("$RUN_PARTS" --list "${AUTOPKGTEST_TMP}/Run-parts")
+ echo "$list"
+@@ -41,7 +41,7 @@ fi
+ "$RUN_PARTS" --report --reverse "${AUTOPKGTEST_TMP}/Run-parts"
+ 
+ # Testing run-parts with scripts that fail
+-echo "ls -la file-does-not-exist" >> "${AUTOPKGTEST_TMP}/Run-parts/executable1"
++echo "exit 2" >> "${AUTOPKGTEST_TMP}/Run-parts/executable1"
+ 
+ exitstatus=0
+ "$RUN_PARTS" -v --exit-on-error "${AUTOPKGTEST_TMP}/Run-parts" 2>&1 || exitstatus="$?"
+@@ -54,7 +54,7 @@ fi
+ 
+ "$RUN_PARTS" -v --exit-on-error "${AUTOPKGTEST_TMP}/Run-parts" 2>&1 | tee -a "${AUTOPKGTEST_TMP}/exit_on_error_output.txt"
+ exit_on_error_output=$(cat "${AUTOPKGTEST_TMP}/exit_on_error_output.txt")
+-if [[ "$exit_on_error_output" = *executable2* ]]; then
++if [ "$exit_on_error_output" != "${exit_on_error_output#*executable2}" ]; then
+ 	echo "Fail! 'run-parts --exit-on-error' should not execute executable2"
+ 	exit 1
+ else
