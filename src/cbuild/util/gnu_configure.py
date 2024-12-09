@@ -89,7 +89,6 @@ def configure(
         "--mandir=/usr/share/man",
         "--infodir=/usr/share/info",
         "--localstatedir=/var",
-        "--disable-dependency-tracking",
     ]
 
     # autoconf cache
