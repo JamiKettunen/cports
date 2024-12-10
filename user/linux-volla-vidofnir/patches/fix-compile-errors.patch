@@ -1,0 +1,26 @@
+diff --git a/drivers/gpu/drm/mediatek/mediatek_v2/mtk_drm_crtc.c b/drivers/gpu/drm/mediatek/mediatek_v2/mtk_drm_crtc.c
+index d08c2877df19..07e9e1dc3971 100644
+--- a/drivers/gpu/drm/mediatek/mediatek_v2/mtk_drm_crtc.c
++++ b/drivers/gpu/drm/mediatek/mediatek_v2/mtk_drm_crtc.c
+@@ -7778,7 +7778,7 @@ static void msync_add_frame_time(struct mtk_drm_crtc *mtk_crtc,
+ 		fps = drm_mode_vrefresh(mode);
+ 		time_diff = msync_dy->record[msync_dy->record_index].time -
+ 			msync_dy->record[last_msync_idx].time;
+-		DDPDBG("[Msync] min fps:%f, fps:%d, time_diff:%d\n", MSYNC_MIN_FPS, fps, time_diff);
++		DDPDBG("[Msync] min fps:%d, fps:%d, time_diff:%d\n", MSYNC_MIN_FPS, fps, time_diff);
+ 		if (1000 * 1000 * 1000 / MSYNC_MIN_FPS < time_diff) {
+ 			msync_dy->record[msync_dy->record_index].low_frame = true;
+ 			DDPDBG("[Msync] low_frame = true\n");
+diff --git a/drivers/gpu/drm/mediatek/mediatek_v2/mtk_drm_crtc.h b/drivers/gpu/drm/mediatek/mediatek_v2/mtk_drm_crtc.h
+index 2e518786554a..2bf13949b38b 100644
+--- a/drivers/gpu/drm/mediatek/mediatek_v2/mtk_drm_crtc.h
++++ b/drivers/gpu/drm/mediatek/mediatek_v2/mtk_drm_crtc.h
+@@ -643,7 +643,7 @@ struct mtk_cwb_info {
+ 
+ #define MSYNC_MAX_RECORD 5
+ #define MSYNC_LOWFRAME_THRESHOLD 3
+-#define MSYNC_MIN_FPS 46.1
++#define MSYNC_MIN_FPS 46
+ 
+ enum MSYNC_RECORD_TYPE {
+ 	INVALID,

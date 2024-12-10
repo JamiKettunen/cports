@@ -1,0 +1,508 @@
+diff --git a/drivers/gpu/drm/mediatek/mediatek_v2/mtk_drm_crtc.c b/drivers/gpu/drm/mediatek/mediatek_v2/mtk_drm_crtc.c
+index b02e07da7ffc..d08c2877df19 100644
+--- a/drivers/gpu/drm/mediatek/mediatek_v2/mtk_drm_crtc.c
++++ b/drivers/gpu/drm/mediatek/mediatek_v2/mtk_drm_crtc.c
+@@ -593,7 +593,7 @@ struct mtk_ddp_comp *mtk_ddp_comp_request_first(struct mtk_drm_crtc *mtk_crtc)
+ 	int i, j;
+ 
+ 	for_each_comp_in_cur_crtc_path(comp, mtk_crtc, i, j)
+-		if (comp && mtk_ddp_comp_get_type(comp->id != MTK_DISP_VIRTUAL))
++		if (comp && mtk_ddp_comp_get_type(comp->id) != MTK_DISP_VIRTUAL)
+ 			return comp;
+ 
+ 	/* This CRTC does not contain output comp */
+diff --git a/drivers/gpu/drm/mediatek/mml/mtk-mml-pq-core.c b/drivers/gpu/drm/mediatek/mml/mtk-mml-pq-core.c
+index 51f39507e535..6f2ee1c23593 100644
+--- a/drivers/gpu/drm/mediatek/mml/mtk-mml-pq-core.c
++++ b/drivers/gpu/drm/mediatek/mml/mtk-mml-pq-core.c
+@@ -1743,7 +1743,7 @@ static bool ut_inited;
+ static struct list_head ut_mml_tasks;
+ static u32 ut_task_cnt;
+ 
+-static void ut_init()
++static void ut_init(void)
+ {
+ 	if (ut_inited)
+ 		return;
+diff --git a/drivers/gpu/mediatek/gpu_mali/mali_valhall/mali-r32p1/drivers/gpu/arm/midgard/platform/mtk_platform_common/mtk_mfg_counter.c b/drivers/gpu/mediatek/gpu_mali/mali_valhall/mali-r32p1/drivers/gpu/arm/midgard/platform/mtk_platform_common/mtk_mfg_counter.c
+index 082c42294878..f8e868948a2c 100644
+--- a/drivers/gpu/mediatek/gpu_mali/mali_valhall/mali-r32p1/drivers/gpu/arm/midgard/platform/mtk_platform_common/mtk_mfg_counter.c
++++ b/drivers/gpu/mediatek/gpu_mali/mali_valhall/mali-r32p1/drivers/gpu/arm/midgard/platform/mtk_platform_common/mtk_mfg_counter.c
+@@ -760,7 +760,7 @@ void mtk_mfg_counter_destroy(void)
+ 
+ 
+ // init but don't enable met
+-int gator_gpu_pmu_init()
++int gator_gpu_pmu_init(void)
+ {
+ 	int ret = PMU_OK;
+ 	int i, j, cnt, block_type;
+diff --git a/drivers/misc/mediatek/sensor/2.0/sensorhub/transceiver.c b/drivers/misc/mediatek/sensor/2.0/sensorhub/transceiver.c
+index 316b9134da21..546f0db22440 100755
+--- a/drivers/misc/mediatek/sensor/2.0/sensorhub/transceiver.c
++++ b/drivers/misc/mediatek/sensor/2.0/sensorhub/transceiver.c
+@@ -695,7 +695,7 @@ static int transceiver_config(struct hf_device *hf_dev,
+ 		SENS_COMM_CTRL_CONFIG_CMD, data, length);
+ }
+ 
+-static transceiver_selftest(struct hf_device *hf_dev,
++static int transceiver_selftest(struct hf_device *hf_dev,
+ 		int sensor_type)
+ {
+ 	return transceiver_comm_with(sensor_type,
+diff --git a/drivers/misc/mediatek/met_drv_v3/common/met_workqueue.c b/drivers/misc/mediatek/met_drv_v3/common/met_workqueue.c
+index bfa67f067852..78268d216161 100644
+--- a/drivers/misc/mediatek/met_drv_v3/common/met_workqueue.c
++++ b/drivers/misc/mediatek/met_drv_v3/common/met_workqueue.c
+@@ -45,7 +45,7 @@ static struct list_head __percpu *per_cpu_valid_list;
+ static struct list_head __percpu *per_cpu_invalid_list;
+ 
+ 
+-static void clean_per_cpu_var(){
++static void clean_per_cpu_var(void){
+ 	int cpu;
+ 
+ 	for_each_possible_cpu(cpu) {
+diff --git a/drivers/media/platform/mtk-isp/camsys/isp7_1/cam/mtk_cam.h b/drivers/media/platform/mtk-isp/camsys/isp7_1/cam/mtk_cam.h
+index 1a3883ef7be7..618673a9ba2e 100644
+--- a/drivers/media/platform/mtk-isp/camsys/isp7_1/cam/mtk_cam.h
++++ b/drivers/media/platform/mtk-isp/camsys/isp7_1/cam/mtk_cam.h
+@@ -90,28 +90,28 @@ struct mtk_raw_pipeline;
+ #define v4l2_subdev_format_request_fd(x) x->reserved[0]
+ #define v4l2_frame_interval_which(x) x->reserved[0]
+ 
+-static inline raw_pipe_data_check(int a)
++static inline bool raw_pipe_data_check(int a)
+ {
+ 	bool result;
+ 
+ 	result = (a >= 0 && a < (MTKCAM_SUBDEV_RAW_END - MTKCAM_SUBDEV_RAW_START)) ? true : false;
+ 	return result;
+ }
+-static inline p_data_check(int a)
++static inline bool p_data_check(int a)
+ {
+ 	bool result;
+ 
+ 	result = (a >= 0 && a < MTKCAM_SUBDEV_MAX) ? true : false;
+ 	return result;
+ }
+-static inline sv_pipe_check(int a)
++static inline bool sv_pipe_check(int a)
+ {
+ 	bool result;
+ 
+ 	result = (a >= 0 && a < CAMSV_PIPELINE_NUM) ? true : false;
+ 	return result;
+ }
+-static inline sv_devs_check(int a)
++static inline bool sv_devs_check(int a)
+ {
+ 	bool result;
+ 
+diff --git a/drivers/thermal/mediatek/thermal_trace.c b/drivers/thermal/mediatek/thermal_trace.c
+index 2f95e1f00be0..aa14ec9d091c 100644
+--- a/drivers/thermal/mediatek/thermal_trace.c
++++ b/drivers/thermal/mediatek/thermal_trace.c
+@@ -193,7 +193,7 @@ static void thermal_info_work(struct work_struct *work)
+ 	thermal_info_timer_add(thermal_trace_data.enable);
+ }
+ 
+-static void get_cpu_info()
++static void get_cpu_info(void)
+ {
+ 	cpu_info.ttj = sign_extend32(
+ 			readl(thermal_csram_base + CPU_TTJ_OFFSET), 31);
+@@ -224,7 +224,7 @@ static void get_cpu_info()
+ 	cpu_info.B_max_temp = sign_extend32(
+ 			readl(thermal_csram_base + CPU_B_MAX_TEMP_OFFSET), 31);
+ }
+-static void get_gpu_info()
++static void get_gpu_info(void)
+ {
+ 	gpu_info.ttj = sign_extend32(
+ 			readl(thermal_csram_base + GPU_TTJ_OFFSET), 31);
+@@ -235,7 +235,7 @@ static void get_gpu_info()
+ 	gpu_info.limit_freq = readl(thermal_csram_base + GPU_LIMIT_FREQ_OFFSET);
+ 	gpu_info.cur_freq = readl(thermal_csram_base + GPU_CUR_FREQ_OFFSET);
+ }
+-static void get_apu_info()
++static void get_apu_info(void)
+ {
+ 	if (thermal_apu_mbox_base) {
+ 		apu_info.ttj = sign_extend32(
+diff --git a/drivers/misc/mediatek/met_drv_v3/common/tinysys/v1/sspm/sspm_met_ipi_handle.c b/drivers/misc/mediatek/met_drv_v3/common/tinysys/v1/sspm/sspm_met_ipi_handle.c
+index 9400f8e2e320..7e0755acaa8d 100644
+--- a/drivers/misc/mediatek/met_drv_v3/common/tinysys/v1/sspm/sspm_met_ipi_handle.c
++++ b/drivers/misc/mediatek/met_drv_v3/common/tinysys/v1/sspm/sspm_met_ipi_handle.c
+@@ -187,7 +187,7 @@ int scmi_tinysys_to_sspm_command( u32 feature_id,
+     return ret;
+ }
+ 
+-void start_sspm_ipi_recv_thread()
++void start_sspm_ipi_recv_thread(void)
+ {
+     init_completion(&SSPM_ACK_comp);
+     init_completion(&SSPM_CMD_comp);
+@@ -227,7 +227,7 @@ void start_sspm_ipi_recv_thread()
+ }
+ 
+ 
+-void stop_sspm_ipi_recv_thread()
++void stop_sspm_ipi_recv_thread(void)
+ {
+ 	if (_sspm_recv_task) {
+ 		sspm_recv_thread_comp = 1;
+diff --git a/drivers/misc/mediatek/met_drv_v3/common/tinysys/v1/mcupm/mcupm_met_ipi_handle.c b/drivers/misc/mediatek/met_drv_v3/common/tinysys/v1/mcupm/mcupm_met_ipi_handle.c
+index 13171489517d..177cfcd2b125 100644
+--- a/drivers/misc/mediatek/met_drv_v3/common/tinysys/v1/mcupm/mcupm_met_ipi_handle.c
++++ b/drivers/misc/mediatek/met_drv_v3/common/tinysys/v1/mcupm/mcupm_met_ipi_handle.c
+@@ -86,7 +86,7 @@ static int mcupm_run_mode = MCUPM_RUN_NORMAL;
+ /*****************************************************************************
+  * internal function ipmlement
+  *****************************************************************************/
+-void start_mcupm_ipi_recv_thread()
++void start_mcupm_ipi_recv_thread(void)
+ {
+ 	int ret = 0;
+ 
+@@ -146,7 +146,7 @@ void start_mcupm_ipi_recv_thread()
+ }
+ 
+ 
+-void stop_mcupm_ipi_recv_thread()
++void stop_mcupm_ipi_recv_thread(void)
+ {
+ 	int ret;
+ 
+diff --git a/drivers/misc/mediatek/met_drv_v3/common/tinysys/v1/tinysys_mgr.c b/drivers/misc/mediatek/met_drv_v3/common/tinysys/v1/tinysys_mgr.c
+index 30e67e4fe22a..99a8e888c949 100644
+--- a/drivers/misc/mediatek/met_drv_v3/common/tinysys/v1/tinysys_mgr.c
++++ b/drivers/misc/mediatek/met_drv_v3/common/tinysys/v1/tinysys_mgr.c
+@@ -313,19 +313,19 @@ int ondiemet_log_manager_uninit(struct device *dev)
+ }
+ 
+ 
+-void ondiemet_log_manager_start()
++void ondiemet_log_manager_start(void)
+ {
+ 	tinysys_log_manager_start();
+ }
+ 
+ 
+-void ondiemet_log_manager_stop()
++void ondiemet_log_manager_stop(void)
+ {
+ 	tinysys_log_manager_stop();
+ }
+ 
+ 
+-void ondiemet_start()
++void ondiemet_start(void)
+ {
+ #ifdef MET_SSPM
+ 	if (met_sspm_api_ready && met_scmi_api_ready) {
+@@ -354,7 +354,7 @@ void ondiemet_start()
+ #endif
+ }
+ 
+-void ondiemet_stop()
++void ondiemet_stop(void)
+ {
+ #ifdef MET_SSPM
+ 	if (met_sspm_api_ready && met_scmi_api_ready) {
+@@ -377,7 +377,7 @@ void ondiemet_stop()
+ #endif
+ }
+ 
+-void ondiemet_extract()
++void ondiemet_extract(void)
+ {
+ #ifdef MET_SSPM
+ 	if (met_sspm_api_ready && met_scmi_api_ready) {
+@@ -1094,7 +1094,7 @@ static int _create_mcupm_node(struct kobject *parent)
+ }
+ 
+ 
+-static void _remove_mcupm_node()
++static void _remove_mcupm_node(void)
+ {
+ 	if (_mcupm_kobj != NULL) {
+ 		sysfs_remove_file(_mcupm_kobj, &_attr_mcupm_buffer_size.attr);
+diff --git a/drivers/misc/mediatek/met_drv_v3/common/mtk_emi_bm.c b/drivers/misc/mediatek/met_drv_v3/common/mtk_emi_bm.c
+index 36b2c0bfdf19..4359bcd8a383 100644
+--- a/drivers/misc/mediatek/met_drv_v3/common/mtk_emi_bm.c
++++ b/drivers/misc/mediatek/met_drv_v3/common/mtk_emi_bm.c
+@@ -3551,7 +3551,7 @@ unsigned check_sspm_support(unsigned int module_id)
+ 
+ 
+ 
+-unsigned int MET_GET_DRAM_TYPE()
++unsigned int MET_GET_DRAM_TYPE(void)
+ {
+ /*
+ enum DRAM_TYPE {
+diff --git a/drivers/usb/mtu3/mtu3_core.c b/drivers/usb/mtu3/mtu3_core.c
+index 8b8b00585543..15636a275c8d 100644
+--- a/drivers/usb/mtu3/mtu3_core.c
++++ b/drivers/usb/mtu3/mtu3_core.c
+@@ -721,7 +721,7 @@ static irqreturn_t mtu3_link_isr(struct mtu3 *mtu)
+ 	mtu->g.ep0->maxpacket = maxpkt;
+ 	mtu->ep0_state = MU3D_EP0_STATE_SETUP;
+ 
+-	if (udev_speed >= MTU3_SPEED_SUPER)
++	if (udev_speed >= USB_SPEED_SUPER)
+ 		ssusb_phy_dp_pullup(mtu->ssusb);
+ 
+ 	if (udev_speed == USB_SPEED_UNKNOWN)
+diff --git a/drivers/usb/mtu3/mtu3_gadget.c b/drivers/usb/mtu3/mtu3_gadget.c
+index e4896f3a3574..a50065ae008e 100644
+--- a/drivers/usb/mtu3/mtu3_gadget.c
++++ b/drivers/usb/mtu3/mtu3_gadget.c
+@@ -194,7 +194,7 @@ static int mtu3_ep_enable(struct mtu3_ep *mep)
+ 	mep->slot = usb_endpoint_xfer_int(desc) ? 0 : mtu->slot;
+ 
+ 	/* reserve ep slot for super speed */
+-	if (mep->slot && mtu->g.speed >= MTU3_SPEED_SUPER) {
++	if (mep->slot && mtu->g.speed >= USB_SPEED_SUPER) {
+ 		switch (mtu->ep_slot_mode) {
+ 		case MTU3_EP_SLOT_MAX:
+ 			mep->slot = MTU3_U3_IP_SLOT_MAX;
+diff --git a/drivers/misc/mediatek/cm_mgr/mtk_cm_ipi.c b/drivers/misc/mediatek/cm_mgr/mtk_cm_ipi.c
+index 66b4dca809d7..fe4116860e88 100644
+--- a/drivers/misc/mediatek/cm_mgr/mtk_cm_ipi.c
++++ b/drivers/misc/mediatek/cm_mgr/mtk_cm_ipi.c
+@@ -36,7 +36,7 @@ void cm_set_ipi_enable(int enable)
+ }
+ EXPORT_SYMBOL(cm_set_ipi_enable);
+ 
+-void cm_sspm_enable(enable)
++void cm_sspm_enable(int enable)
+ {
+ 	cm_mgr_to_sspm_command(IPI_CM_MGR_ENABLE, enable);
+ }
+diff --git a/drivers/misc/mediatek/slbc/slbc_ipi.c b/drivers/misc/mediatek/slbc/slbc_ipi.c
+index 0de5dda91bee..6dd4e8473d4c 100644
+--- a/drivers/misc/mediatek/slbc/slbc_ipi.c
++++ b/drivers/misc/mediatek/slbc/slbc_ipi.c
+@@ -60,7 +60,7 @@ int slbc_sspm_slc_disable(int disable)
+ }
+ EXPORT_SYMBOL_GPL(slbc_sspm_slc_disable);
+ 
+-int slbc_sspm_enable(enable)
++int slbc_sspm_enable(int enable)
+ {
+ 	struct slbc_ipi_data slbc_ipi_d;
+ 
+diff --git a/drivers/misc/mediatek/c2k_usb/viatel_rawbulk.h b/drivers/misc/mediatek/c2k_usb/viatel_rawbulk.h
+index 0a353443bbe6..371116d64e03 100644
+--- a/drivers/misc/mediatek/c2k_usb/viatel_rawbulk.h
++++ b/drivers/misc/mediatek/c2k_usb/viatel_rawbulk.h
+@@ -71,10 +71,10 @@ struct rawbulk_function {
+ 	/* Controls */
+ 	spinlock_t lock;
+ 	int enable:1;
+-	int activated:1;	/* set when usb enabled */
++	unsigned activated:1;	/* set when usb enabled */
+ 	int tty_opened:1;
+ 
+-	int initialized:1;	/* init-flag for activator worker */
++	unsigned initialized:1;	/* init-flag for activator worker */
+ 	struct work_struct activator;	/* asynic transaction starter */
+ 
+ 	struct wakeup_source *keep_awake;
+diff --git a/drivers/misc/mediatek/typec/tcpc/tcpci_typec.c b/drivers/misc/mediatek/typec/tcpc/tcpci_typec.c
+index 01f62cdb0ff9..e8041dda2cc2 100755
+--- a/drivers/misc/mediatek/typec/tcpc/tcpci_typec.c
++++ b/drivers/misc/mediatek/typec/tcpc/tcpci_typec.c
+@@ -2987,7 +2987,6 @@ EXPORT_SYMBOL(tcpc_typec_handle_wd);
+ int tcpc_typec_handle_fod(struct tcpc_device *tcpc,
+ 			  enum tcpc_fod_status fod)
+ {
+-	int ret;
+ 	enum tcpc_fod_status fod_old = tcpc->typec_fod;
+ 
+ 	if (!(tcpc->tcpc_flags & TCPC_FLAGS_FOREIGN_OBJECT_DETECTION))
+@@ -3024,8 +3023,8 @@ int tcpc_typec_handle_fod(struct tcpc_device *tcpc,
+ 
+ 	TYPEC_NEW_STATE(typec_foreign_object_protection);
+ 	tcpc->typec_attach_new = TYPEC_UNATTACHED;
+-	ret = tcpci_set_cc(tcpc, TYPEC_CC_OPEN);
+-	ret = tcpci_set_cc_hidet(tcpc, true);
++	tcpci_set_cc(tcpc, TYPEC_CC_OPEN);
++	tcpci_set_cc_hidet(tcpc, true);
+ out:
+ 	tcpci_notify_fod_status(tcpc);
+ 	if (tcpc->typec_state == typec_foreign_object_protection) {
+diff --git a/drivers/misc/mediatek/typec/tcpc/tcpc_rt1711h.c b/drivers/misc/mediatek/typec/tcpc/tcpc_rt1711h.c
+index 23259de6b2ae..a7650de02ee2 100755
+--- a/drivers/misc/mediatek/typec/tcpc/tcpc_rt1711h.c
++++ b/drivers/misc/mediatek/typec/tcpc/tcpc_rt1711h.c
+@@ -173,14 +173,20 @@ static int rt1711_read_device(void *client, u32 reg, int len, void *dst)
+ {
+ 	struct i2c_client *i2c = client;
+ 	int ret = 0, count = 5;
++#if ENABLE_RT1711_DBG
+ 	u64 t1 = 0, t2 = 0;
++#endif
+ 
+ 	while (1) {
++#if ENABLE_RT1711_DBG
+ 		t1 = local_clock();
++#endif
+ 		ret = i2c_smbus_read_i2c_block_data(i2c, reg, len, dst);
++#if ENABLE_RT1711_DBG
+ 		t2 = local_clock();
+ 		RT1711_INFO("%s del = %lluus, reg = %02X, len = %d\n",
+ 			    __func__, (t2 - t1) / NSEC_PER_USEC, reg, len);
++#endif
+ 		if (ret < 0 && count > 1)
+ 			count--;
+ 		else
+@@ -194,14 +200,20 @@ static int rt1711_write_device(void *client, u32 reg, int len, const void *src)
+ {
+ 	struct i2c_client *i2c = client;
+ 	int ret = 0, count = 5;
++#if ENABLE_RT1711_DBG
+ 	u64 t1 = 0, t2 = 0;
++#endif
+ 
+ 	while (1) {
++#if ENABLE_RT1711_DBG
+ 		t1 = local_clock();
++#endif
+ 		ret = i2c_smbus_write_i2c_block_data(i2c, reg, len, src);
++#if ENABLE_RT1711_DBG
+ 		t2 = local_clock();
+ 		RT1711_INFO("%s del = %lluus, reg = %02X, len = %d\n",
+ 			    __func__, (t2 - t1) / NSEC_PER_USEC, reg, len);
++#endif
+ 		if (ret < 0 && count > 1)
+ 			count--;
+ 		else
+@@ -833,11 +845,14 @@ int rt1711_fault_status_clear(struct tcpc_device *tcpc, uint8_t status)
+ {
+ 	int ret;
+ 
+-	if (status & TCPC_V10_REG_FAULT_STATUS_VCONN_OV)
++	if (status & TCPC_V10_REG_FAULT_STATUS_VCONN_OV) {
+ 		ret = rt1711_fault_status_vconn_ov(tcpc);
++		if (ret < 0)
++			return ret;
++	}
+ 
+-	rt1711_i2c_write8(tcpc, TCPC_V10_REG_FAULT_STATUS, status);
+-	return 0;
++	ret = rt1711_i2c_write8(tcpc, TCPC_V10_REG_FAULT_STATUS, status);
++	return  ret;
+ }
+ 
+ int rt1711_get_alert_mask(struct tcpc_device *tcpc, uint32_t *mask)
+diff --git a/drivers/misc/mediatek/typec/tcpc/pd_dpm_alt_mode_dp.c b/drivers/misc/mediatek/typec/tcpc/pd_dpm_alt_mode_dp.c
+index bdd7413c78d9..9a502f84b36a 100644
+--- a/drivers/misc/mediatek/typec/tcpc/pd_dpm_alt_mode_dp.c
++++ b/drivers/misc/mediatek/typec/tcpc/pd_dpm_alt_mode_dp.c
+@@ -338,7 +338,7 @@ static inline uint8_t dp_dfp_u_select_mode(struct pd_port *pd_port,
+ 	struct svdm_mode *remote, *local;
+ 	int i, j;
+ 	int match_score, best_match_score = 0;
+-	int local_index = -1, remote_index = -1;
++	int /*local_index = -1,*/ remote_index = -1;
+ 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
+ 
+ 	local = &svid_data->local_mode;
+@@ -357,7 +357,7 @@ static inline uint8_t dp_dfp_u_select_mode(struct pd_port *pd_port,
+ 				dp_remote_mode, &local_dp_config,
+ 				&remote_dp_config);
+ 			if (match_score >  best_match_score) {
+-				local_index = j;
++				//local_index = j;
+ 				remote_index = i;
+ 				dp_data->local_config = local_dp_config;
+ 				dp_data->remote_config = remote_dp_config;
+diff --git a/drivers/misc/mediatek/ssc/ssc_module.c b/drivers/misc/mediatek/ssc/ssc_module.c
+index b4cdf02191bb..956802d3dff8 100644
+--- a/drivers/misc/mediatek/ssc/ssc_module.c
++++ b/drivers/misc/mediatek/ssc/ssc_module.c
+@@ -63,7 +63,7 @@ static unsigned int ssc_disable;
+ static BLOCKING_NOTIFIER_HEAD(vlogic_bound_chain);
+ static struct regulator *ssc_vcore_voter;
+ 
+-static int set_vcore_vlogic_bound(en)
++static int set_vcore_vlogic_bound(int en)
+ {
+ 	int ret;
+ 
+diff --git a/drivers/misc/mediatek/iommu/iommu_secure.c b/drivers/misc/mediatek/iommu/iommu_secure.c
+index a97d348399b7..b9e997339a25 100644
+--- a/drivers/misc/mediatek/iommu/iommu_secure.c
++++ b/drivers/misc/mediatek/iommu/iommu_secure.c
+@@ -227,7 +227,7 @@ int ao_secure_dbg_switch_by_atf(uint32_t type,
+ }
+ EXPORT_SYMBOL_GPL(ao_secure_dbg_switch_by_atf);
+ 
+-mtk_iommu_secure_bk_tf_dump(uint32_t type, uint32_t id, uint32_t bank,
++int mtk_iommu_secure_bk_tf_dump(uint32_t type, uint32_t id, uint32_t bank,
+ 		u32 *iova, u32 *pa, u32 *fault_id)
+ {
+ 	int ret;
+diff --git a/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/wlan_drv_init.c b/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/wlan_drv_init.c
+index 7b28ad934f83..824fd640da97 100644
+--- a/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/wlan_drv_init.c
++++ b/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/wlan_drv_init.c
+@@ -20,25 +20,25 @@
+ #include "wmt_detect.h"
+ #include "wlan_drv_init.h"
+ 
+-int __attribute__((weak)) mtk_wcn_wlan_gen4_init()
++int __attribute__((weak)) mtk_wcn_wlan_gen4_init(void)
+ {
+ 	WMT_DETECT_PR_INFO("no impl. mtk_wcn_wlan_gen4_init\n");
+ 	return 0;
+ }
+ 
+-int __attribute__((weak)) mtk_wcn_wlan_gen3_init()
++int __attribute__((weak)) mtk_wcn_wlan_gen3_init(void)
+ {
+ 	WMT_DETECT_PR_INFO("no impl. mtk_wcn_wlan_gen3_init\n");
+ 	return 0;
+ }
+ 
+-int __attribute__((weak)) mtk_wcn_wlan_gen2_init()
++int __attribute__((weak)) mtk_wcn_wlan_gen2_init(void)
+ {
+ 	WMT_DETECT_PR_INFO("no impl. mtk_wcn_wlan_gen2_init\n");
+ 	return 0;
+ }
+ 
+-int __attribute__((weak)) mtk_wcn_wmt_wifi_init()
++int __attribute__((weak)) mtk_wcn_wmt_wifi_init(void)
+ {
+ 	WMT_DETECT_PR_INFO("no impl. mtk_wcn_wmt_wifi_init\n");
+ 	return 0;
+diff --git a/drivers/misc/mediatek/performance/fpsgo_v3/fstb/fstb.c b/drivers/misc/mediatek/performance/fpsgo_v3/fstb/fstb.c
+index 0238cafc87c1..336b0914a871 100644
+--- a/drivers/misc/mediatek/performance/fpsgo_v3/fstb/fstb.c
++++ b/drivers/misc/mediatek/performance/fpsgo_v3/fstb/fstb.c
+@@ -107,7 +107,7 @@ static DEFINE_MUTEX(fstb_cam_active_time);
+ static struct rb_root video_pid_tree;
+ static DEFINE_MUTEX(fstb_video_pid_tree_lock);
+ 
+-static set_cam_active_fpsgo_off;
++static int set_cam_active_fpsgo_off;
+ static DEFINE_MUTEX(fstb_set_cam_active_fpsgo_off_lock);
+ 
+ 
+diff --git a/drivers/misc/mediatek/connectivity/common/common_main/platform/mtk_wcn_consys_hw.c b/drivers/misc/mediatek/connectivity/common/common_main/platform/mtk_wcn_consys_hw.c
+index 95c879ab5158..d87a9a8e4f8c 100755
+--- a/drivers/misc/mediatek/connectivity/common/common_main/platform/mtk_wcn_consys_hw.c
++++ b/drivers/misc/mediatek/connectivity/common/common_main/platform/mtk_wcn_consys_hw.c
+@@ -913,7 +913,7 @@ INT32 mtk_wcn_consys_detect_adie_chipid(UINT32 co_clock_type)
+ 	return chipid;
+ }
+ 
+-struct pinctrl *mtk_wcn_consys_get_pinctrl()
++struct pinctrl *mtk_wcn_consys_get_pinctrl(VOID)
+ {
+ 	return consys_pinctrl;
+ }
