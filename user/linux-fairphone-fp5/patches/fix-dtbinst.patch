@@ -1,0 +1,15 @@
+--- a/arch/arm64/boot/dts/vendor/fp5/Makefile
++++ b/arch/arm64/boot/dts/vendor/fp5/Makefile
+@@ -88,9 +88,9 @@
+ 	lahainap-v2.1-qrd.dtb \
+ 	lahaina-mtp-v2.dtb \
+ 	lahaina-mtp-v2.1.dtb \
+-	lahaina-v2.1-mtp-hsp-pro.dts \
+-	lahaina-v2.1-cdp-hsp-pro.dts \
+-	lahaina-v2.1-qrd-hsp-pro.dts
++	lahaina-v2.1-mtp-hsp-pro.dtb \
++	lahaina-v2.1-cdp-hsp-pro.dtb \
++	lahaina-v2.1-qrd-hsp-pro.dtb
+ endif
+ 
+ ifeq ($(CONFIG_BUILD_ARM64_DT_OVERLAY),y)
