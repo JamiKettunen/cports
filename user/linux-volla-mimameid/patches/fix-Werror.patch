@@ -1,0 +1,168 @@
+diff --git a/drivers/gpu/mediatek/gpu_mali/mali_valhall/mali-r32p1/drivers/gpu/arm/midgard/platform/mtk_platform_common/mtk_mfg_counter.c b/drivers/gpu/mediatek/gpu_mali/mali_valhall/mali-r32p1/drivers/gpu/arm/midgard/platform/mtk_platform_common/mtk_mfg_counter.c
+index a00a548128a5..9f28cad7a1d8 100644
+--- a/drivers/gpu/mediatek/gpu_mali/mali_valhall/mali-r32p1/drivers/gpu/arm/midgard/platform/mtk_platform_common/mtk_mfg_counter.c
++++ b/drivers/gpu/mediatek/gpu_mali/mali_valhall/mali-r32p1/drivers/gpu/arm/midgard/platform/mtk_platform_common/mtk_mfg_counter.c
+@@ -769,7 +769,7 @@ void mtk_mfg_counter_destroy(void)
+ 
+ 
+ // init but don't enable met
+-int gator_gpu_pmu_init()
++int gator_gpu_pmu_init(void)
+ {
+ 	int ret = PMU_OK;
+ 	int i, j, cnt, block_type;
+diff --git a/drivers/input/touchscreen/omnivision_tcm/omnivision_tcm_core.c b/drivers/input/touchscreen/omnivision_tcm/omnivision_tcm_core.c
+index 9bd7e5210ab8..7e4ba253bc41 100755
+--- a/drivers/input/touchscreen/omnivision_tcm/omnivision_tcm_core.c
++++ b/drivers/input/touchscreen/omnivision_tcm/omnivision_tcm_core.c
+@@ -3501,7 +3501,7 @@ static int ovt_tcm_resume_ext(void)
+ 	return retval;
+ }
+ 
+-static int ovt_tcm_suspend_ext()
++static int ovt_tcm_suspend_ext(void)
+ {
+ 	struct ovt_tcm_module_handler *mod_handler;
+ 	struct ovt_tcm_hcd *tcm_hcd =  g_tcm_hcd;
+diff --git a/drivers/misc/mediatek/base/power/mcdi/mtk_mcdi_governor.c b/drivers/misc/mediatek/base/power/mcdi/mtk_mcdi_governor.c
+index dedfd1482ed8..4644d04be714 100644
+--- a/drivers/misc/mediatek/base/power/mcdi/mtk_mcdi_governor.c
++++ b/drivers/misc/mediatek/base/power/mcdi/mtk_mcdi_governor.c
+@@ -177,7 +177,7 @@ void set_mcdi_idle_state(int cpu, int state)
+ 	mcdi_prof_set_idle_state(cpu, state);
+ }
+ 
+-int get_cluster_off_token(cpu)
++int get_cluster_off_token(int cpu)
+ {
+ 	unsigned long flags;
+ 	int cluster;
+diff --git a/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/bluetooth_drv_init.c b/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/bluetooth_drv_init.c
+index d89d5da4357b..78e95a0825b2 100644
+--- a/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/bluetooth_drv_init.c
++++ b/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/bluetooth_drv_init.c
+@@ -21,7 +21,7 @@
+ #include "bluetooth_drv_init.h"
+ 
+ #ifdef CONFIG_MTK_COMBO_BT
+-int __attribute__((weak)) mtk_wcn_stpbt_drv_init()
++int __attribute__((weak)) mtk_wcn_stpbt_drv_init(void)
+ {
+ 	WMT_DETECT_PR_INFO("Not implement mtk_wcn_stpbt_drv_init\n");
+ 	return 0;
+diff --git a/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/fm_drv_init.c b/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/fm_drv_init.c
+index 4ec149e77046..955eb9e5eceb 100644
+--- a/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/fm_drv_init.c
++++ b/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/fm_drv_init.c
+@@ -21,7 +21,7 @@
+ #include "fm_drv_init.h"
+ 
+ #ifdef CONFIG_MTK_FMRADIO
+-int __attribute__((weak)) mtk_wcn_fm_init()
++int __attribute__((weak)) mtk_wcn_fm_init(void)
+ {
+ 	WMT_DETECT_PR_INFO("no impl. mtk_wcn_fm_init\n");
+ 	return 0;
+diff --git a/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/gps_drv_init.c b/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/gps_drv_init.c
+index ac48b231a3d0..af6f90293f83 100644
+--- a/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/gps_drv_init.c
++++ b/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/gps_drv_init.c
+@@ -21,7 +21,7 @@
+ #include "gps_drv_init.h"
+ 
+ #ifdef CONFIG_MTK_COMBO_GPS
+-int __attribute__((weak)) mtk_wcn_stpgps_drv_init()
++int __attribute__((weak)) mtk_wcn_stpgps_drv_init(void)
+ {
+ 	WMT_DETECT_PR_INFO("no impl. mtk_wcn_stpgps_drv_init\n");
+ 	return 0;
+diff --git a/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/wlan_drv_init.c b/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/wlan_drv_init.c
+index 7b28ad934f83..824fd640da97 100644
+--- a/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/wlan_drv_init.c
++++ b/drivers/misc/mediatek/connectivity/common/common_detect/drv_init/wlan_drv_init.c
+@@ -20,25 +20,25 @@
+ #include "wmt_detect.h"
+ #include "wlan_drv_init.h"
+ 
+-int __attribute__((weak)) mtk_wcn_wlan_gen4_init()
++int __attribute__((weak)) mtk_wcn_wlan_gen4_init(void)
+ {
+ 	WMT_DETECT_PR_INFO("no impl. mtk_wcn_wlan_gen4_init\n");
+ 	return 0;
+ }
+ 
+-int __attribute__((weak)) mtk_wcn_wlan_gen3_init()
++int __attribute__((weak)) mtk_wcn_wlan_gen3_init(void)
+ {
+ 	WMT_DETECT_PR_INFO("no impl. mtk_wcn_wlan_gen3_init\n");
+ 	return 0;
+ }
+ 
+-int __attribute__((weak)) mtk_wcn_wlan_gen2_init()
++int __attribute__((weak)) mtk_wcn_wlan_gen2_init(void)
+ {
+ 	WMT_DETECT_PR_INFO("no impl. mtk_wcn_wlan_gen2_init\n");
+ 	return 0;
+ }
+ 
+-int __attribute__((weak)) mtk_wcn_wmt_wifi_init()
++int __attribute__((weak)) mtk_wcn_wmt_wifi_init(void)
+ {
+ 	WMT_DETECT_PR_INFO("no impl. mtk_wcn_wmt_wifi_init\n");
+ 	return 0;
+diff --git a/drivers/misc/mediatek/connectivity/common/common_main/platform/mtk_wcn_consys_hw.c b/drivers/misc/mediatek/connectivity/common/common_main/platform/mtk_wcn_consys_hw.c
+index 95c879ab5158..d87a9a8e4f8c 100755
+--- a/drivers/misc/mediatek/connectivity/common/common_main/platform/mtk_wcn_consys_hw.c
++++ b/drivers/misc/mediatek/connectivity/common/common_main/platform/mtk_wcn_consys_hw.c
+@@ -913,7 +913,7 @@ INT32 mtk_wcn_consys_detect_adie_chipid(UINT32 co_clock_type)
+ 	return chipid;
+ }
+ 
+-struct pinctrl *mtk_wcn_consys_get_pinctrl()
++struct pinctrl *mtk_wcn_consys_get_pinctrl(VOID)
+ {
+ 	return consys_pinctrl;
+ }
+diff --git a/drivers/misc/mediatek/perf_common/perf_tracker.c b/drivers/misc/mediatek/perf_common/perf_tracker.c
+index 1a49be19dd8c..209220c6ee31 100644
+--- a/drivers/misc/mediatek/perf_common/perf_tracker.c
++++ b/drivers/misc/mediatek/perf_common/perf_tracker.c
+@@ -53,12 +53,12 @@ u32 __attribute__((weak)) qos_sram_read(u32 offset)
+ 	return 0;
+ }
+ 
+-int __attribute__((weak)) get_cur_vcore_uv()
++int __attribute__((weak)) get_cur_vcore_uv(void)
+ {
+ 	return 0;
+ }
+ 
+-int __attribute__((weak)) get_cur_ddr_khz()
++int __attribute__((weak)) get_cur_ddr_khz(void)
+ {
+ 	return 0;
+ }
+diff --git a/drivers/misc/mediatek/task_turbo/task_turbo.h b/drivers/misc/mediatek/task_turbo/task_turbo.h
+index df3414365b40..0513fa714dc5 100644
+--- a/drivers/misc/mediatek/task_turbo/task_turbo.h
++++ b/drivers/misc/mediatek/task_turbo/task_turbo.h
+@@ -13,5 +13,5 @@ enum {
+ 	END_INHERIT,
+ };
+ 
+-extern sched_set_cpuprefer(pid_t pid, unsigned int prefer_type);
++extern int sched_set_cpuprefer(pid_t pid, unsigned int prefer_type);
+ #endif
+diff --git a/drivers/misc/mediatek/video/mt6768/dispsys/display_recorder.c b/drivers/misc/mediatek/video/mt6768/dispsys/display_recorder.c
+index 4cfb88607353..17af50717341 100644
+--- a/drivers/misc/mediatek/video/mt6768/dispsys/display_recorder.c
++++ b/drivers/misc/mediatek/video/mt6768/dispsys/display_recorder.c
+@@ -1116,7 +1116,7 @@ void dprec_logger_dump_reset(void)
+ 		sizeof(dprec_string_buffer_analysize));
+ }
+ 
+-char *dprec_logger_get_dump_addr()
++char *dprec_logger_get_dump_addr(void)
+ {
+ 	return dprec_string_buffer_analysize;
+ }

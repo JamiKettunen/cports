@@ -1,0 +1,25 @@
+Patch-Source: https://android.googlesource.com/kernel/common/+/5355a120e428b1689c65c8d1a54cd5cf619a9d4b%5E%21/#F0
+diff --git a/Makefile b/Makefile
+index e9d3b977194a..4887866b4d7a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -88,10 +88,18 @@
+ 
+ # If the user is running make -s (silent mode), suppress echoing of
+ # commands
++# make-4.0 (and later) keep single letter options in the 1st word of MAKEFLAGS.
+ 
+-ifneq ($(findstring s,$(filter-out --%,$(MAKEFLAGS))),)
++ifeq ($(filter 3.%,$(MAKE_VERSION)),)
++  silence:=$(findstring s,$(firstword -$(MAKEFLAGS)))
++else
++  silence:=$(findstring s,$(filter-out --%,$(MAKEFLAGS)))
++endif
++
++ifeq ($(silence),s)
+   quiet=silent_
+   tools_silent=s
++  KBUILD_VERBOSE = 0
+ endif
+ 
+ export quiet Q KBUILD_VERBOSE
