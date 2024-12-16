@@ -1,0 +1,108 @@
+Patch-Source: https://github.com/droidian/plasma-workspace/tree/feature/next/upgrade-6.2.3
+---
+From e971edbcc5d23d87c33d7688bbf38611fd7e0455 Mon Sep 17 00:00:00 2001
+From: Alexander Rutz <alex@familyrutz.com>
+Date: Sat, 30 Nov 2024 14:49:56 -0700
+Subject: [PATCH] startkde/plasma-session: allow skipping kwin start
+
+Its possible to replace kwin on X11, allow same on wayland. There are some downsides when making it possible with wayland, some of the features which rely on kwin are not available.
+
+Setting the environment variable KDE_NO_KWIN before starting plasma will skip kwin start.
+
+NOTE: Another wayland compositor must be started before plasma. Tested with wayfire.
+---
+ startkde/plasma-session/startup.cpp | 30 +++++++++++++++++------------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
+
+diff --git a/startkde/plasma-session/startup.cpp b/startkde/plasma-session/startup.cpp
+index 93e1585de8..9e568ac10a 100644
+--- a/startkde/plasma-session/startup.cpp
++++ b/startkde/plasma-session/startup.cpp
+@@ -161,8 +161,12 @@ Startup::Startup(QObject *parent)
+     } else {
+         // This must block until started as it sets the WAYLAND_DISPLAY/DISPLAY env variables needed for the rest of the boot
+         // fortunately it's very fast as it's just starting a wrapper
+-        StartServiceJob kwinWaylandJob(QStringLiteral("kwin_wayland_wrapper"), {QStringLiteral("--xwayland")}, QStringLiteral("org.kde.KWinWrapper"));
+-        kwinWaylandJob.exec();
++        if (!qEnvironmentVariableIsSet("KDE_NO_KWIN")) {
++            StartServiceJob kwinWaylandJob(QStringLiteral("kwin_wayland_wrapper"), {QStringLiteral("--xwayland")}, QStringLiteral("org.kde.KWinWrapper"));
++            kwinWaylandJob.exec();
++        } else {
++            qCWarning(PLASMA_SESSION) << "KDE_NO_KWIN environment variable is set, kwin start is disabled, make sure another wayland compositor is running";
++        }
+         // kslpash is only launched in plasma-session from the wayland mode, for X it's in startplasma-x11
+ 
+         const KConfig cfg(QStringLiteral("ksplashrc"));
+@@ -179,16 +183,18 @@ Startup::Startup(QObject *parent)
+     KJob *phase1 = nullptr;
+     m_lock.reset(new QEventLoopLocker);
+ 
+-    const QList<KJob *> sequence = {
+-        new StartProcessJob(QStringLiteral("kcminit_startup"), {}),
+-        new StartServiceJob(QStringLiteral("kded6"), {}, QStringLiteral("org.kde.kded6"), {}),
+-        x11WindowManagerJob,
+-        new StartServiceJob(QStringLiteral("ksmserver"), QCoreApplication::instance()->arguments().mid(1), QStringLiteral("org.kde.ksmserver")),
+-        new StartupPhase0(autostart, this),
+-        phase1 = new StartupPhase1(autostart, this),
+-        new RestoreSessionJob(),
+-        new StartupPhase2(autostart, this),
+-    };
++    QList<KJob *> sequence;
++    sequence.append(new StartProcessJob(QStringLiteral("kcminit_startup"), {}));
++    sequence.append(new StartServiceJob(QStringLiteral("kded6"), {}, QStringLiteral("org.kde.kded6"), {}));
++    if (!qEnvironmentVariableIsSet("KDE_NO_KWIN")) {
++        sequence.append(x11WindowManagerJob);
++        sequence.append(new StartServiceJob(QStringLiteral("ksmserver"), QCoreApplication::instance()->arguments().mid(1), QStringLiteral("org.kde.ksmserver")));
++    }
++    sequence.append(new StartupPhase0(autostart, this));
++    sequence.append(phase1 = new StartupPhase1(autostart, this));
++    sequence.append(new RestoreSessionJob());
++    sequence.append(new StartupPhase2(autostart, this));
++
+     KJob *last = nullptr;
+     for (KJob *job : sequence) {
+         if (!job) {
+
+From f7b121157b67a2b926b57f86b8c62d7d05601e08 Mon Sep 17 00:00:00 2001
+From: Alexander Rutz <alex@familyrutz.com>
+Date: Sat, 30 Nov 2024 14:58:43 -0700
+Subject: [PATCH] ksplash: only wait for 6 stages to complete when not starting
+ with kwin
+
+Ksplash will wait for 7 stages to complete and timeout after 30 seconds. When KDE_NO_KWIN is set, we skip ksmserver at start. This makes ksplash running the full 30 seconds even plasma is up and running.
+---
+ ksplash/ksplashqml/splashapp.cpp | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/ksplash/ksplashqml/splashapp.cpp b/ksplash/ksplashqml/splashapp.cpp
+index c1d8a2ae87..fe82f767f3 100644
+--- a/ksplash/ksplashqml/splashapp.cpp
++++ b/ksplash/ksplashqml/splashapp.cpp
+@@ -25,6 +25,7 @@
+ 
+ #define TEST_STEP_INTERVAL 2000
+ 
++int stage_count = 7;
+ /**
+  * There are 7 stages in ksplash
+  *  - initial (from this class)
+@@ -71,6 +72,9 @@ SplashApp::SplashApp(int &argc, char **argv)
+         adoptScreen(screen);
+     }
+ 
++    if (qEnvironmentVariableIsSet("KDE_NO_KWIN"))
++        stage_count = 6;
++
+     setStage(QStringLiteral("initial"));
+ 
+     if (KWindowSystem::isPlatformWayland()) {
+@@ -114,7 +118,7 @@ void SplashApp::setStage(const QString &stage)
+ void SplashApp::setStage(int stage)
+ {
+     m_stage = stage;
+-    if (m_stage == 7) {
++    if (m_stage == stage_count) {
+         QGuiApplication::exit(EXIT_SUCCESS);
+     }
+     for (SplashWindow *w : std::as_const(m_windows)) {
+
