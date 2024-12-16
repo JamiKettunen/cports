@@ -1,0 +1,11 @@
+--- a/usr/gen_initramfs_list.sh
++++ b/usr/gen_initramfs_list.sh
+@@ -306,7 +306,7 @@
+ 	if [ -z ${cpio_file} ]; then
+ 		timestamp=
+ 		if test -n "$KBUILD_BUILD_TIMESTAMP"; then
+-			timestamp="$(date -d"$KBUILD_BUILD_TIMESTAMP" +%s || :)"
++			timestamp="$(date -j -f "%a %b %e %H:%M:%S UTC %Y" "$KBUILD_BUILD_TIMESTAMP" +%s || :)"
+ 			if test -n "$timestamp"; then
+ 				timestamp="-t $timestamp"
+ 			fi

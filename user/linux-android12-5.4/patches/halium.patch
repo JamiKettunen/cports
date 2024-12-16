@@ -1,0 +1,111 @@
+Patch-Source: https://gitlab.com/ubports/porting/community-ports/android12/generic/kernel-android-common/-/commits/android12-5.4-halium
+---
+From 720eef27a21e13fa0600c6f0c3acc7bfa4b2d075 Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Sat, 15 Oct 2022 11:20:36 +0000
+Subject: [PATCH] (halium) GKI: use Android ABI padding for SYSVIPC task_struct
+ fields
+
+This allows to enable CONFIG_SYSVIPC=y without breaking module ABI
+---
+ include/linux/sched.h | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 3b6cd312986b..44e2d1c96a11 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -916,8 +916,10 @@ struct task_struct {
+ 	struct nameidata		*nameidata;
+ 
+ #ifdef CONFIG_SYSVIPC
+-	struct sysv_sem			sysvsem;
+-	struct sysv_shm			sysvshm;
++	// struct sysv_sem			sysvsem;
++	/* sysvsem is in the ANDROID_KABI_RESERVE(1) field below */
++	// struct sysv_shm			sysvshm;
++	/* sysvshm is in the ANDROID_KABI_RESERVE(1) field below */
+ #endif
+ #ifdef CONFIG_DETECT_HUNG_TASK
+ 	unsigned long			last_switch_count;
+@@ -1306,9 +1308,18 @@ struct task_struct {
+ 	ANDROID_KABI_RESERVE(3);
+ 	ANDROID_KABI_RESERVE(4);
+ 	ANDROID_KABI_RESERVE(5);
++
++#if defined(CONFIG_SYSVIPC)
++	// struct sysv_sem			sysvsem;
++	ANDROID_KABI_USE(6, struct sysv_sem sysvsem);
++	// struct sysv_shm			sysvshm;
++	_ANDROID_KABI_REPLACE(ANDROID_KABI_RESERVE(7); ANDROID_KABI_RESERVE(8),
++						  struct sysv_shm sysvshm);
++#else
+ 	ANDROID_KABI_RESERVE(6);
+ 	ANDROID_KABI_RESERVE(7);
+ 	ANDROID_KABI_RESERVE(8);
++#endif
+ 
+ 	/*
+ 	 * New fields for task_struct should be added above here, so that
+-- 
+GitLab
+
+From 335dc28d43f19876c4c9557281acb91e5cf3105b Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Wed, 30 Aug 2023 22:47:11 +0000
+Subject: [PATCH] (halium) block/ioctl: workaround kernel panic in ufshcd-sprd
+ driver
+
+The ufshcd-sprd driver on Unisoc devices appears to repurpose the
+CDROM_LAST_WRITTEN ioctl number for its internal UFS_IOCTL_ENTER_MODE.
+
+While this is unlikely to be used on standard production devices, it
+triggers a kernel panic when blkid attempts to probe for a CDROM device:
+https://github.com/util-linux/util-linux/blob/master/libblkid/src/probe.c#L1073
+
+As a workaround, return error on the CDROM_LAST_WRITTEN ioctl in blkdev_ioctl
+if the disk does not have the GENHD_FL_CD flag set.
+---
+ block/ioctl.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/block/ioctl.c b/block/ioctl.c
+index f5565dd6bf2a..1a629c64c5b7 100644
+--- a/block/ioctl.c
++++ b/block/ioctl.c
+@@ -10,6 +10,7 @@
+ #include <linux/blktrace_api.h>
+ #include <linux/pr.h>
+ #include <linux/uaccess.h>
++#include <linux/cdrom.h>
+ 
+ static int blkpg_ioctl(struct block_device *bdev, struct blkpg_ioctl_arg __user *arg)
+ {
+@@ -605,6 +606,24 @@ int blkdev_ioctl(struct block_device *bdev, fmode_t mode, unsigned cmd,
+ 		return blkdev_pr_preempt(bdev, argp, true);
+ 	case IOC_PR_CLEAR:
+ 		return blkdev_pr_clear(bdev, argp);
++
++	/* Halium: workaround kernel panic on Unisoc devices
++	 *
++	 * The ufshcd-sprd driver appears to repurpose the CDROM_LAST_WRITTEN
++	 * ioctl number for its internal UFS_IOCTL_ENTER_MODE.
++	 *
++	 * While this is unlikely to be used on standard production devices, it
++	 * triggers a kernel panic when blkid attempts to probe for a CDROM device:
++	 * https://github.com/util-linux/util-linux/blob/master/libblkid/src/probe.c#L1073
++	 *
++	 * As a workaround, we filter out this ioctl here if the disk
++	 * does not have the GENHD_FL_CD flag set.
++	 */
++	case CDROM_LAST_WRITTEN:
++		if (!(bdev->bd_disk->flags & GENHD_FL_CD))
++			return -ENOTTY;
++		/* fallthrough */
++
+ 	default:
+ 		return __blkdev_driver_ioctl(bdev, mode, cmd, arg);
+ 	}
+-- 
+GitLab
+
