@@ -59,19 +59,29 @@ def configure(pkg, flavor, build_dir=None, env=None):
     )
 
 
-def update_configs(pkg, archs, flavor):
+def update_configs(pkg, archs, flavor, configs=None):
     for a in archs:
         with pkg.profile(a):
             with pkg.stamp(f"{a}_config"):
                 pkg.log(f"configuring {a}...")
                 configure(pkg, flavor, f"{pkg.make_dir}-{a}")
+                if configs:
+                    pkg.do("chimera-buildkernel", "config", configs)
+                    pkg.cp(
+                        f"{pkg.make_dir}-{a}/.config",
+                        pkg.files_path / f"config-{a}.{flavor}",
+                    )
+                    configure(pkg, flavor, f"{pkg.make_dir}-{a}")
                 pkg.log("now perform other config (press enter once done)")
                 input()
                 pkg.cp(
                     f"{pkg.make_dir}-{a}/.config",
                     pkg.files_path / f"config-{a}.{flavor}",
                 )
-    pkg.log_green("SUCCESS: kernel configs have been updated")
+    pkg.log_green(
+        "SUCCESS: kernel configs have been updated"
+        + (f" from {configs}" if configs else "")
+    )
 
 
 def build(pkg, flavor, env=None):
