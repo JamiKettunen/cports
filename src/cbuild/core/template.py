@@ -465,6 +465,9 @@ core_fields = [
     # git update-check
     ("_commit", None, str, False, False, False),
     ("_branch", None, str, False, False, False),
+    # linux-kernel
+    ("kernel_flavor", None, str, False, False, False),
+    ("kernel_configs", None, str, False, False, False),
 ]
 
 # a field priority list, the second element indicates whether
@@ -484,6 +487,8 @@ core_fields_priority = [
     ("configure_args", True),
     ("configure_env", True),
     ("configure_gen", True),
+    ("kernel_flavor", True),
+    ("kernel_configs", False),
     ("make_cmd", True),
     ("make_dir", True),
     ("make_env", True),
