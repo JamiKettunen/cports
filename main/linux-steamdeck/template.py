@@ -4,11 +4,12 @@ pkgver = "6.8.12"
 pkgrel = 0
 _vver = 7
 archs = ["x86_64"]
-make_dir = "build"
+build_style = "linux-kernel"
+kernel_flavor = "valve"
 hostmakedepends = ["base-kernel-devel"]
 depends = ["base-kernel"]
 provides = ["linux"]
-pkgdesc = f"Linux kernel for Steam Deck {pkgver[0:pkgver.rfind('.')]}.x"
+pkgdesc = f"Linux kernel {pkgver[0:pkgver.rfind('.')]}.x for Steam Deck"
 maintainer = "q66 <q66@chimera-linux.org>"
 license = "GPL-2.0-only"
 url = "https://gitlab.com/evlaV/linux-integration"
@@ -27,38 +28,8 @@ options = [
     "foreignelf",  # vdso32
 ]
 
-_flavor = "valve"
-
-if self.current_target == "custom:generate-configs":
+if self.current_target and self.current_target.startswith("custom:"):
     hostmakedepends += ["base-cross", "ncurses-devel"]
-
-if self.profile().cross:
-    broken = "linux-devel does not come out right"
-
-
-@custom_target("generate-configs", "patch")
-def _(self):
-    from cbuild.util import linux
-
-    linux.update_configs(self, archs, _flavor)
-
-
-def configure(self):
-    from cbuild.util import linux
-
-    linux.configure(self, _flavor)
-
-
-def build(self):
-    from cbuild.util import linux
-
-    linux.build(self, _flavor)
-
-
-def install(self):
-    from cbuild.util import linux
-
-    linux.install(self, _flavor)
 
 
 @subpackage("linux-steamdeck-devel")
