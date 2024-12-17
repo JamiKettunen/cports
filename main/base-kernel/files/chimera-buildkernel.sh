@@ -311,7 +311,7 @@ do_config() {
         tgt="menuconfig"
     fi
 
-    call_make "$tgt"
+    call_make $tgt
 }
 
 do_build() {
