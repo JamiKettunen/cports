@@ -53,6 +53,7 @@ def configure(pkg, flavor, build_dir=None, env=None):
         f"JOBS={pkg.make_jobs}",
         f"LOCALVERSION=-{pkg.pkgrel}-{flavor}",
         f"EPOCH={epoch}",
+        *pkg.configure_args,
         *args,
         env=_build_env(pkg, pkg.configure_env, None, env),
     )
