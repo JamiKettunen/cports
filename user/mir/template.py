@@ -1,7 +1,8 @@
 pkgname = "mir"
-pkgver = "2.17.0"
+pkgver = "2.19.3"
 pkgrel = 0
 build_style = "cmake"
+# FIXME: drop MIR_ENABLE_TESTS=OFF!
 configure_args = ["-DMIR_FATAL_COMPILE_WARNINGS=OFF", "-DMIR_ENABLE_TESTS=OFF"]
 hostmakedepends = ["cmake", "ninja", "pkgconf", "python-pillow"]
 makedepends = [
@@ -21,14 +22,14 @@ makedepends = [
     "freetype-devel",
     "yaml-cpp-devel",
     "gtest-devel",
-    "gmpxx-devel",
+    "gmp-gmpxx-devel",
 ]
 depends = ["dmz-cursor-theme"]  # for examples/{mir_demo_server,miral-shell}
 pkgdesc = "Wayland compositor and shell library"
 license = "GPL-2.0-or-later AND LGPL-2.0-or-later"
 url = "https://github.com/canonical/mir"
 source = f"{url}/archive/refs/tags/v{pkgver}.tar.gz"
-sha256 = "745d507de912ff66864c15fa4262e618cbb52a4d493bb834e84a4a6611b89968"
+sha256 = "7a185f0e8fe21972f3219ec32d0db6141419093d50f245647e7d6b822250da2d"
 
 
 def init_configure(self):

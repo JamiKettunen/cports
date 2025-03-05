@@ -1,0 +1,74 @@
+diff --git a/src/platforms/common/server/kms-utils/drm_event_handler.h b/src/platforms/common/server/kms-utils/drm_event_handler.h
+index fa142198b3..fe48c7a704 100644
+--- a/src/platforms/common/server/kms-utils/drm_event_handler.h
++++ b/src/platforms/common/server/kms-utils/drm_event_handler.h
+@@ -17,6 +17,7 @@
+ #ifndef MIR_PLATFORM_KMS_DRM_EVENT_HANDLER_H_
+ #define MIR_PLATFORM_KMS_DRM_EVENT_HANDLER_H_
+ 
++#include <functional>
+ #include <future>
+ 
+ namespace mir
+diff --git a/src/include/server/mir/scene/session_coordinator.h b/src/include/server/mir/scene/session_coordinator.h
+index e779c69c5a..89ae169032 100644
+--- a/src/include/server/mir/scene/session_coordinator.h
++++ b/src/include/server/mir/scene/session_coordinator.h
+@@ -22,6 +22,8 @@
+ 
+ #include "mir_toolkit/common.h"
+ 
++#include <unistd.h>
++
+ #include <memory>
+ 
+ namespace mir
+diff --git a/src/server/frontend_wayland/xdg_activation_v1.cpp b/src/server/frontend_wayland/xdg_activation_v1.cpp
+index dd77469d35..5eee69481e 100644
+--- a/src/server/frontend_wayland/xdg_activation_v1.cpp
++++ b/src/server/frontend_wayland/xdg_activation_v1.cpp
+@@ -28,6 +28,7 @@
+ #include "mir/log.h"
+ #include <random>
+ #include <chrono>
++#include <mutex>
+ #include <uuid.h>
+ #include <mir/events/keyboard_event.h>
+ 
+diff --git a/src/include/server/mir/shell/shell.h b/src/include/server/mir/shell/shell.h
+index 51ba2a07b7..c44713c398 100644
+--- a/src/include/server/mir/shell/shell.h
++++ b/src/include/server/mir/shell/shell.h
+@@ -24,6 +24,8 @@
+ 
+ #include "mir_toolkit/common.h"
+ 
++#include <unistd.h>
++
+ #include <memory>
+ 
+ namespace mir
+diff --git a/src/miral/config_file.cpp b/src/miral/config_file.cpp
+index 4253a9bc7f..8e8240a81b 100644
+--- a/src/miral/config_file.cpp
++++ b/src/miral/config_file.cpp
+@@ -29,6 +29,7 @@
+ #include <fstream>
+ #include <optional>
+ #include <string>
++#include <sstream>
+ #include <vector>
+ 
+ using namespace std::filesystem;
+diff --git a/src/platforms/wayland/wl_egl_display_provider.cpp b/src/platforms/wayland/wl_egl_display_provider.cpp
+index 8078eca714..aa5969abac 100644
+--- a/src/platforms/wayland/wl_egl_display_provider.cpp
++++ b/src/platforms/wayland/wl_egl_display_provider.cpp
+@@ -6,6 +6,7 @@
+ #include <EGL/egl.h>
+ #include <wayland-egl-core.h>
+ 
++#include <mutex>
+ #include <optional>
+ 
+ namespace mg = mir::graphics;
