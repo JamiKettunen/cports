@@ -20,8 +20,8 @@ makedepends = [
 pkgdesc = "Tiling Wayland compositor based on Mir"
 license = "GPL-3.0-or-later"
 url = "https://mattkae.github.io/miracle-wm-wiki"
-source = f"https://github.com/mattkae/miracle-wm/archive/v{pkgver}.tar.gz"
-sha256 = "250bfe04f3f887f64bb7dfa98c9d6f56827ca628b68851424a20b5783ba13482"
+source = f"https://github.com/miracle-wm-org/miracle-wm/archive/12492c821ad6152031a8181adedd38fea0112340.tar.gz"
+sha256 = "8756cf4f212460c2c09d832d057d168f24e8d6d653bf6a387ad90bd4d1421caf"
 
 
 # FIXME: cannot ^C / use close button when nested under X11 unlike mir_demo_server! needs SIGKILL to close

@@ -1,3 +1,63 @@
+diff --git a/src/animator.cpp b/src/animator.cpp
+index d015c2a..6688be7 100644
+--- a/src/animator.cpp
++++ b/src/animator.cpp
+@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ #define GLM_ENABLE_EXPERIMENTAL
+ 
+ #include "animator.h"
++#include <algorithm>
+ #include <chrono>
+ #include <glm/gtx/transform.hpp>
+ #include <mir/log.h>
+@@ -76,11 +77,11 @@ float ease(AnimationDefinition const& defintion, float t)
+     case EaseFunction::linear:
+         return t;
+     case EaseFunction::ease_in_sine:
+-        return 1 - cosf((t * M_PIf) / 2.f);
++        return 1 - cosf((t * static_cast<float>(M_PI)) / 2.f);
+     case EaseFunction::ease_in_out_sine:
+-        return -(cosf(M_PIf * t) - 1) / 2;
++        return -(cosf(static_cast<float>(M_PI) * t) - 1) / 2;
+     case EaseFunction::ease_out_sine:
+-        return sinf((t * M_PIf) / 2.f);
++        return sinf((t * static_cast<float>(M_PI)) / 2.f);
+     case EaseFunction::ease_in_quad:
+         return t * t;
+     case EaseFunction::ease_out_quad:
+diff --git a/src/drag_and_drop_service.cpp b/src/drag_and_drop_service.cpp
+index f7f5fdd..c942307 100644
+--- a/src/drag_and_drop_service.cpp
++++ b/src/drag_and_drop_service.cpp
+@@ -40,7 +40,7 @@ DragAndDropService::DragAndDropService(
+ {
+ }
+ 
+-bool DragAndDropService::handle_pointer_event(CompositorState& state, float x, float y, MirPointerAction action, uint modifiers)
++bool DragAndDropService::handle_pointer_event(CompositorState& state, float x, float y, MirPointerAction action, unsigned int modifiers)
+ {
+     if (!MIRACLE_FEATURE_FLAG_DRAG_AND_DROP || !config->drag_and_drop().enabled)
+         return false;
+@@ -163,4 +163,4 @@ void DragAndDropService::drag_to(
+         return;
+ 
+     workspace->add_to_root(*dragging);
+-}
+\ No newline at end of file
++}
+diff --git a/src/drag_and_drop_service.h b/src/drag_and_drop_service.h
+index 02d74e2..7cd20f8 100644
+--- a/src/drag_and_drop_service.h
++++ b/src/drag_and_drop_service.h
+@@ -38,7 +38,7 @@ public:
+         std::shared_ptr<CommandController> const& command_controller,
+         std::shared_ptr<Config> const& config,
+         std::shared_ptr<OutputManager> const& output_manager);
+-    bool handle_pointer_event(CompositorState& state, float x, float y, MirPointerAction action, uint modifiers);
++    bool handle_pointer_event(CompositorState& state, float x, float y, MirPointerAction action, unsigned int modifiers);
+ 
+ private:
+     std::shared_ptr<CommandController> command_controller;
 diff --git a/src/layout_scheme.cpp b/src/layout_scheme.cpp
 index 83d5a7d..fc379af 100644
 --- a/src/layout_scheme.cpp
@@ -10,3 +70,67 @@ index 83d5a7d..fc379af 100644
  
  const char* miracle::to_string(miracle::LayoutScheme scheme)
  {
+@@ -44,4 +45,4 @@ miracle::LayoutScheme miracle::get_next_layout(miracle::LayoutScheme scheme)
+     if (next == LayoutScheme::none)
+         next = static_cast<LayoutScheme>(0);
+     return next;
+-}
+\ No newline at end of file
++}
+diff --git a/src/move_service.cpp b/src/move_service.cpp
+index f108cb2..868bdf8 100644
+--- a/src/move_service.cpp
++++ b/src/move_service.cpp
+@@ -40,7 +40,7 @@ bool MoveService::handle_pointer_event(
+     float x,
+     float y,
+     MirPointerAction action,
+-    uint modifiers)
++    unsigned int modifiers)
+ {
+     if (state.mode() == WindowManagerMode::moving)
+     {
+@@ -94,4 +94,4 @@ bool MoveService::handle_pointer_event(
+     }
+ 
+     return false;
+-}
+\ No newline at end of file
++}
+diff --git a/src/move_service.h b/src/move_service.h
+index 6270003..9b15557 100644
+--- a/src/move_service.h
++++ b/src/move_service.h
+@@ -32,7 +32,7 @@ class MoveService
+ {
+ public:
+     MoveService(std::shared_ptr<CommandController> const&, std::shared_ptr<Config> const&, std::shared_ptr<OutputManager> const& output_manager);
+-    bool handle_pointer_event(CompositorState& state, float x, float y, MirPointerAction action, uint modifiers);
++    bool handle_pointer_event(CompositorState& state, float x, float y, MirPointerAction action, unsigned int modifiers);
+ 
+ private:
+     std::shared_ptr<CommandController> command_controller;
+diff --git a/src/output.cpp b/src/output.cpp
+index 0e41136..1f3e4da 100644
+--- a/src/output.cpp
++++ b/src/output.cpp
+@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+ #include "workspace.h"
+ #include "workspace_manager.h"
++#define GLM_ENABLE_EXPERIMENTAL
+ #include <glm/gtx/transform.hpp>
+ #include <memory>
+ #include <mir/log.h>
+diff --git a/src/render_data_manager.h b/src/render_data_manager.h
+index 1c02c15..1d0add9 100644
+--- a/src/render_data_manager.h
++++ b/src/render_data_manager.h
+@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+ #include <glm/glm.hpp>
+ #include <mir/scene/surface.h>
++#include <mutex>
+ #include <vector>
+ 
+ namespace miracle
