@@ -28,8 +28,8 @@ depends = ["dmz-cursor-theme"]  # for examples/{mir_demo_server,miral-shell}
 pkgdesc = "Wayland compositor and shell library"
 license = "GPL-2.0-or-later AND LGPL-2.0-or-later"
 url = "https://github.com/canonical/mir"
-source = f"{url}/archive/refs/tags/v{pkgver}.tar.gz"
-sha256 = "7a185f0e8fe21972f3219ec32d0db6141419093d50f245647e7d6b822250da2d"
+source = f"https://github.com/canonical/mir/archive/5f49884f046e8ef44fe5a210d9fbefe5b752cb00.tar.gz"
+sha256 = "696a5aef1ebde9cfd4880e57db0f0537014e2a8093407795da9f63eeddb5f70a"
 
 
 def init_configure(self):

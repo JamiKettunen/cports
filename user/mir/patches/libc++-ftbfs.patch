@@ -1,15 +1,3 @@
-diff --git a/src/platforms/common/server/kms-utils/drm_event_handler.h b/src/platforms/common/server/kms-utils/drm_event_handler.h
-index fa142198b3..fe48c7a704 100644
---- a/src/platforms/common/server/kms-utils/drm_event_handler.h
-+++ b/src/platforms/common/server/kms-utils/drm_event_handler.h
-@@ -17,6 +17,7 @@
- #ifndef MIR_PLATFORM_KMS_DRM_EVENT_HANDLER_H_
- #define MIR_PLATFORM_KMS_DRM_EVENT_HANDLER_H_
- 
-+#include <functional>
- #include <future>
- 
- namespace mir
 diff --git a/src/include/server/mir/scene/session_coordinator.h b/src/include/server/mir/scene/session_coordinator.h
 index e779c69c5a..89ae169032 100644
 --- a/src/include/server/mir/scene/session_coordinator.h
@@ -23,18 +11,6 @@ index e779c69c5a..89ae169032 100644
  #include <memory>
  
  namespace mir
-diff --git a/src/server/frontend_wayland/xdg_activation_v1.cpp b/src/server/frontend_wayland/xdg_activation_v1.cpp
-index dd77469d35..5eee69481e 100644
---- a/src/server/frontend_wayland/xdg_activation_v1.cpp
-+++ b/src/server/frontend_wayland/xdg_activation_v1.cpp
-@@ -28,6 +28,7 @@
- #include "mir/log.h"
- #include <random>
- #include <chrono>
-+#include <mutex>
- #include <uuid.h>
- #include <mir/events/keyboard_event.h>
- 
 diff --git a/src/include/server/mir/shell/shell.h b/src/include/server/mir/shell/shell.h
 index 51ba2a07b7..c44713c398 100644
 --- a/src/include/server/mir/shell/shell.h
@@ -46,6 +22,18 @@ index 51ba2a07b7..c44713c398 100644
 +#include <unistd.h>
 +
  #include <memory>
+ 
+ namespace mir
+diff --git a/src/include/server/mir/shell/token_authority.h b/src/include/server/mir/shell/token_authority.h
+index c8087bbcac..95754f42f5 100644
+--- a/src/include/server/mir/shell/token_authority.h
++++ b/src/include/server/mir/shell/token_authority.h
+@@ -20,6 +20,7 @@
+ #include <chrono>
+ #include <functional>
+ #include <memory>
++#include <mutex>
+ #include <unordered_set>
  
  namespace mir
 diff --git a/src/miral/config_file.cpp b/src/miral/config_file.cpp
@@ -60,6 +48,18 @@ index 4253a9bc7f..8e8240a81b 100644
  #include <vector>
  
  using namespace std::filesystem;
+diff --git a/src/platforms/common/server/kms-utils/drm_event_handler.h b/src/platforms/common/server/kms-utils/drm_event_handler.h
+index fa142198b3..fe48c7a704 100644
+--- a/src/platforms/common/server/kms-utils/drm_event_handler.h
++++ b/src/platforms/common/server/kms-utils/drm_event_handler.h
+@@ -17,6 +17,7 @@
+ #ifndef MIR_PLATFORM_KMS_DRM_EVENT_HANDLER_H_
+ #define MIR_PLATFORM_KMS_DRM_EVENT_HANDLER_H_
+ 
++#include <functional>
+ #include <future>
+ 
+ namespace mir
 diff --git a/src/platforms/wayland/wl_egl_display_provider.cpp b/src/platforms/wayland/wl_egl_display_provider.cpp
 index 8078eca714..aa5969abac 100644
 --- a/src/platforms/wayland/wl_egl_display_provider.cpp
@@ -72,3 +72,15 @@ index 8078eca714..aa5969abac 100644
  #include <optional>
  
  namespace mg = mir::graphics;
+diff --git a/src/server/shell/decoration/decoration_strategy.cpp b/src/server/shell/decoration/decoration_strategy.cpp
+index 485ad5e419..657fa28fe3 100644
+--- a/src/server/shell/decoration/decoration_strategy.cpp
++++ b/src/server/shell/decoration/decoration_strategy.cpp
+@@ -31,6 +31,7 @@
+ #include <codecvt>
+ #include <filesystem>
+ #include <map>
++#include <mutex>
+ 
+ namespace ms = mir::scene;
+ namespace geom = mir::geometry;
