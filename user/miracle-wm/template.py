@@ -1,5 +1,5 @@
 pkgname = "miracle-wm"
-pkgver = "0.3.2"
+pkgver = "0.4.1"
 pkgrel = 0
 build_style = "cmake"
 hostmakedepends = ["cmake", "ninja", "pkgconf"]
@@ -15,12 +15,13 @@ makedepends = [
     "glm",
     "libxkbcommon-devel",
     "boost-devel",
+    "json-c-devel",
 ]
 pkgdesc = "Tiling Wayland compositor based on Mir"
 license = "GPL-3.0-or-later"
 url = "https://mattkae.github.io/miracle-wm-wiki"
 source = f"https://github.com/mattkae/miracle-wm/archive/v{pkgver}.tar.gz"
-sha256 = "da62b048c02ed7ed92734832d82875302de8524b1920264b69e8ee54a685fab7"
+sha256 = "250bfe04f3f887f64bb7dfa98c9d6f56827ca628b68851424a20b5783ba13482"
 
 
 # FIXME: cannot ^C / use close button when nested under X11 unlike mir_demo_server! needs SIGKILL to close

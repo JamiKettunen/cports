@@ -1,0 +1,12 @@
+diff --git a/src/layout_scheme.cpp b/src/layout_scheme.cpp
+index 83d5a7d..fc379af 100644
+--- a/src/layout_scheme.cpp
++++ b/src/layout_scheme.cpp
+@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+ #include "layout_scheme.h"
+ #include <stdexcept>
++#include <string>
+ 
+ const char* miracle::to_string(miracle::LayoutScheme scheme)
+ {
