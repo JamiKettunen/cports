@@ -2,12 +2,7 @@ pkgname = "plasma-settings"
 pkgver = "25.02.0"
 pkgrel = 0
 build_style = "cmake"
-hostmakedepends = [
-    "cmake",
-    "extra-cmake-modules",
-    "gettext",
-    "ninja",
-]
+hostmakedepends = ["cmake", "extra-cmake-modules", "gettext", "ninja"]
 makedepends = [
     "qt6-qtdeclarative-devel",
     "kirigami-addons-devel",
@@ -20,7 +15,7 @@ makedepends = [
     "kitemviews-devel",
     "kitemmodels-devel",
 ]
-#depends = []  # TODO: kded kirigami-addons openrc-settingsd
+# TODO: depends = ["openrc-settingsd"] ?
 pkgdesc = "KDE settings application for Plasma Mobile"
 license = "GPL-2.0-or-later AND LGPL-2.1-or-later"
 url = "https://invent.kde.org/plasma-mobile/plasma-settings"
