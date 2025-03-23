@@ -8,7 +8,6 @@ hostmakedepends = [
     "gettext",
     "ninja",
     "pkgconf",
-    #"qt6-qtbase",
 ]
 makedepends = [
     "qt6-qtbase-private-devel",  # qwaylandwindow_p.h -> qtguiglobal_p.h
@@ -37,7 +36,13 @@ makedepends = [
 ]
 depends = [
     "kpipewire",
-    # TODO: likely a bunch more missing stuff...
+    "openrc-settingsd",  # dinitctl enable openrc-settingsd
+    "bluez-qt",
+    "maliit-keyboard"
+    "plasma-nm",
+    "plasma-pa",
+    "qqc2-breeze-style",
+    "plasma-nano",
 ]
 pkgdesc = "KDE shell components for Plasma Mobile"
 license = "GPL-2.0-or-later AND LGPL-2.1-or-later"
@@ -47,3 +52,18 @@ sha256 = "a7cea53614b5ba62eb1a3a0edebdf07cb9d60d060b9d2df5f2c74ee318740ac8"
 hardening = ["vis"]
 # ECM qtpaths
 options = ["!cross"]
+
+
+# TODO: plasma-mobile-meta with usually wanted but not mandatory stuff?
+
+
+@subpackage("plasma-mobile-apps-meta")
+def _(self):
+    self.subdesc = "apps recommends package"
+    self.install_if = [self]
+    self.depends = [
+        "plasma-settings",
+    ]
+    self.options = ["empty"]
+
+    return []
