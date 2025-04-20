@@ -1,6 +1,6 @@
 pkgname = "systemd-boot"
-pkgver = "256.11"
-pkgrel = 5
+pkgver = "257.5"
+pkgrel = 0
 archs = ["aarch64", "loongarch64", "riscv64", "x86_64"]
 build_style = "meson"
 configure_args = [
@@ -134,7 +134,7 @@ url = "https://github.com/systemd/systemd"
 source = (
     f"https://github.com/systemd/systemd/archive/refs/tags/v{pkgver}.tar.gz"
 )
-sha256 = "5038424744b2ed8c1d7ecc75b00eeffe68528f9789411da60f199d65762d9ba5"
+sha256 = "4d65f9482608cf9f7823df42a6d7796f0e0dfcfb94301df75effff86d40da33e"
 # the tests that can run are mostly useless
 options = ["!check"]
 
