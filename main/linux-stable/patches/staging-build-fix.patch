@@ -1,0 +1,14 @@
+aarch64-chimera-linux-musl-ld.lld: error: undefined symbol: devm_drm_of_get_bridge
+>>> referenced by aux-bridge.c:116 (/builddir/linux-stable-6.14.3/build/../drivers/gpu/drm/bridge/aux-bridge.c:116)
+>>>               vmlinux.o:(drm_aux_bridge_probe)
+
+--- a/drivers/gpu/drm/bridge/Kconfig
++++ b/drivers/gpu/drm/bridge/Kconfig
+@@ -16,6 +16,7 @@ config DRM_AUX_BRIDGE
+ 	tristate
+ 	depends on DRM_BRIDGE && OF
+ 	select AUXILIARY_BUS
++	select DRM_KMS_HELPER
+ 	select DRM_PANEL_BRIDGE
+ 	help
+ 	  Simple transparent bridge that is used by several non-DRM drivers to
