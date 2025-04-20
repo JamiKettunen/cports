@@ -14,8 +14,12 @@ SD_BOOT_CFG=/etc/default/systemd-boot
 SD_BOOT_SYSTEM_RELAX_ESP_FILE=/usr/lib/systemd/boot/relax-esp
 SD_BOOT_SYSTEM_CMDLINE_FILE=/usr/lib/systemd/boot/cmdline
 SD_BOOT_SYSTEM_DEVICETREE_FILE=/usr/lib/systemd/boot/devicetree
+SD_BOOT_SYSTEM_UKIFY_ARGS_FILE=/usr/lib/systemd/boot/ukify-args
+SD_BOOT_SYSTEM_UKIFY_DTBS_FILE=/usr/lib/systemd/boot/ukify-dtbs
 SD_BOOT_CMDLINE_FILE=/etc/default/systemd-boot-cmdline
 SD_BOOT_DEVICETREE_FILE=/etc/default/systemd-boot-devicetree
+SD_BOOT_UKIFY_ARGS_FILE=/etc/default/systemd-boot-ukify-args
+SD_BOOT_UKIFY_DTBS_FILE=/etc/default/systemd-boot-ukify-dtbs
 SD_BOOT_OS_TITLE="$PRETTY_NAME"
 SD_BOOT_DISABLE_RECOVERY=
 SD_BOOT_ESP_PATH=
@@ -23,6 +27,8 @@ SD_BOOT_BOOT_PATH=
 SD_BOOT_ENTRY_TOKEN=
 SD_BOOT_COUNT_TRIES=
 SD_BOOT_DISABLE_DEVICETREE=
+SD_BOOT_UKIFY_ARGS=
+SD_BOOT_UKIFY_DTBS=
 
 [ -z "$SD_BOOT_OS_TITLE" ] && SD_BOOT_OS_TITLE="Chimera Linux"
 [ -r /etc/kernel/entry-token ] && read -r SD_BOOT_ENTRY_TOKEN < /etc/kernel/entry-token
@@ -37,6 +43,18 @@ DEV_CMDLINE=$SD_BOOT_CMDLINE
 DEV_CMDLINE_DEFAULT=$SD_BOOT_CMDLINE_DEFAULT
 DEV_EXTRA_CMDLINE=
 DEV_DEVICETREE=$SD_BOOT_DEVICETREE
+
+if [ -r "$SD_BOOT_UKIFY_ARGS_FILE" ]; then
+    SD_BOOT_UKIFY_ARGS=$(cat "$SD_BOOT_UKIFY_ARGS_FILE")
+elif [ -r "$SD_BOOT_SYSTEM_UKIFY_ARGS_FILE" ]; then
+    SD_BOOT_UKIFY_ARGS=$(cat "$SD_BOOT_SYSTEM_UKIFY_ARGS_FILE")
+fi
+
+if [ -r "$SD_BOOT_UKIFY_DTBS_FILE" ]; then
+    read -r SD_BOOT_UKIFY_DTBS < "$SD_BOOT_UKIFY_DTBS_FILE"
+elif [ -r "$SD_BOOT_SYSTEM_UKIFY_DTBS_FILE" ]; then
+    read -r SD_BOOT_UKIFY_DTBS < "$SD_BOOT_SYSTEM_UKIFY_DTBS_FILE"
+fi
 
 if [ -r "$SD_BOOT_CMDLINE_FILE" ]; then
     DEV_EXTRA_CMDLINE=$(cat "$SD_BOOT_CMDLINE_FILE")
@@ -191,13 +209,38 @@ write_entry() {
     else
         CONF_NAME="${SD_BOOT_ENTRY_TOKEN}-${1}.conf"
     fi
-    write_cfg "$CONF_NAME" "title ${SD_BOOT_OS_TITLE}"
-    write_cfg "$CONF_NAME" "linux /${3}"
-    if [ -f "/boot/initrd.img-${2}" ]; then
-        write_cfg "$CONF_NAME" "initrd /initrd.img-${2}"
+    write_cfg "$CONF_NAME" "title ${SD_BOOT_OS_TITLE}" # TODO: include ${2} (KERNVER)?
+    if [ -z "$SD_BOOT_UKIFY_ARGS" ]; then
+        write_cfg "$CONF_NAME" "linux /${3}"
+        if [ -f "/boot/initrd.img-${2}" ]; then
+            write_cfg "$CONF_NAME" "initrd /initrd.img-${2}"
+        fi
+        write_devicetree "$2" "$DEV_DEVICETREE"
+        write_cfg "$CONF_NAME" "options ${4}"
+    else
+        SD_BOOT_UKIFY_ARGS="$(echo "$SD_BOOT_UKIFY_ARGS" | sed -e "s/@LINUX@/\/boot\/${3}/" -e "s/@CMDLINE@/${4}/")"
+        if [ -f "/boot/initrd.img-${2}" ]; then
+            SD_BOOT_UKIFY_ARGS="$(echo "$SD_BOOT_UKIFY_ARGS" | sed "s/@INITRD@/\/boot\/initrd.img-${2}/")"
+        fi
+        if [ -d "/boot/dtbs/dtbs-${2}" ] && echo "$SD_BOOT_UKIFY_ARGS" | grep -q '^@DTBAUTO_ARGS@$'; then
+            DTBS=$(find "/boot/dtbs/dtbs-${2}"/ -path "*/$SD_BOOT_UKIFY_DTBS.dtb")
+            if [ -z "$DTBS" ]; then
+                echo "No DTBs for ${2} found with path pattern '*/$SD_BOOT_UKIFY_DTBS.dtb'." >&2
+                exit 7
+            fi
+            for DTB in $DTBS; do
+                SD_BOOT_UKIFY_ARGS="$SD_BOOT_UKIFY_ARGS
+--devicetree-auto=$DTB"
+            done
+            SD_BOOT_UKIFY_ARGS="$(echo "$SD_BOOT_UKIFY_ARGS" | sed "/@DTBAUTO_ARGS@/d")"
+        fi
+        if ! echo "$SD_BOOT_UKIFY_ARGS" | tr '\n' '\0' | xargs -0 ukify build --uname "${2}" --output="$SD_BOOT_ESP_PATH/uki-${1}.efi"; then
+            echo "Generation of uki-${1}.efi failed." >&2
+            exit 8
+        fi
+        write_cfg "$CONF_NAME" "efi /uki-${1}.efi"
     fi
-    write_devicetree "$2" "$DEV_DEVICETREE"
-    write_cfg "$CONF_NAME" "options ${4}"
+
 }
 
 for KVER in $(linux-version list | linux-version sort --reverse); do

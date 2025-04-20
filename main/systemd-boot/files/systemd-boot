@@ -50,3 +50,16 @@ SD_BOOT_DEVICETREE=
 # The number of tries to use for boot counting. By default
 # pulled from /etc/kernel/tries, but can be configured here.
 #SD_BOOT_COUNT_TRIES=
+
+# FIXME: update working from old paths..
+# Arguments passed to ukify when creating UKI .efi files. Template strings like
+# @LINUX@, @INITRD@, @CMDLINE@ and @DTBAUTO_ARGS@ will be replaced by
+# gen-systemd-boot. By default pulled from /etc/kernel/ukify-args, but can be
+# configured here.
+#SD_BOOT_UKIFY_ARGS=""
+
+# Device tree blobs for current kernel to use with ukify --devicetree-auto.
+# String will be passed as an arg to "find /boot/dtbs/dtbs-.../ -path" with
+# automatically added "*/" prefix and ".dtb" suffix. By default pulled from
+# /etc/kernel/ukify-dtbs, but can be configured here.
+#SD_BOOT_UKIFY_DTBS=""
