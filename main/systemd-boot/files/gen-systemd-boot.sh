@@ -25,9 +25,9 @@ SD_BOOT_COUNT_TRIES=
 SD_BOOT_DISABLE_DEVICETREE=
 
 [ -z "$SD_BOOT_OS_TITLE" ] && SD_BOOT_OS_TITLE="Chimera Linux"
-[ -r /etc/kernel/entry-token ] && SD_BOOT_ENTRY_TOKEN=$(cat /etc/kernel/entry-token)
+[ -r /etc/kernel/entry-token ] && read -r SD_BOOT_ENTRY_TOKEN < /etc/kernel/entry-token
 [ -z "$SD_BOOT_ENTRY_TOKEN" ] && SD_BOOT_ENTRY_TOKEN="chimera"
-[ -r /etc/kernel/tries ] && SD_BOOT_COUNT_TRIES=$(cat /etc/kernel/tries)
+[ -r /etc/kernel/tries ] && read -r SD_BOOT_COUNT_TRIES < /etc/kernel/tries
 
 # source global config if present
 [ -r $SD_BOOT_SYSTEM_CFG ] && . $SD_BOOT_SYSTEM_CFG
