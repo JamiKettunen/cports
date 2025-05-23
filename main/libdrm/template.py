@@ -8,8 +8,8 @@ makedepends = ["udev-devel", "libpciaccess-devel", "linux-headers"]
 pkgdesc = "Userspace interface to kernel DRM services"
 license = "MIT"
 url = "https://dri.freedesktop.org"
-source = f"https://gitlab.freedesktop.org/mesa/drm/-/archive/libdrm-{pkgver}/drm-libdrm-{pkgver}.tar.gz"
-sha256 = "49c077f3938147e7c321fe89255eb189c1be68f6ed0aa36e29d38e3db0e84e08"
+source = f"https://gitlab.freedesktop.org/mesa/libdrm/-/archive/libdrm-{pkgver}/libdrm-libdrm-{pkgver}.tar.gz"
+sha256 = "337fbf9bad92728494abe7a4561b33c191976fb746639c872f89bd75ef63ea0b"
 # FIXME cfi int
 hardening = ["vis", "!cfi", "!int"]
 options = ["!distlicense"]
