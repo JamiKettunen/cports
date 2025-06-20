@@ -2,12 +2,10 @@ pkgname = "kauth"
 pkgver = "6.15.0"
 pkgrel = 0
 build_style = "cmake"
+# XXX drop libexec
+configure_args = ["-DCMAKE_INSTALL_LIBEXECDIR=/usr/lib"]
 make_check_wrapper = ["dbus-run-session"]
-hostmakedepends = [
-    "cmake",
-    "extra-cmake-modules",
-    "ninja",
-]
+hostmakedepends = ["cmake", "extra-cmake-modules", "ninja"]
 makedepends = [
     "kcoreaddons-devel",
     "kwindowsystem-devel",
@@ -15,9 +13,7 @@ makedepends = [
     "qt6-qtbase-devel",
     "qt6-qttools-devel",
 ]
-checkdepends = [
-    "dbus",
-]
+checkdepends = ["dbus"]
 pkgdesc = "KDE Execute actions as privileged user"
 license = "LGPL-2.1-or-later"
 url = "https://develop.kde.org/docs/features/kauth"

@@ -2,15 +2,17 @@ pkgname = "ktexteditor"
 pkgver = "6.15.0"
 pkgrel = 0
 build_style = "cmake"
+# XXX drop libexec
+configure_args = ["-DCMAKE_INSTALL_LIBEXECDIR=/usr/lib"]
 make_check_args = [
     "-E",
     # FIXME: katedocument_test testAboutToSave() hangs for 5 minutes,
-    # txt_diff encoding tests broken similar to alpine but pass in cbuild chroot?
-    # messagetest flakes about half of the time
-    "katedocument_test|messagetest|encoding_(utf8|latin15|utf32|utf16|utf32be|utf16be|cyrillic_utf8|cp1251|koi8-r|one-char-latin-15|latin15-with-utf8-bom).txt_diff|bug313759",
+    "katedocument_test",
+    # flaky tests when parallel
+    "-j1",
 ]
 make_check_env = {"QT_QPA_PLATFORM": "offscreen"}
-make_check_wrapper = ["dbus-run-session", "--"]
+make_check_wrapper = ["dbus-run-session"]
 hostmakedepends = ["cmake", "extra-cmake-modules", "gettext", "ninja"]
 makedepends = [
     "editorconfig-devel",

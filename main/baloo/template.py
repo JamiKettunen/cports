@@ -2,9 +2,11 @@ pkgname = "baloo"
 pkgver = "6.15.0"
 pkgrel = 0
 build_style = "cmake"
-# FIXME: "not connected to dbus server"
-make_check_args = ["-E", "(fileindexerconfigtest|filewatchtest)"]
-make_check_wrapper = ["dbus-run-session", "--"]
+# XXX drop libexec
+configure_args = ["-DCMAKE_INSTALL_LIBEXECDIR=/usr/lib"]
+# flaky tests when parallel
+make_check_args = ["-j1"]
+make_check_wrapper = ["dbus-run-session"]
 hostmakedepends = [
     "cmake",
     "extra-cmake-modules",

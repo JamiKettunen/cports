@@ -2,6 +2,8 @@ pkgname = "kdeplasma-addons"
 pkgver = "6.4.0"
 pkgrel = 0
 build_style = "cmake"
+# XXX drop libexec
+configure_args = ["-DCMAKE_INSTALL_LIBEXECDIR=/usr/lib"]
 # FIXME: failed tz comparison / scientific notation number e uppercase
 make_check_args = ["-E", "(converterrunnertest|datetimerunnertest)"]
 make_check_wrapper = ["wlheadless-run", "--"]
@@ -40,12 +42,7 @@ makedepends = [
     "qt6-qtquick3d-devel",
     "sonnet-devel",
 ]
-depends = [
-    "kirigami-addons",
-    "kitemmodels",
-    "purpose",
-    "qt6-qtquick3d",
-]
+depends = ["kirigami-addons", "kitemmodels", "purpose", "qt6-qtquick3d"]
 checkdepends = ["xwayland-run"]
 pkgdesc = "KDE Plasma addons"
 license = "GPL-3.0-only AND CC0-1.0 AND LGPL-3.0-or-later"

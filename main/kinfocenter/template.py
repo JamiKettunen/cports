@@ -2,6 +2,8 @@ pkgname = "kinfocenter"
 pkgver = "6.4.0"
 pkgrel = 0
 build_style = "cmake"
+# XXX drop libexec
+configure_args = ["-DCMAKE_INSTALL_LIBEXECDIR=/usr/lib"]
 hostmakedepends = [
     "cmake",
     "extra-cmake-modules",
@@ -22,10 +24,7 @@ makedepends = [
     "qt6-qtbase-devel",
     # TODO: SeleniumWebDriverATSPI? (GUI accessibility tests)
 ]
-depends = [
-    "kdeclarative",
-    "systemsettings",
-]
+depends = ["kdeclarative", "systemsettings"]
 pkgdesc = "Utility providing information about your system"
 license = "GPL-2.0-or-later AND LGPL-2.1-or-later"
 url = "https://invent.kde.org/plasma/kinfocenter"

@@ -2,6 +2,8 @@ pkgname = "powerdevil"
 pkgver = "6.4.0"
 pkgrel = 0
 build_style = "cmake"
+# XXX drop libexec
+configure_args = ["-DCMAKE_INSTALL_LIBEXECDIR=/usr/lib"]
 # FIXME: all tests broken like on alpine, migrateconfig_test*
 make_check_args = [
     "-E",
@@ -60,10 +62,10 @@ url = "https://invent.kde.org/plasma/powerdevil"
 source = f"$(KDE_SITE)/plasma/{pkgver}/powerdevil-{pkgver}.tar.xz"
 sha256 = "d0ad54cb6d4ccf39c0d5b7f0c7df2f51bc99ffd3fd6ca7538ed3f41dfc4f677e"
 file_modes = {
-    "usr/libexec/org_kde_powerdevil": ("root", "root", 0o755),
+    "usr/lib/org_kde_powerdevil": ("root", "root", 0o755),
 }
 file_xattrs = {
-    "usr/libexec/org_kde_powerdevil": {
+    "usr/lib/org_kde_powerdevil": {
         "security.capability": "cap_wake_alarm+ep",
     },
 }

@@ -2,6 +2,8 @@ pkgname = "ksystemstats"
 pkgver = "6.4.0"
 pkgrel = 0
 build_style = "cmake"
+# XXX drop libexec
+configure_args = ["-DCMAKE_INSTALL_LIBEXECDIR=/usr/lib"]
 make_check_env = {"QT_QPA_PLATFORM": "offscreen"}
 make_check_wrapper = ["dbus-run-session"]
 hostmakedepends = [
@@ -39,10 +41,10 @@ sha256 = "e0f8855a4db91508066b9da5108ddbce48bbadda64bb96653ac2fb312fc1468e"
 # silence some ~600 lines of spam...
 tool_flags = {"CXXFLAGS": ["-Wno-deprecated-declarations"]}
 file_modes = {
-    "usr/libexec/ksystemstats_intel_helper": ("root", "root", 0o755),
+    "usr/lib/ksystemstats_intel_helper": ("root", "root", 0o755),
 }
 file_xattrs = {
-    "usr/libexec/ksystemstats_intel_helper": {
+    "usr/lib/ksystemstats_intel_helper": {
         "security.capability": "cap_perfmon+ep",
     },
 }

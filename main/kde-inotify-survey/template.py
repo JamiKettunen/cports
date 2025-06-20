@@ -2,6 +2,8 @@ pkgname = "kde-inotify-survey"
 pkgver = "25.04.2"
 pkgrel = 0
 build_style = "cmake"
+# XXX drop libexec
+configure_args = ["-DCMAKE_INSTALL_LIBEXECDIR=/usr/lib"]
 hostmakedepends = [
     "cmake",
     "extra-cmake-modules",

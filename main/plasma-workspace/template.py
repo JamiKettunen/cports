@@ -3,7 +3,10 @@ pkgver = "6.4.0"
 pkgrel = 0
 build_style = "cmake"
 # TODO: -DINSTALL_SDDM_WAYLAND_SESSION=ON experiments?
-configure_args = ["-DGLIBC_LOCALE_GEN=OFF"]
+configure_args = [
+    "-DGLIBC_LOCALE_GEN=OFF",
+    "-DCMAKE_INSTALL_LIBEXECDIR=/usr/lib",  # XXX drop libexec
+]
 make_check_args = [
     "-E",
     "(^tasksmodeltest$"  # failing test_moveLauncherBug472524() & test_moveBug444816()
