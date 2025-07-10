@@ -1,0 +1,25 @@
+--- a/libdiscover/backends/AlpineApkBackend/AlpineApkBackend.cpp
++++ b/libdiscover/backends/AlpineApkBackend/AlpineApkBackend.cpp
+@@ -170,7 +170,7 @@ void AlpineApkBackend::fillResourcesAndApplyAppStreamData()
+                 // during first run of this function during initial load
+                 //   m_resources hash is empty, so we need to insert new items
+                 res = new AlpineApkResource(pkg, appsComponent, resType, this);
+-                res->setCategoryName(QStringLiteral("alpine_packages"));
++                res->setCategoryName(QStringLiteral("apk_packages"));
+                 res->setOriginSource(QStringLiteral("apk"));
+                 res->setSection(QStringLiteral("dummy"));
+                 m_resources.insert(key, res);
+@@ -282,11 +282,11 @@ void AlpineApkBackend::onAppstreamDataDownloaded()
+ 
+ QList<std::shared_ptr<Category>> AlpineApkBackend::category() const
+ {
+-    static CategoryFilter s_apkFlt{CategoryFilter::FilterType::CategoryNameFilter, QLatin1String("alpine_packages")};
++    static CategoryFilter s_apkFlt{CategoryFilter::FilterType::CategoryNameFilter, QLatin1String("apk_packages")};
+ 
+     // Display a single root category
+     // we could add more, but Alpine apk does not have this concept
+-    static std::shared_ptr<Category> s_rootCat(std::make_shared<Category>(i18nc("Root category name", "Alpine Linux packages"), // name
++    static std::shared_ptr<Category> s_rootCat(std::make_shared<Category>(i18nc("Root category name", "Chimera Linux packages"), // name
+                                                                           QStringLiteral("package-x-generic"), // icon name
+                                                                           s_apkFlt, // const CategoryFilter& filters
+                                                                           QSet<QString>{displayName()}, // pluginName

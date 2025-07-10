@@ -1,0 +1,11 @@
+--- a/discover/qml/UpdatesPage.qml
++++ b/discover/qml/UpdatesPage.qml
+@@ -231,7 +231,7 @@ DiscoverPage {
+                 Discover.ReadFile {
+                     id: log
+                     filter: ".*ALPM-SCRIPTLET\\] .*"
+-                    path: "/var/log/pacman.log"
++                    path: "/var/log/apk.log"
+                 }
+             }
+         }

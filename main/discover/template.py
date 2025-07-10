@@ -1,6 +1,6 @@
 pkgname = "discover"
 pkgver = "6.4.2"
-pkgrel = 0
+pkgrel = 1
 build_style = "cmake"
 # XXX drop libexec
 configure_args = ["-DCMAKE_INSTALL_LIBEXECDIR=/usr/lib"]
@@ -43,6 +43,7 @@ makedepends = [
     "kstatusnotifieritem-devel",
     "kuserfeedback-devel",
     "kxmlgui-devel",
+    "libapk-qt-devel",
     "purpose-devel",
     "qcoro-devel",
     "qt6-qtdeclarative-devel",
