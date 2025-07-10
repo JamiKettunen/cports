@@ -16,6 +16,8 @@ hostmakedepends = [
     "scdoc",
 ]
 makedepends = ["openssl3-devel", "zlib-ng-compat-devel"]
+# shared lib that e.g. libapk-qt depends on
+provides = [f"so:libapk.so.{pkgver}=0"]
 pkgdesc = "Alpine package manager"
 license = "GPL-2.0-only"
 url = "http://git.alpinelinux.org/cgit/apk-tools"
