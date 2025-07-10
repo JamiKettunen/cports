@@ -1,0 +1,10 @@
+from 2d449db3fc2cfdfcf87b3f1077dce5e6e42a0dba upstream
+--- a/ApkQtConfig.cmake.in
++++ b/ApkQtConfig.cmake.in
+@@ -12,5 +12,5 @@ set_target_properties(ApkQt::ApkQt
+ )
+ 
+ include(CMakeFindDependencyMacro)
+-find_dependency(Qt5Core)
++find_dependency(Qt@QTMVER@Core)
+ # We could add find_dependency(LibApk) if apk-tools provided cmake package config file, but no...)
