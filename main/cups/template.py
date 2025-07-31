@@ -1,6 +1,6 @@
 pkgname = "cups"
 pkgver = "2.4.12"
-pkgrel = 0
+pkgrel = 1
 build_style = "gnu_configure"
 configure_args = [
     "--enable-relro",
@@ -46,7 +46,7 @@ makedepends = [
     "linux-pam-devel",
     "openssl3-devel",
 ]
-depends = ["xdg-utils"]
+depends = ["virtual:cups-filters-provider!cups-filters-none", "xdg-utils"]
 pkgdesc = "Common Unix Printing System"
 license = "Apache-2.0"
 url = "https://github.com/OpenPrinting/cups"
@@ -93,6 +93,15 @@ def post_install(self):
 
     # we don't have xinetd
     self.uninstall("etc/xinetd.d")
+
+
+@subpackage("cups-filters-none")
+def _(self):
+    self.subdesc = "no cups-filters"
+    self.provides = ["cups-filters-provider=0"]
+    self.options = ["empty"]
+
+    return []
 
 
 @subpackage("cups-libs")

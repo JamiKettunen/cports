@@ -1,6 +1,6 @@
 pkgname = "cups-filters"
 pkgver = "2.0.1"
-pkgrel = 0
+pkgrel = 1
 build_style = "gnu_configure"
 configure_args = [
     # TODO mupdf deptree
@@ -22,6 +22,7 @@ makedepends = [
     "linux-headers",
 ]
 depends = ["cups"]
+provides = [self.with_pkgver("cups-filters-provider")]
 pkgdesc = "Filters, backends, utilities for CUPS"
 license = "Apache-2.0 AND custom:gpl-exception"
 url = "https://github.com/OpenPrinting/cups-filters"
