@@ -41,6 +41,7 @@ Prepare options and their default values:
     RELEASE=             The release number to use, with FLAVOR.
     SPLIT_DBG=1          Separate the debug info.
     STRIP=1              Strip the modules.
+    STUBBLE=0            Build a combined stubble+dtbs+kernel EFI image.
 
 If FLAVOR is specified, it's like LOCALVERSION=-RELEASE-FLAVOR, with RELEASE
 becoming 0 if unset.
@@ -93,6 +94,7 @@ EPOCH=
 JOBS=1
 STRIP=1
 SPLIT_DBG=1
+STUBBLE=0
 
 case "$ARCH" in
     x86_64) ARCH=x86_64;;
@@ -145,6 +147,7 @@ read_prepared() {
     JOBS=$(cat "${prepdir}/jobs")
     STRIP=$(cat "${prepdir}/strip")
     SPLIT_DBG=$(cat "${prepdir}/split-dbg")
+    STUBBLE=$(cat "${prepdir}/stubble")
     [ -r "${prepdir}/epoch" ] && EPOCH=$(cat "${prepdir}/epoch")
 
     export PATH="${prepdir}/wrappers:${PATH}"
@@ -214,6 +217,7 @@ do_prepare() {
             JOBS=*) JOBS=${1#JOBS=};;
             STRIP=*) STRIP=${1#STRIP=};;
             SPLIT_DBG=*) SPLIT_DBG=${1#SPLIT_DBG=};;
+            STUBBLE=*) STUBBLE=${1#STUBBLE=};;
         esac
         shift
     done
@@ -310,6 +314,7 @@ do_prepare() {
     printf "%s" "$EPOCH" > "${TEMPDIR}/epoch"
     printf "%s" "$STRIP" > "${TEMPDIR}/strip"
     printf "%s" "$SPLIT_DBG" > "${TEMPDIR}/split-dbg"
+    printf "%s" "$STUBBLE" > "${TEMPDIR}/stubble"
 
     printf "%s" "$TEMPDIR" > .chimera_prepare_done
 
@@ -434,9 +439,32 @@ do_install() {
                 || die "failed to install dtbs"
             ;;
         arm64|riscv)
+            # TODO: better standalone zboot support? maybe don't have both Image + vmlinuz.efi in same packaging etc
             install -m 644 "${OBJDIR}/arch/${ARCH}/boot/Image" \
                 "${DESTDIR}/boot/vmlinux-${kernver}" \
                 || die "failed to install kernel"
+            # TODO: arm64-exclusive or make available elsewhere? (currently also applies to riscv..)
+            if grep "^CONFIG_EFI_ZBOOT=y" "${OBJDIR}/.config" > /dev/null; then
+                # FIXME: stop gating behind zboot, uncompressed also ok, script structure needs thought tho..
+                if [ "$STUBBLE" -ne 0 ]; then
+                    stubble_hwids="/usr/share/stubble/hwids"
+                    [ -d "${stubble_hwids}" ] || die "stubble requested but hwids dir missing"
+                    echo "Gathering ${ARCH} DTBs supported by stubble..."
+                    dtbs=$(/usr/lib/stubble/finddtbs.py "${OBJDIR}/arch/${ARCH}/boot/dts" "${stubble_hwids}")
+                    [ "${dtbs}" ] || die "failed to locate any stubble-compatible ${ARCH} dtbs"
+                    printf '  %s\n' $(echo "$dtbs" | sed 's/.*dts\///')
+                    ukify build --stub=/usr/lib/stubble/stubble.efi \
+                        --linux="${OBJDIR}/arch/${ARCH}/boot/vmlinuz.efi" \
+                        --hwids="${stubble_hwids}" --uname "${kernver}" \
+                        $(echo "$dtbs" | xargs -I {} echo "--devicetree-auto={}") \
+                        --output="${DESTDIR}/boot/vmlinuz-${kernver}" \
+                        || die "failed to install stubble/kernel/dtb EFI bundle"
+                else
+                    install -m 644 "${OBJDIR}/arch/${ARCH}/boot/vmlinuz.efi" \
+                        "${DESTDIR}/boot/vmlinuz-${kernver}" \
+                        || die "failed to install kernel"
+                fi
+            fi
             call_make dtbs_install \
                 INSTALL_DTBS_PATH="${DESTDIR}/boot/dtbs/dtbs-${kernver}" \
                 || die "failed to install dtbs"
