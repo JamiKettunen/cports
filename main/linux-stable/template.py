@@ -42,6 +42,11 @@ if self.current_target == "custom:generate-configs":
 if self.profile().cross:
     broken = "linux-devel does not come out right"
 
+_have_stubble = self.profile().arch == "aarch64"
+if _have_stubble:
+    hostmakedepends += ["stubble"]
+    configure_args += ["STUBBLE=1"]
+
 
 @subpackage("linux-stable-devel")
 def _(self):
@@ -61,3 +66,24 @@ def _(self):
         "textrels",
     ]
     return ["usr/lib/debug", "usr/lib/modules/*/apk-dist/boot/System.map-*"]
+
+
+@subpackage("linux-stable-dtbs", _have_stubble)
+def _(self):
+    self.subdesc = "devicetree blobs"
+    self.install_if = [self.parent]
+    return ["usr/lib/modules/*/apk-dist/boot/dtbs"]
+
+
+@subpackage("linux-stable-image", _have_stubble)
+def _(self):
+    self.subdesc = "uncompressed kernel"
+    self.install_if = [self.parent]
+    return ["usr/lib/modules/*/apk-dist/boot/vmlinux-*"]
+
+
+@subpackage("linux-stable-stubble", _have_stubble)
+def _(self):
+    self.subdesc = "stubble/kernel/dtbs subset EFI bundle"
+    self.depends = [self.parent, "!linux-stable-dtbs", "!linux-stable-image"]
+    return ["usr/lib/modules/*/apk-dist/boot/vmlinuz-*"]
