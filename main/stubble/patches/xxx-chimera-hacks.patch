@@ -1,0 +1,41 @@
+required bits from main/udev/patches/xxx-chimera-hacks.patch to build
+
+--- a/include/efi.h
++++ b/include/efi.h
+@@ -3,6 +3,12 @@
+ 
+ /* IWYU pragma: always_keep */
+ 
++#define __DEFINED_wchar_t
++/* uchar.h/wchar.h are not suitable for freestanding environments. */
++typedef __WCHAR_TYPE__ wchar_t;
++typedef __CHAR16_TYPE__ char16_t;
++typedef __CHAR32_TYPE__ char32_t;
++
+ #include <limits.h>                     /* IWYU pragma: export */
+ #include <stdarg.h>                     /* IWYU pragma: export */
+ #include <stdbool.h>                    /* IWYU pragma: export */
+@@ -14,11 +20,6 @@
+ #include "efi-fundamental.h"            /* IWYU pragma: export */
+ #include "macro-fundamental.h"          /* IWYU pragma: export */
+ 
+-/* uchar.h/wchar.h are not suitable for freestanding environments. */
+-typedef __WCHAR_TYPE__ wchar_t;
+-typedef __CHAR16_TYPE__ char16_t;
+-typedef __CHAR32_TYPE__ char32_t;
+-
+ /* Let's be paranoid and do some sanity checks. */
+ assert_cc(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__);
+ assert_cc(__STDC_HOSTED__ == 0);
+diff --git a/include/memory-util-fundamental.h b/include/memory-util-fundamental.h
+index 58bc52a..cffe77e 100644
+--- a/include/memory-util-fundamental.h
++++ b/include/memory-util-fundamental.h
+@@ -1,7 +1,6 @@
+ /* SPDX-License-Identifier: LGPL-2.1-or-later */
+ #pragma once
+ 
+-#include <stddef.h>
+ 
+ #include "efi-string.h"
+ 
