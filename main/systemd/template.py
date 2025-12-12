@@ -91,6 +91,9 @@ license = "LGPL-2.1-or-later"
 url = "https://github.com/systemd/systemd"
 source = f"{url}/archive/refs/tags/v{pkgver.replace('_', '-')}.tar.gz"
 sha256 = "7af4f36db512ad2f0f749a0f9886370edeb2bb5128014fc47cdf73702c7e1911"
+# symlink: usr/lib/environment.d/99-environment.conf (points to: ../../../etc/environment, unknown provider)
+# bash completion 'udevadm' has no matching command
+options = ["brokenlinks", "!lintcomp"]
 
 
 def init_configure(self):
@@ -151,6 +154,7 @@ def _(self):
 def _(self):
     self.subdesc = "device manager"
     self.renames = ["udev"]
+    self.triggers = ["/usr/lib/udev/rules.d", "/usr/lib/udev/hwdb.d", "/etc/udev/hwdb.d"]
 
     return [
         "etc/udev",
