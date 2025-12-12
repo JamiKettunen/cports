@@ -190,8 +190,6 @@ def invoke(pkg):
         "local",
         "lib/installed-tests",
         "lib/locale",
-        "lib/systemd/system",
-        "lib/systemd/user",
         "libexec/installed-tests",
         "share/glib-2.0/schemas/gschemas.compiled",
         "share/installed-tests",
