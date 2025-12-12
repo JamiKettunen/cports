@@ -1,7 +1,7 @@
 # update linux-stable-zfs-bin when bumping
 pkgname = "linux-stable"
 pkgver = "7.1.2"
-pkgrel = 0
+pkgrel = 1
 archs = [
     "aarch64",
     "loongarch64",
