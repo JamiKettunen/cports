@@ -1,0 +1,43 @@
+#!/bin/sh
+# heavily tweaked https://git.launchpad.net/ubuntu/+source/ubuntu-x1e-settings/tree/hooks/ubuntu-x1e-settings?h=ubuntu/plucky
+PREREQ=""
+prereqs()
+{
+    echo "$PREREQ"
+}
+
+case $1 in
+prereqs)
+    prereqs
+    exit 0
+    ;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions
+
+# Only copy what's needed for current machine when possible, otherwise fallback to everything X1E/X1P
+SOC="x1e80100" # fallback
+ADSP_FW_NODE="/proc/device-tree/soc@0/remoteproc@6800000/firmware-name"
+if [ -f "$ADSP_FW_NODE" ]; then
+    ADSP_FW_FILE=$(IFS= awk '{print $1}' < "$ADSP_FW_NODE") # e.g. ".../qcadsp8380.mbn"
+    SOC=${ADSP_FW_FILE#qcom/}; SOC=${SOC%%/*} # e.g. "x1e80100" or "x1p42100"
+    BOARD_SUFFIX="${ADSP_FW_FILE%/*}"; BOARD_SUFFIX="${BOARD_SUFFIX#qcom/$SOC}" # e.g. "/ASUSTeK/vivobook-s15"
+    if [ -d $(find /lib/firmware/updates/qcom/$SOC/* /lib/firmware/qcom/$SOC/* -type d -path "*$BOARD_SUFFIX" 2>/dev/null) ]; then
+        # with valid device-specific subdir these would otherwise be missed for X1-85/45 GPUs
+        case "$SOC" in
+        "x1e80100") # hamoa
+            add_firmware qcom/gen70500_sqe.fw
+            add_firmware qcom/gen70500_gmu.bin
+        ;;
+        "x1p42100") # purwa
+            add_firmware qcom/gen71500_sqe.fw
+            add_firmware qcom/gen71500_gmu.bin
+        ;;
+        esac
+    else
+        unset BOARD_SUFFIX # invalid e.g. on CRD, fallback to copying all
+    fi
+fi
+for f in $(find /lib/firmware/updates/qcom/${SOC}${BOARD_SUFFIX} /lib/firmware/qcom/${SOC}${BOARD_SUFFIX} -not -type d 2>/dev/null); do
+    add_firmware "${f#/lib/firmware/}"
+done
