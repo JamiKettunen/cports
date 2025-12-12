@@ -1,0 +1,12 @@
+# Display (TODO: drop with initramfs-tools v0.149+ -> https://github.com/chimera-linux/cports/pull/4642)
+panel_samsung_atna33xc20
+
+# Missing with modules on linux-stable,
+#pm8941-pwrkey
+# TODO: useful in initramfs?
+qcom_tsens
+
+# FIXME: not probed by hw even once in rootfs?! been built-in stuff on jhovold/jg kernel forks..
+cpufreq_userspace
+qcom-cpufreq-hw
+scmi-cpufreq
