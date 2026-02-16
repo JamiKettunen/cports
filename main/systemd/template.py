@@ -1,5 +1,5 @@
 pkgname = "systemd"
-pkgver = "259_rc3"
+pkgver = "259.1"
 pkgrel = 0
 build_style = "meson"
 configure_args = [
@@ -90,7 +90,7 @@ pkgdesc = "System and service manager"
 license = "LGPL-2.1-or-later"
 url = "https://github.com/systemd/systemd"
 source = f"{url}/archive/refs/tags/v{pkgver.replace('_', '-')}.tar.gz"
-sha256 = "89241b11eca4ea5019f75ea5794d356d153c541c166844550d11f140891d6993"
+sha256 = "7af4f36db512ad2f0f749a0f9886370edeb2bb5128014fc47cdf73702c7e1911"
 
 
 def init_configure(self):
