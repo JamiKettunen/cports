@@ -1,5 +1,5 @@
 pkgname = "ksshaskpass"
-pkgver = "6.5.5"
+pkgver = "6.6.0"
 pkgrel = 0
 build_style = "cmake"
 hostmakedepends = [
@@ -16,9 +16,10 @@ makedepends = [
     "kwallet-devel",
     "kwidgetsaddons-devel",
     "qt6-qtdeclarative-devel",
+    "qtkeychain-devel",
 ]
 pkgdesc = "KDE askpass helper"
 license = "GPL-2.0-or-later"
 url = "https://invent.kde.org/plasma/ksshaskpass"
 source = f"$(KDE_SITE)/plasma/{pkgver}/ksshaskpass-{pkgver}.tar.xz"
-sha256 = "191e729f6442b916b53dc35a830b0188f74ea20ef6525b326983ae5815ec6bcb"
+sha256 = "28a775a52be2fb67c4404afdf819132152183541cbddbe0b15753e7b0c6341f6"

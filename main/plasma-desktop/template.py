@@ -1,6 +1,6 @@
 pkgname = "plasma-desktop"
-pkgver = "6.5.5"
-pkgrel = 1
+pkgver = "6.6.0"
+pkgrel = 0
 build_style = "cmake"
 # XXX drop libexec
 configure_args = ["-DCMAKE_INSTALL_LIBEXECDIR=/usr/lib"]
@@ -109,7 +109,7 @@ pkgdesc = "KDE Plasma Desktop"
 license = "GPL-2.0-only AND LGPL-2.1-only"
 url = "https://kde.org/plasma-desktop"
 source = f"$(KDE_SITE)/plasma/{pkgver}/plasma-desktop-{pkgver}.tar.xz"
-sha256 = "2367f12531575b2e445cd2b0fa0b756f151f10eaa27358b0966735ff400146c7"
+sha256 = "d91e4dd276ea1ad743e31ace859a36ec4dfb431495c81eb1a8eb32a49c73f342"
 hardening = ["vis"]
 
 # most kdepim stuff depends on messagelib which depends on qtwebengine
@@ -158,16 +158,17 @@ def _(self):
         "plasma-browser-integration",  # browser integration with plasma
         "plasma-disks",  # smart monitoring
         "plasma-firewall",  # firewall configuration
+        "plasma-keyboard",  # on-screen keyboard
         "plasma-thunderbolt",  # user device authentication
         "print-manager",  # printer configuration
+        "qrca",  # connect to Wi-FI via QR scan
         "svgpart",  # svg renderer kpart plugin
-        "xwaylandvideobridge",  # x11 screen capture compat under wayland, TODO: test on baremetal
         # non-kde, misc integrations
         "desktop-file-utils",
         "fprintd-meta",
         "iio-sensor-proxy-meta",  # tablet/convertible auto-rotate etc.
-        "maliit-keyboard",  # on-screen keyboard
         "power-profiles-daemon-meta",  # battery power saving
+        "xdg-desktop-portal-gtk",  # flatpak gtk font sync
     ]
     self.options = ["empty"]
 

@@ -1,5 +1,5 @@
 pkgname = "kdeplasma-addons"
-pkgver = "6.5.5"
+pkgver = "6.6.0"
 pkgrel = 0
 build_style = "cmake"
 # XXX drop libexec
@@ -49,7 +49,7 @@ pkgdesc = "KDE Plasma addons"
 license = "GPL-3.0-only AND CC0-1.0 AND LGPL-3.0-or-later"
 url = "https://invent.kde.org/plasma/kdeplasma-addons"
 source = f"$(KDE_SITE)/plasma/{pkgver}/kdeplasma-addons-{pkgver}.tar.xz"
-sha256 = "32b69b987258998b95017cf08aba1d85b986303bd59e1bbc600ed12e2184f5cb"
+sha256 = "df58519038f8fa02f399c3ebd06d6860880641f2bd68566b2207212f9ba34235"
 
 if self.profile().arch in ["aarch64", "ppc64le", "x86_64"]:
     makedepends += ["qt6-qtwebengine-devel"]
